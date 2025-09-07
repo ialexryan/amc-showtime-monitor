@@ -295,12 +295,8 @@ export class AMCApiClient {
   }
 
   // Generate ticket purchase URL for a showtime
-  generateTicketUrl(showtime: AMCShowtime, theatreSlug: string): string {
-    // AMC's ticket URL format (this may need adjustment based on their actual URL structure)
-    const baseUrl = 'https://www.amctheatres.com/movie-theatres';
-    const date = new Date(showtime.showDateTimeLocal);
-    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-    return `${baseUrl}/${theatreSlug}/showtimes/${dateStr}`;
+  generateTicketUrl(showtime: AMCShowtime): string {
+    // AMC's direct showtime ticket URL format
+    return `https://www.amctheatres.com/showtimes/${showtime.id}/seats`;
   }
 }

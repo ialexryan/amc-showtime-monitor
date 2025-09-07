@@ -97,14 +97,12 @@ export class TelegramBot {
         if (msg.isSoldOut) statusEmoji = '❌';
         else if (msg.isAlmostSoldOut) statusEmoji = '⚠️';
 
-        return `${statusEmoji} ${dateStr} ${timeStr}${formatStr ? ` - ${formatStr}` : ` - Aud ${msg.auditorium}`}`;
+        const showtimeText = `${statusEmoji} ${dateStr} ${timeStr}${formatStr ? ` - ${formatStr}` : ` - Aud ${msg.auditorium}`}`;
+        return msg.ticketUrl
+          ? `<a href="${msg.ticketUrl}">${showtimeText}</a>`
+          : showtimeText;
       })
       .join('\n');
-
-    const ticketUrl = messages[0].ticketUrl;
-    const ticketLink = ticketUrl
-      ? `\n\n🎫 <a href="${ticketUrl}">Buy Tickets</a>`
-      : '';
 
     const showtimeCount =
       messages.length === 1
@@ -115,7 +113,7 @@ export class TelegramBot {
 
 🏛️ ${messages[0].theatreName}
 
-${showtimeList}${ticketLink}`;
+${showtimeList}`;
   }
 
   private getFormatString(

@@ -173,10 +173,7 @@ export class ShowtimeMonitor {
 
     // Process each showtime
     for (const amcShowtime of amcShowtimes) {
-      const ticketUrl = this.amcClient.generateTicketUrl(
-        amcShowtime,
-        this.theatre.slug
-      );
+      const ticketUrl = this.amcClient.generateTicketUrl(amcShowtime);
 
       // Store showtime in database and check if it's new
       const result = this.database.upsertShowtime({
