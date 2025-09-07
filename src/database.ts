@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 
 export interface Theatre {
   id: number;
@@ -34,7 +34,7 @@ export interface Showtime {
 }
 
 export class ShowtimeDatabase {
-  private db: Database.Database;
+  private db: Database;
 
   constructor(dbPath: string = './showtimes.db') {
     this.db = new Database(dbPath);
@@ -199,7 +199,7 @@ export class ShowtimeDatabase {
         showtime.attributes,
         showtime.ticketUrl
       );
-      return { id: result.lastInsertRowid as number, isNew: true };
+      return { id: Number(result.lastInsertRowid), isNew: true };
     }
   }
 
