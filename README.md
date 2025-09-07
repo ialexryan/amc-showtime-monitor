@@ -1,259 +1,189 @@
-# AMC Showtime Monitor 🎬
+# AMC Showtime Monitor
 
-A high-performance TypeScript application that monitors AMC Theatres for new movie showtimes and sends instant Telegram notifications. Perfect for getting the best seats to hotly anticipated movies!
+Monitor AMC Theatres for new movie showtimes and send Telegram notifications when showtimes are posted for your favorite movies.
 
-## ✨ Features
+## Features
 
-- **Fuzzy Movie Matching**: Monitors movies like "Tron: Ares" and catches variations like "Tron: Ares Special Opening Night"
-- **Real-time Notifications**: Instant Telegram notifications with showtime details and direct ticket purchase links
-- **Premium Format Detection**: Highlights IMAX, Dolby Cinema, and other premium formats
-- **Smart Deduplication**: Tracks announced showtimes to avoid spam notifications
-- **Blazing Fast**: Built with Bun for lightning-fast startup times (perfect for cron jobs)
-- **SQLite Storage**: Efficient local database with proper indexing and relationships
-- **Rate Limit Protection**: Built-in error handling and respectful API usage
+- **Real-time monitoring**: Check for new showtimes at configurable intervals
+- **Fuzzy movie matching**: Find movies even with slight title variations
+- **Premium format detection**: Highlights IMAX, Dolby Cinema, and other premium formats
+- **Direct ticket links**: Each showtime links directly to AMC's seat selection page
+- **Telegram notifications**: Get instant alerts when new showtimes are posted
+- **Duplicate prevention**: Tracks announced showtimes to avoid repeat notifications
+- **SQLite persistence**: Maintains state across runs
 
-## 🚀 Quick Start
+## Requirements
 
-### Prerequisites
+- [Bun](https://bun.sh/) runtime
+- AMC API key (included in example config)
+- Telegram bot token and chat ID
 
-- [Bun](https://bun.sh/) installed
-- Telegram account
-- AMC API key (provided in example config)
+## Setup
 
-### Installation
+1. **Clone and install dependencies**:
+   ```bash
+   git clone <repository-url>
+   cd amc-showtime-monitor
+   bun install
+   ```
 
+2. **Create configuration file**:
+   ```bash
+   bun src/cli.ts init
+   ```
+
+3. **Set up Telegram bot**:
+   ```bash
+   bun src/cli.ts setup
+   ```
+   Follow the interactive guide to create your Telegram bot.
+
+4. **Edit config.json** with your settings:
+   ```json
+   {
+     "movies": ["Tron: Ares", "The Odyssey"],
+     "theatre": "AMC Metreon 16",
+     "pollIntervalMinutes": 15,
+     "telegram": {
+       "botToken": "your-bot-token",
+       "chatId": "your-chat-id"
+     },
+     "amcApiKey": "your-amc-api-key-here"
+   }
+   ```
+
+## Usage
+
+### Check for new showtimes
 ```bash
-# Clone and setup
-git clone <your-repo>
-cd amc-showtime-monitor
-bun install
-
-# Initialize configuration
-bun src/cli.ts init
-
-# Set up Telegram bot
-bun src/cli.ts setup
+bun check
 ```
 
-### Configure Your Settings
-
-Edit `config.json`:
-
-```json
-{
-  "movies": [
-    "Tron: Ares",
-    "Odyssey"
-  ],
-  "theatre": "AMC Metreon 16",
-  "pollIntervalMinutes": 15,
-  "telegram": {
-    "botToken": "your-telegram-bot-token",
-    "chatId": "your-chat-id"
-  },
-  "amcApiKey": "your-amc-api-key-here"
-}
-```
-
-### Test Your Setup
-
+### Test Telegram connection
 ```bash
-# Test Telegram connection
-bun src/cli.ts test
-
-# Check status
-bun src/cli.ts status
-
-# Run a single check
-bun src/cli.ts check
+bun test
 ```
 
-## 📱 Telegram Bot Setup
+### View monitoring status
+```bash
+bun status
+```
 
-1. **Create Bot**: Message [@BotFather](https://t.me/BotFather) on Telegram
-2. **Send**: `/newbot`
-3. **Follow prompts** to name your bot
-4. **Copy the bot token** (looks like: `123456789:ABCdefGHI...`)
-5. **Start a chat** with your new bot
-6. **Send any message** to your bot
-7. **Get your Chat ID**: Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-8. **Find your Chat ID** in the JSON response under `"chat":{"id":`
-9. **Add both values** to your `config.json`
+### Run with verbose logging
+```bash
+bun src/cli.ts check -v
+```
 
-## ⏰ Scheduling
+## Automation
 
-### macOS (Recommended)
+Set up automated monitoring using your system's scheduler:
 
+### macOS (launchd)
 Create `~/Library/LaunchAgents/com.user.amc-monitor.plist`:
-
 ```xml
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
 <dict>
     <key>Label</key>
     <string>com.user.amc-monitor</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/your-username/.bun/bin/bun</string>
-        <string>src/cli.ts</string>
+        <string>/path/to/bun</string>
         <string>check</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/path/to/amc-showtime-monitor</string>
     <key>StartInterval</key>
-    <integer>900</integer> <!-- 15 minutes -->
-    <key>StandardOutPath</key>
-    <string>/tmp/amc-monitor.log</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/amc-monitor-error.log</string>
+    <integer>900</integer>
 </dict>
 </plist>
 ```
 
-Load it:
+### Linux (cron)
 ```bash
-launchctl load ~/Library/LaunchAgents/com.user.amc-monitor.plist
+# Run every 15 minutes
+*/15 * * * * cd /path/to/amc-showtime-monitor && bun check
 ```
 
-### Linux/Unix (cron)
+## Configuration
 
-```bash
-# Edit crontab
-crontab -e
+### Movies
+- Use exact movie titles or close variations
+- Fuzzy matching handles minor differences
+- Include "The", "A", "An" articles for better matching
 
-# Add line (check every 15 minutes)
-*/15 * * * * cd /path/to/amc-showtime-monitor && /path/to/bun src/cli.ts check
+### Theatre
+- Use either the full theatre name ("AMC Metreon 16") 
+- Or the theatre slug ("amc-metreon-16")
+- Theatre lookup supports fuzzy matching
+
+### Polling Interval
+- Minimum recommended: 15 minutes
+- Be respectful of AMC's API rate limits
+- Higher frequency may trigger rate limiting
+
+## API Limitations
+
+### Vendor-Exclusive Movies
+Some movies may show "vendor exclusive" errors and not appear in search results. This typically happens when:
+
+- Movies are far from release date
+- Distribution agreements restrict API access
+- AMC limits certain content to premium API partners
+
+**What this means**: Movies like "The Odyssey" might not be accessible until closer to their release date, even though they appear on AMC's website.
+
+**Workaround**: Keep these movies in your config - they'll automatically start working once AMC makes them publicly available through the API.
+
+## Notification Format
+
+Notifications show:
+- Movie title
+- Theatre name  
+- Premium formats (IMAX, Dolby Cinema, etc.) instead of auditorium numbers
+- Direct links to seat selection for each showtime
+- Sold out/almost sold out status
+
+Example:
 ```
+🎬 New Showtime for Tron: Ares!
 
-## 🎯 CLI Commands
-
-```bash
-# Check for new showtimes
-bun src/cli.ts check [options]
-
-# Test Telegram bot
-bun src/cli.ts test
-
-# Show current status
-bun src/cli.ts status
-
-# Initialize new config
-bun src/cli.ts init
-
-# Setup guide for Telegram
-bun src/cli.ts setup
-
-# Help
-bun src/cli.ts --help
-```
-
-### Options
-
-- `-c, --config <path>`: Custom config file path
-- `-d, --database <path>`: Custom database file path  
-- `-v, --verbose`: Verbose logging
-
-## 📊 How It Works
-
-1. **Theatre Lookup**: Finds your AMC theatre using fuzzy matching
-2. **Movie Search**: Searches AMC's advance ticket movies for your configured titles
-3. **Fuzzy Matching**: Matches movie names flexibly (catches special editions, etc.)
-4. **Showtime Retrieval**: Gets all future showtimes for matched movies
-5. **Deduplication**: Compares against local SQLite database
-6. **Notifications**: Sends rich Telegram messages for new showtimes
-7. **State Tracking**: Records notifications to prevent duplicates
-
-## 🔧 Configuration
-
-### Movie Names
-
-The monitor uses fuzzy matching, so:
-- `\"Tron: Ares\"` matches `\"Tron: Ares Special Opening Night\"`
-- `\"Odyssey\"` matches `\"The Odyssey\"` or `\"Odyssey IMAX Experience\"`
-
-### Theatre Names
-
-Theatre matching is also fuzzy:
-- `\"AMC Metreon 16\"` matches `\"AMC Metreon 16\"` exactly
-- `\"Metreon\"` would also work
-
-### Poll Frequency
-
-- **15 minutes**: Good balance of responsiveness vs. API respect
-- **5 minutes**: More aggressive (use cautiously)
-- **30+ minutes**: Conservative but might miss rapid sellouts
-
-## 🚨 Notification Format
-
-```
-🎬 New Showtime Available!
-
-🎭 Tron: Ares
 🏛️ AMC Metreon 16
-📅 Fri, Dec 20 at 7:00 PM
-🎪 Auditorium 1
-🎯 IMAX with Laser at AMC
 
-🎫 Buy Tickets
+🎬 Thu, Oct 9 7:00 PM - IMAX with Laser at AMC
+🎬 Thu, Oct 9 10:15 PM - Dolby Cinema at AMC
 ```
 
-Premium formats are automatically detected and highlighted:
-- IMAX with Laser at AMC
-- Dolby Cinema at AMC
-- RealD 3D
-- Laser at AMC
-- And more...
+## Development
 
-## 🗃️ Database Schema
+### Linting and Formatting
+```bash
+bun run lint        # Check code quality
+bun run lint:fix    # Fix linting issues
+bun run format      # Format code
+```
 
-The SQLite database tracks:
-- **Theatres**: ID, name, location
-- **Movies**: ID, name, release date, ratings  
-- **Showtimes**: Movie/theatre relationships, times, attributes, notification status
+### Database
+- SQLite database (`showtimes.db`) stores theatres, movies, and showtime history
+- Database is created automatically on first run
+- Delete database file to reset all tracking
 
-## ⚠️ Rate Limiting & Ethics
+## Troubleshooting
 
-- Built-in exponential backoff on API errors
-- Respects AMC's API with reasonable polling intervals
-- Designed for personal use, not commercial scraping
-- Falls back gracefully on errors
+### Common Issues
 
-## 🐛 Troubleshooting
+1. **Theatre not found**: Try using the exact name from AMC's website or the theatre slug
+2. **Movie not found**: Check spelling, try with/without articles ("The", "A")
+3. **API rate limiting**: Reduce polling frequency in config
+4. **Vendor exclusive movies**: Wait for movie to become publicly available
 
-### \"Theatre not found\"
-- Check spelling in config.json
-- Try partial names like \"Metreon\" instead of full name
-- Use `bun src/cli.ts status` to verify
+### Debug Mode
+Run with verbose logging to see detailed search results:
+```bash
+bun src/cli.ts check -v
+```
 
-### \"No movies found\"
-- AMC might not have advance tickets yet
-- Try broader search terms
-- Check AMC website to confirm movies exist
+## License
 
-### Telegram notifications not working
-- Verify bot token and chat ID
-- Test with `bun src/cli.ts test`
-- Ensure you've messaged your bot first
-
-### Rate limiting errors  
-- Increase `pollIntervalMinutes` in config
-- Check for other applications using the same API key
-
-## 📝 Development
-
-Built with modern TypeScript and cutting-edge tools:
-
-- **Runtime**: Bun (native TypeScript, blazing fast)
-- **Database**: SQLite with better-sqlite3
-- **HTTP Client**: Axios with interceptors
-- **Fuzzy Search**: Fuse.js
-- **CLI**: Commander.js
-
-## 📄 License
-
-ISC License - Use responsibly and respect AMC's terms of service.
-
----
-
-*Happy movie watching! 🍿*
+This project is for personal use only. Respect AMC's terms of service and API usage guidelines.

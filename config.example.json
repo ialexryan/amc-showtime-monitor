@@ -1,8 +1,5 @@
 {
-  "movies": [
-    "Tron: Ares",
-    "Odyssey"
-  ],
+  "movies": ["Tron: Ares", "Odyssey"],
   "theatre": "AMC Metreon 16",
   "pollIntervalMinutes": 15,
   "telegram": {

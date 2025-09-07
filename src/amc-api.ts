@@ -207,16 +207,25 @@ export class AMCApiClient {
       if (movies.length > 0) {
         const fuse = new Fuse(movies, {
           keys: ['name'],
-          threshold: 0.3, // More strict matching for movies
+          threshold: 0.6, // More relaxed threshold to catch "The Movie" vs "Movie"
           includeScore: true,
         });
 
         const fuzzyResults = fuse.search(movieName);
         const filteredMovies = fuzzyResults
-          .filter((result) => (result.score ?? 1) < 0.4) // Only good matches
+          .filter((result) => (result.score ?? 1) < 0.7) // More lenient scoring for articles like "The"
           .map((result) => result.item);
 
         console.log(`Filtered to ${filteredMovies.length} relevant movies`);
+        if (filteredMovies.length > 0) {
+          console.log(
+            `Best matches:`,
+            filteredMovies.map(
+              (m) =>
+                `${m.name} (score: ${fuzzyResults.find((r) => r.item.id === m.id)?.score?.toFixed(3)})`
+            )
+          );
+        }
         return filteredMovies;
       }
 

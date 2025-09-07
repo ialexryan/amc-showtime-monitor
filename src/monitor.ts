@@ -127,18 +127,44 @@ export class ShowtimeMonitor {
     movies: AMCMovie[],
     searchTerm: string
   ): AMCMovie[] {
+    // Normalize function to handle common articles
+    const normalizeTitle = (title: string): string => {
+      return title
+        .toLowerCase()
+        .replace(/^(the|a|an)\s+/i, '') // Remove leading articles
+        .trim();
+    };
+
+    // First try exact matches after removing articles
+    const normalizedSearchTerm = normalizeTitle(searchTerm);
+    const exactMatches = movies.filter(
+      (movie) => normalizeTitle(movie.name) === normalizedSearchTerm
+    );
+
+    if (exactMatches.length > 0) {
+      console.log(
+        `   ✅ Found exact matches (ignoring articles): ${exactMatches.map((m) => m.name).join(', ')}`
+      );
+      return exactMatches;
+    }
+
     // Use fuzzy search to find movies that closely match our search term
     const fuse = new Fuse(movies, {
       keys: ['name'],
-      threshold: 0.4, // Allow some fuzziness for variations like "Special Edition", etc.
+      threshold: 0.6, // More relaxed to handle articles like "The", "A", etc.
       includeScore: true,
     });
 
     const results = fuse.search(searchTerm);
 
+    console.log(
+      `   🔍 Fuzzy search results for "${searchTerm}":`,
+      results.map((r) => `${r.item.name} (score: ${r.score?.toFixed(3)})`)
+    );
+
     // Return movies with good similarity scores
     return results
-      .filter((result) => (result.score ?? 1) < 0.5) // Only reasonably close matches
+      .filter((result) => (result.score ?? 1) < 0.7) // More lenient for common article words
       .map((result) => result.item);
   }
 
