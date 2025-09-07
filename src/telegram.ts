@@ -46,7 +46,7 @@ export class TelegramBot {
           chat_id: this.chatId,
           text: batchMessage,
           parse_mode: 'HTML',
-          disable_web_page_preview: false,
+          disable_web_page_preview: true,
         });
 
         console.log(
