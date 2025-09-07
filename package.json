@@ -22,6 +22,7 @@
     "test": "bun src/cli.ts test",
     "status": "bun src/cli.ts status",
     "setup": "bun src/cli.ts setup",
+    "reset-db": "bun src/cli.ts reset-db",
     "dev": "bun --watch src/cli.ts",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { existsSync } from 'node:fs';
+import { existsSync, unlinkSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
@@ -203,6 +203,52 @@ program
     console.log(
       '🤖 Run "bun src/cli.ts setup" for Telegram bot setup instructions'
     );
+  });
+
+program
+  .command('reset-db')
+  .description('Reset the database (removes all tracked showtimes)')
+  .option('-d, --database <path>', 'Path to database file', './showtimes.db')
+  .option('--yes', 'Skip confirmation prompt')
+  .action(async (options) => {
+    try {
+      if (!existsSync(options.database)) {
+        console.log(
+          `📄 Database file ${options.database} doesn't exist - nothing to reset`
+        );
+        process.exit(0);
+      }
+
+      if (!options.yes) {
+        console.log(
+          '⚠️  This will delete all tracked showtimes and reset notification history.'
+        );
+        console.log(
+          '   You will receive notifications for all existing showtimes again.'
+        );
+        console.log();
+
+        // Simple confirmation without external dependencies
+        const answer = prompt(
+          'Are you sure you want to reset the database? (y/N): '
+        );
+        if (answer?.toLowerCase() !== 'y' && answer?.toLowerCase() !== 'yes') {
+          console.log('❌ Database reset cancelled');
+          process.exit(0);
+        }
+      }
+
+      // Delete the database file
+      unlinkSync(options.database);
+
+      console.log('✅ Database reset successfully');
+      console.log(
+        '💡 The database will be recreated automatically on the next run'
+      );
+    } catch (error) {
+      console.error('❌ Error resetting database:', error.message);
+      process.exit(1);
+    }
   });
 
 // Handle the case where no command is provided
