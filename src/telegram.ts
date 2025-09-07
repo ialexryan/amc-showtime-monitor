@@ -138,7 +138,7 @@ ${showtimeList}`;
         (attr) => attr.code.toUpperCase() === format
       );
       if (found) {
-        return found.name;
+        return found.name.replace(/ at AMC$/, '');
       }
     }
 
@@ -152,7 +152,7 @@ ${showtimeList}`;
     );
 
     if (otherFormats.length > 0) {
-      return otherFormats[0].name;
+      return otherFormats[0].name.replace(/ at AMC$/, '');
     }
 
     return '';
