@@ -203,7 +203,7 @@ export class ShowtimeMonitor {
           showDateTime: amcShowtime.showDateTimeUtc,
           showDateTimeLocal: amcShowtime.showDateTimeLocal,
           auditorium: amcShowtime.auditorium,
-          attributes: amcShowtime.attributes?.map((attr) => attr.name) || [],
+          attributes: amcShowtime.attributes || [],
           ticketUrl: ticketUrl,
           isSoldOut: amcShowtime.isSoldOut,
           isAlmostSoldOut: amcShowtime.isAlmostSoldOut,

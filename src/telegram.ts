@@ -6,7 +6,7 @@ export interface TelegramMessage {
   showDateTime: string;
   showDateTimeLocal: string;
   auditorium: number;
-  attributes: string[];
+  attributes: Array<{ code: string; name: string; description?: string }>;
   ticketUrl?: string;
   isSoldOut: boolean;
   isAlmostSoldOut: boolean;
@@ -25,31 +25,8 @@ export class TelegramBot {
     });
   }
 
-  async sendShowtimeNotification(message: TelegramMessage): Promise<void> {
-    const formattedMessage = this.formatShowtimeMessage(message);
-
-    try {
-      await this.client.post('/sendMessage', {
-        chat_id: this.chatId,
-        text: formattedMessage,
-        parse_mode: 'HTML',
-        disable_web_page_preview: false,
-      });
-
-      console.log(`✅ Telegram notification sent for ${message.movieName}`);
-    } catch (error) {
-      console.error('❌ Failed to send Telegram notification:', error.message);
-      throw error;
-    }
-  }
-
   async sendBatchNotification(messages: TelegramMessage[]): Promise<void> {
     if (messages.length === 0) return;
-
-    if (messages.length === 1) {
-      await this.sendShowtimeNotification(messages[0]);
-      return;
-    }
 
     // Group messages by movie for cleaner batch notifications
     const movieGroups = new Map<string, TelegramMessage[]>();
@@ -90,45 +67,6 @@ export class TelegramBot {
     }
   }
 
-  private formatShowtimeMessage(message: TelegramMessage): string {
-    const date = new Date(message.showDateTimeLocal);
-    const dateStr = date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-
-    // Parse attributes to highlight premium formats
-    const attributes = this.parseAttributes(message.attributes);
-    const formatStr = this.getFormatString(attributes);
-
-    // Status indicators
-    let statusEmoji = '🎬';
-    if (message.isSoldOut) statusEmoji = '❌';
-    else if (message.isAlmostSoldOut) statusEmoji = '⚠️';
-
-    let statusText = '';
-    if (message.isSoldOut) statusText = ' <b>(SOLD OUT)</b>';
-    else if (message.isAlmostSoldOut) statusText = ' <b>(Almost Sold Out)</b>';
-
-    const ticketLink = message.ticketUrl
-      ? `\n\n🎫 <a href="${message.ticketUrl}">Buy Tickets</a>`
-      : '';
-
-    return `${statusEmoji} <b>New Showtime Available!</b>
-
-🎭 <b>${message.movieName}</b>
-🏛️ ${message.theatreName}
-📅 ${dateStr} at ${timeStr}
-🎪 Auditorium ${message.auditorium}
-${formatStr ? `🎯 ${formatStr}\n` : ''}${statusText}${ticketLink}`;
-  }
-
   private formatBatchMessage(
     movieName: string,
     messages: TelegramMessage[]
@@ -153,14 +91,13 @@ ${formatStr ? `🎯 ${formatStr}\n` : ''}${statusText}${ticketLink}`;
           hour12: true,
         });
 
-        const attributes = this.parseAttributes(msg.attributes);
-        const formatStr = this.getFormatString(attributes);
+        const formatStr = this.getFormatString(msg.attributes);
 
         let statusEmoji = '🎬';
         if (msg.isSoldOut) statusEmoji = '❌';
         else if (msg.isAlmostSoldOut) statusEmoji = '⚠️';
 
-        return `${statusEmoji} ${dateStr} ${timeStr} - Aud ${msg.auditorium}${formatStr ? ` (${formatStr})` : ''}`;
+        return `${statusEmoji} ${dateStr} ${timeStr}${formatStr ? ` - ${formatStr}` : ` - Aud ${msg.auditorium}`}`;
       })
       .join('\n');
 
@@ -169,52 +106,51 @@ ${formatStr ? `🎯 ${formatStr}\n` : ''}${statusText}${ticketLink}`;
       ? `\n\n🎫 <a href="${ticketUrl}">Buy Tickets</a>`
       : '';
 
-    return `🎬 <b>${messages.length} New Showtimes for ${movieName}!</b>
+    const showtimeCount =
+      messages.length === 1
+        ? 'New Showtime'
+        : `${messages.length} New Showtimes`;
+
+    return `🎬 <b>${showtimeCount} for ${movieName}!</b>
 
 🏛️ ${messages[0].theatreName}
 
 ${showtimeList}${ticketLink}`;
   }
 
-  private parseAttributes(
-    attributesJson: string
-  ): Array<{ code: string; name: string }> {
-    try {
-      return JSON.parse(attributesJson) || [];
-    } catch {
-      return [];
-    }
-  }
-
   private getFormatString(
     attributes: Array<{ code: string; name: string }>
   ): string {
-    // Priority order for premium formats
+    // Priority order for premium formats (most premium first)
     const premiumFormats = [
-      'imaxwithlaseratamc',
-      'imax',
-      'dolbycinemaatamc',
-      'dolbyatmos',
-      'laseratamc',
-      'reald3d',
-      'dbox',
+      'IMAXWITHLASER3D',
+      'IMAXWITHLASERATAMC',
+      'DOLBYCINEMAATAMCPRIME',
+      'DOLBYCINEMAATAMC',
+      'IMAX',
+      'DOLBY3D',
+      'LASERATAMC',
+      'REALD3D',
+      'DBOX',
+      'DOLBYATMOS',
     ];
 
     for (const format of premiumFormats) {
-      const found = attributes.find((attr) =>
-        attr.code.toLowerCase().includes(format.toLowerCase())
+      const found = attributes.find(
+        (attr) => attr.code.toUpperCase() === format
       );
       if (found) {
         return found.name;
       }
     }
 
-    // Look for other notable attributes
+    // Look for other notable premium attributes
     const otherFormats = attributes.filter(
       (attr) =>
-        attr.code.includes('premium') ||
-        attr.code.includes('luxury') ||
-        attr.code.includes('reserved')
+        attr.code.includes('PREMIUM') ||
+        attr.code.includes('LUXURY') ||
+        attr.code.includes('3D') ||
+        attr.name.includes('Premium')
     );
 
     if (otherFormats.length > 0) {
