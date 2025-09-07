@@ -1,0 +1,2013 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>AMC Developer Portal - Purchasing Concessions for Express Pickup</title>
+    <link href="../Content/images/favicon.ico.html" rel="shortcut icon" type="image/x-icon" />
+
+    <link href="../Content/Site.css" rel="stylesheet" />
+    <link href="../Content/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="../Content/highlight/styles/default.css" rel="stylesheet" />
+    <link href="../Content/Redesign.css" rel="stylesheet" />
+
+    <link href="../Content/themes/amc/bootstrap.css" rel="stylesheet" />
+    <link href="../Content/themes/amc/bootstrap-docs.min.css" rel="stylesheet" />
+    <link href="../Content/themes/amc/common.css" rel="stylesheet" />
+    <link href="../Content/themes/amc/site.css" rel="stylesheet" />
+    <link href="../Content/highlight/styles/default.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <header class="Header-wrap is-opaque">
+        <ul class="Header u-listUnstyled u-container u-flexwrap" role="menu">
+            <li class="NavGroup HeaderBranding">
+                <ul class="u-listUnstyled">
+                    <li class="NavGroupItem">
+                        <a class="Link SiteLogo" aria-disabled="" href="../index.html">
+                            <i class="logo" alt="A M C Home">
+                                <!--?xml version="1.0" encoding="iso-8859-1"?-->
+                                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.7 73.7" enable-background="new 0 0 73.7 73.7" xml:space="preserve">
+                                <g>
+                                <g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#E51937" d="M73.7,36.9c0,20.4-16.5,36.8-37,36.8C16.5,73.7,0,57.2,0,36.9   C0,16.5,16.5,0,36.8,0C57.2,0,73.7,16.5,73.7,36.9z M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7   c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2   c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5   c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7   C38.9,28.8,38.4,29.2,37.8,29.5z M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7c0-1.3-0.7-2.1-1.9-2.2   c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0c1.1,0,1.8-0.8,1.8-2   c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9c0,2.7,0,5.3,0,8   c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z M59.2,43.5   c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3   c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8   c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                            </g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7  c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2  c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5  c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7  C38.9,28.8,38.4,29.2,37.8,29.5z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7  c0-1.3-0.7-2.1-1.9-2.2c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0  c1.1,0,1.8-0.8,1.8-2c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9  c0,2.7,0,5.3,0,8c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M59.2,43.5c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4  c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4  c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                        </g>
+                                <rect x="-13.3" y="8.5" display="none" fill="none" width="97" height="56"></rect>
+                                    </svg>
+                            </i>
+                        </a>
+                    </li>
+                    <li class="NavGroupItem">
+                        <a class="SiteTitle Link" href="../index.html">Developer Portal</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9">
+<h2>Purchasing Concessions for Express Pickup</h2>
+
+<p>
+    In this guide we will run through a basic process for finding concessions available at a theatre,
+    and purchasing them with a credit card for express pickup (for delivery to seat refer to
+    <a href="PurchasingDeliveryToSeatConcessions.html">Purchasing Concessions for Delivery to Seat</a>).
+</p>
+<ol>
+    <li><a href="#step-1">Finding concessions at a theatre</a></li>
+    <li><a href="#step-2">Finding a pickup time</a></li>
+    <li><a href="#step-3">Creating an empty order</a> </li>
+    <li>
+        Adding concessions items to the order
+        <ul>
+            <li><a href="#step-4a">Adding Chicken Nachos with No Sour Cream</a></li>
+            <li><a href="#step-4b">Adding a Combo w/ 2 Fountain Drinks and a Popcorn</a></li>
+        </ul>
+    </li>
+</ol>
+
+<hr />
+
+<h4 id="step-1">Finding concessions at a theatre</h4>
+<p>
+    To get started with purchasing concessions we will begin by selecting the theatre from which we want to order concessions.
+    In this tutorial we will be using AMC DINE-IN Studio 28. We'll construct the url using Studio 28's theatre number of 610
+    and to keep things simple we will look at a shortened response which only displays the items we intend to
+    purchase.
+</p>
+<p>
+    Please note that if you do not specify a page-size in the query string, the endpoint will default to a page-size of 10
+    and if all the items are not returned you will need to page through the results by specifying a page-number in the query
+    string.
+</p>
+<p>
+    Also important to note, each SKU is theatre specific, meaning the SKU for Chicken Nachos at AMC DINE-IN Studio 28 is different
+    from the SKU for the same product at AMC Town Center 20.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#find-available-concessions">
+            <pre><b>GET</b>&nbsp; /v1/theatres/610/concessions?page-size=2&amp;page-number=1</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="find-available-concessions" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+  "pageSize": 2,
+  "pageNumber": 1,
+  "count": 85,
+  "_embedded": {
+    "concessions": [
+      {
+        "name": "Chicken Nachos",
+        "displayName": "Chicken Nachos",
+        "nutritionalInfo": "610-1000",
+        "price": 8.48,
+        "tax": 0.69,
+        "taxGroupId": 11,
+        "taxAtComboItemLevel": false,
+        "SKU": "CONCESSIONS-12632",
+        "prepTime": 37,
+        "theatreId": 610,
+        "concessionId": 8081287,
+        "media": {
+          "imageSmall": "http://cdn.amctheatres.com/concessions/8081287-small.png",
+          "imageLarge": "http://cdn.amctheatres.com/concessions/8081287-large.png"
+        },
+        "_embedded": {
+          "categories": [
+            {
+              "name": "Nachos",
+              "level": 2,
+              "sortOrder": 1,
+              "productSortOrder": 1,
+              "media": {
+                "imageSmall": "http://cdn.amctheatres.com/concessions/categories/25-small.png",
+                "imageLarge": "http://cdn.amctheatres.com/concessions/categories/25-large.png"
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions/categories/nachos",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v1/concessions": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions?category=nachos",
+                  "templated": false
+                }
+              }
+            },
+            {
+              "name": "Entrees",
+              "level": 1,
+              "sortOrder": 4,
+              "media": {
+                "imageSmall": "http://cdn.amctheatres.com/concessions/categories/5-small.png",
+                "imageLarge": "http://cdn.amctheatres.com/concessions/categories/5-large.png"
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions/categories/entrees",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v1/concessions": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions?category=entrees",
+                  "templated": false
+                }
+              }
+            }
+          ],
+          "modifierGroups": [
+            {
+              "groupName": "Nacho Toppings",
+              "required": false,
+              "_embedded": {
+                "modifiers": [
+                  {
+                    "name": "No Guacamole ",
+                    "displayName": "No Guacamole (***Nacho only)",
+                    "SKU": "CONCESSIONS-42913",
+                    "price": 0,
+                    "tax": 0,
+                    "_links": {
+                      "self": {
+                        "href": "https://api.amctheatres.com/v1/concessions/42913",
+                        "templated": false
+                      }
+                    }
+                  },
+                  {
+                    "name": "No Sour Cream ",
+                    "displayName": "No Sour Cream (***Nacho only)",
+                    "SKU": "CONCESSIONS-42914",
+                    "price": 0,
+                    "tax": 0,
+                    "_links": {
+                      "self": {
+                        "href": "https://api.amctheatres.com/v1/concessions/42914",
+                        "templated": false
+                      }
+                    }
+                  }
+                ]
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions/groups/170",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v1/concessions": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions?group=nacho+toppings",
+                  "templated": false
+                }
+              }
+            }
+          ]
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v1/concessions/12632",
+            "templated": false
+          },
+          "https://api.amctheatres.com/rels/v2/media": {
+            "href": "https://api.amctheatres.com/v1/media/concessions/8081287/{media-type}",
+            "templated": true
+          },
+          "https://api.amctheatres.com/rels/v2/theatre": {
+            "href": "https://api.amctheatres.com/v1/theatres/610",
+            "templated": false
+          }
+        }
+      },
+      {
+        "name": "Large Popcorn + 2 Large Drinks",
+        "displayName": "Large Popcorn + 2 Large Drinks",
+        "description": "",
+        "nutritionalInfo": "970-3010",
+        "size": "",
+        "price": 23.2,
+        "tax": 2.01,
+        "taxGroupId": 7,
+        "sku": "CONCESSIONS-1781559",
+        "prepTime": 0,
+        "theatreId": 610,
+        "concessionId": 8080778,
+        "media": {
+          "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/8080778-small.jpg",
+          "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/8080778-large.jpg"
+        },
+        "discounts": [],
+        "_embedded": {
+          "categories": [
+            {
+              "name": "1 Large Popcorn + 2 Large Drinks",
+              "level": 2,
+              "sortOrder": 1,
+              "productSortOrder": 0,
+              "categoryId": 9,
+              "media": {
+                "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/categories/9-small.jpg",
+                "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/categories/9-large.jpg"
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions/categories/1+large+popcorn+%2b+2+large+drinks",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v1/concessions": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions?category=1+large+popcorn+%2b+2+large+drinks",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v2/media": {
+                  "href": "https://api.amctheatres.com/v2/media/product-categories/9/{media-type}",
+                  "templated": true
+                }
+              }
+            },
+            {
+              "name": "Combos",
+              "level": 1,
+              "sortOrder": 1,
+              "categoryId": 2,
+              "media": {
+                "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/categories/2-small.jpg",
+                "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/categories/2-large.jpg"
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions/categories/combos",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v1/concessions": {
+                  "href": "https://api.amctheatres.com/v1/theatres/610/concessions?category=combos",
+                  "templated": false
+                },
+                "https://api.amctheatres.com/rels/v2/media": {
+                  "href": "https://api.amctheatres.com/v2/media/product-categories/2/{media-type}",
+                  "templated": true
+                }
+              }
+            }
+          ],
+          "comboComponents": [
+            {
+              "name": "Large Popcorn Tub",
+              "sku": "CONCESSIONS-2267122",
+              "type": "Concession",
+              "quantity": 1,
+              "sortOrder": 1,
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/concessions/2267122",
+                  "templated": false
+                }
+              }
+            },
+            {
+              "name": "Large Drink",
+              "sku": "CONCESSIONS-2270585",
+              "type": "Concession",
+              "quantity": 2,
+              "sortOrder": 2,
+              "_links": {
+                "self": {
+                  "href": "https://api.amctheatres.com/v1/concessions/2270585",
+                  "templated": false
+                }
+              }
+            }
+          ]
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v1/concessions/1781559",
+            "templated": false
+          },
+          "https://api.amctheatres.com/rels/v2/media": {
+            "href": "https://api.amctheatres.com/v2/media/products/8080778/{media-type}",
+            "templated": true
+          },
+          "https://api.amctheatres.com/rels/v2/theatre": {
+            "href": "https://api.amctheatres.com/v1/theatres/610",
+            "templated": false
+          }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.amctheatres.com/v1/theatres/610/concessions?page-number=1&page-size=167",
+      "templated": false
+    },
+    "upSellProduct": {
+      "href": "https://api.amctheatres.com/v1/theatres/610/concessions/up-sell",
+      "templated": false
+    }
+  }
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    The response above provides us with the blueprint for ordering the desired concessions items just the way we want.
+    If we want to add Chicken Nachos to the order we will need to make note of it's SKU:
+</p>
+<pre>"SKU": "CONCESSIONS-12632"</pre>
+<p>
+    Some items, such as Chicken Nachos can be modified. How an item can be modified is described within the "modifierGroups" section,
+    certain items will require one or more modifier selections. In this example, you can modify the Chicken Nachos by specifying "No Gaucomole"
+    or "No Sour Cream", neither of which are required. If we want "No Sour Cream" we will need to note the SKU:
+</p>
+<pre>"SKU": "CONCESSIONS-42914"</pre>
+<p><b>Please note:</b> The prices on concessions are not final and are for display only.</p>
+<hr />
+
+<h4 id="step-2">Finding a pickup time</h4>
+<p>
+    Now we need to find an acceptable pickup time for specifying when we want to pickup our concessions items.
+    The pickup time tells the kitchen when to have your concessions prepared for pickup. If you are placing an order with no associated showtime (such as one with no tickets)
+    you must first check that the theatre does not require a showtime to be associated with the concessions. To do this, query the theatre and check the value of the
+    hasMultipleKitchens field. If hasMultipleKitchens is true, the theatre will require that a showtime is provided with all concession orders.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#get-theatre">
+            <pre><b>GET</b>&nbsp; /v2/theatres/610</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="get-theatre" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+    "deliveryToSeat": false,
+    "id": 610,
+    "longName": "AMC DINE-IN Studio 28",
+    "name": "AMC DINE-IN Studio 28",
+    "guestServicesPhoneNumber": "9133933030",
+    "utcOffset": "-05:00",
+    "timezone": "CENTRAL TIME",
+    "slug": "amc-dine-in-studio-28",
+    "facebookUrl": "https://www.facebook.com/AMCStudio28",
+    "websiteUrl": "https://www.amctheatres.com/movie-theatres/kansas-city/amc-dine-in-studio-28",
+    "ticketable": "AMC",
+    "attributes": [
+        {
+            "code": "macguffins",
+            "name": "MacGuffins Bar",
+            "description": "Enjoy delicious, adult-only, beverages at MacGuffins Bar. Beer and wine are always ready to be poured, and select theatres also offer premium spirits and AMC-crafted cocktails. For guests 21+ only."
+        },
+        {
+            "code": "amcindependent",
+            "name": "AMC independent",
+            "description": "AMC independent is our renewed commitment to advancing independent film. Now, you can see more distinct and unconventional films at our theatres around the country. We’re bringing you more of what you want -- a diverse line-up of films that excite, encourage and engage. Over 20% of our theatres are committed to showing independent films throughout the year, including AMC-exclusive releases. We hope that you enjoy these new stories that we are bringing to the screen, and more importantly, to your local theatres."
+        },
+        {
+            "code": "sensoryfriendly",
+            "name": "Sensory Friendly Films",
+            "description": "We turn the lights up and the sound down, so you can feel free to be you at these unique showings for people living with autism or other special needs."
+        },
+        {
+            "code": "marketplace",
+            "name": "The Marketplace",
+            "description": "Choose from an expanded menu of concessions including Coca-Cola Freestyle with over 100 drink choices.  Also featuring chicken tender bites, loaded hot dogs, specialty smoothies and coffee drinks, gourmet popcorn and healthier options in a self-service concession stand that’s built like a convenience store."
+        },
+        {
+            "code": "digitalprojection",
+            "name": "Digital Projection",
+            "description": "This theatre features digital projection in all auditoriums."
+        },
+        {
+            "code": "stadiumseating",
+            "name": "Stadium Seating",
+            "description": "This theatre features stadium seating in all auditoriums."
+        },
+        {
+            "code": "reservedseating",
+            "name": "Reserved Seating",
+            "description": "Select your seat when you buy your tickets online, on our mobile app or at the theatre."
+        },
+        {
+            "code": "theatrerentals",
+            "name": "Theatre Rentals",
+            "description": "Theatre rentals are available at this theatre. Please email your contact information to <a href="../cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="0b596e657f6a67784b6a66687f636e6a7f796e7825686466">[email&#160;protected]</a> for information on pricing and availability."
+        },
+        {
+            "code": "assistedlisteningdevices",
+            "name": "Assisted Listening Devices",
+            "description": "This theatre offers assisted listening devices. Contact the guest services desk at the theatre for more information."
+        },
+        {
+            "code": "wheelchairaccess",
+            "name": "Wheelchair Access",
+            "description": "This theatre is wheelchair-accessible in all auditoriums."
+        },
+        {
+            "code": "distractionfreeenvironment",
+            "name": "Age Policy for R-Rated Movies After 6 p.m.",
+            "description": "This theatre does not allow children under the age of 6 to attend R-rated movies after 6 p.m. For R-rated showtimes starting before 6 p.m., children under the age of 6 may only be admitted with a parent or legal guardian."
+        },
+        {
+            "code": "nooutsidefoodandbeverage",
+            "name": "No Outside Food and Beverage",
+            "description": "Please refrain from bringing outside food and beverage items into the theatre."
+        },
+        {
+            "code": "alcoholcardingpolicy",
+            "name": "Alcohol Carding Policy",
+            "description": "Regardless of age, all guests purchasing or consuming alcohol within the theatre must show positive proof of age. Guests without a valid ID cannot purchase or consume alcohol per AMC policy."
+        },
+        {
+            "code": "agepolicyforrratedfilms",
+            "name": "Age Policy for R-Rated Films",
+            "description": "Under 17 requires accompanying parent or adult guardian (age 21 or older). Guests 25 years and under must show ID.\nWe restrict children younger than 6 from attending R-Rated films after 6pm to improve the experience for everyone. To bring your children younger than 6 to R-Rated films, please visit us before 6pm."
+        },
+        {
+            "code": "pricingnotice",
+            "name": "Pricing Notice",
+            "description": "AMC reserves the right to exercise special pricing options for unique in-theatre experiences."
+        },
+        {
+            "code": "refundpolicy",
+            "name": "Refund Policy",
+            "description": "No refunds after printed showtime."
+        },
+        {
+            "code": "specialengagements",
+            "name": "Special Engagements",
+            "description": "Some types of passes may be restricted for Special Engagements or New Releases and thus subject to a surcharge. Be sure to read the back of your pass for more details."
+        },
+        {
+            "code": "printathome",
+            "name": "Mobile Ticketing",
+            "description": "Skip the box office and go straight to the ticket drop with our mobile ticketing solution when buying tickets online."
+        },
+        {
+            "code": "hundredplusdrinkchoices",
+            "name": "Coca-Cola Freestyle",
+            "description": "Select from 100+ drink choices.  Whether you're craving a classic Coca-Cola, a Sprite Peach, or a Dasani Lime for your show,  we’ve got you covered."
+        },
+        {
+            "code": "closedcaption",
+            "name": "Closed Caption",
+            "description": "Closed captioning devices available at this theatre.  Contact the guest services desk at the theatre for more information."
+        },
+        {
+            "code": "descriptivevideo",
+            "name": "Audio Description",
+            "description": "Audio Description devices available at this theatre. Contact the guest services desk at the theatre for more information."
+        },
+        {
+            "code": "seniorpricing",
+            "name": "Senior Pricing",
+            "description": "If you're 60 or over, save on your movie ticket any day, starting at 12pm. Just show a valid ID at the box office."
+        },
+        {
+            "code": "militarypricingafter4pm",
+            "name": "Military Pricing",
+            "description": "This location offers special military pricing. See box office for details. Must present a valid military ID."
+        },
+        {
+            "code": "studentpricing",
+            "name": "Student Pricing",
+            "description": "Every day, starting at 4pm, show your valid student ID at the box office and save on your ticket."
+        },
+        {
+            "code": "fooddrinksonlineordering",
+            "name": "Food & Drinks Online Ordering",
+            "description": "Now, you can order your food and drinks online or on our mobile app before you get to the theatre."
+        },
+        {
+            "code": "featurefare",
+            "name": "Feature Fare",
+            "description": "We're elevating the movie menu, offering better quality and variety with new loaded hot dogs, stone-fired flatbread pizzas, gluten-free snacks, and so much more!"
+        },
+        {
+            "code": "dolbycinemaatamcprime",
+            "name": "Dolby Cinema at AMC",
+            "description": "Powerful images and sound technologies combine with cutting-edge, reserved recliners to transform each show into a completely captivating cinematic event."
+        },
+        {
+            "code": "5tickettuesdays",
+            "name": "Discount Tuesdays",
+            "description": "All AMC Stubs members save big on tickets on Tuesday showtimes! Available at the box office, online or on our app. It’s just a weekly reminder of the many perks of being a member. (Discount varies by location. Surcharges for premium formats and special events. Exclusions apply. Not valid 12/22-1/2.)"
+        },
+        {
+            "code": "amcstubsalist",
+            "name": "AMC Stubs A-List",
+            "description": "Subscribe to A-List and see all the movies you want at this theatre for a low monthly fee.  Click to learn more and find other participating theatres."
+        },
+        {
+            "code": "forkandscreen",
+            "name": "Fork & Screen",
+            "description": "A cool and casual, family-friendly experience featuring in-theatre dining, full bar, and premium seats.  Enjoy handcrafted burgers, bowls, desserts and more while you watch the show."
+        },
+        {
+            "code": "dineinseatsideservice",
+            "name": "Dine-In Full Service",
+            "description": "The perfect way to experience dinner and a movie.  Reserve your seat and enjoy a made-from-scratch menu prepared fresh by our chefs, plus a full bar.  Just push the service button at your seat to order."
+        },
+        {
+            "code": "reald3d",
+            "name": "RealD 3D",
+            "description": "Feast your eyes on the mind-blowing RealD 3D experience at AMC. Using a new digital approach, you can watch movies with amazing depth and clarity, without sacrificing comfort."
+        },
+        {
+            "code": "reclinerseating",
+            "name": "AMC Signature Recliners",
+            "description": "This auditorium has recliner seats."
+        },
+        {
+            "code": "cinemasuites",
+            "name": "Cinema Suites",
+            "description": "A grown-up atmosphere featuring in-theatre dining, full bar, and extra-comfy recliners.  Enjoy handcrafted burgers, bowls, desserts and more while you watch the show."
+        },
+        {
+            "code": "imax",
+            "name": "IMAX at AMC",
+            "description": "Immersive, heart-pounding audio combined with the clearest images on the largest screens takes you beyond the standard cinema experience.  Experience films to the fullest in IMAX at AMC."
+        },
+        {
+            "code": "dineIn",
+            "name": "In-Theatre Dining",
+            "description": "In-Theatre Dining"
+        }
+    ],
+    "location": {
+        "addressLine1": "12075 So Strang Line Road",
+        "city": "OLATHE",
+        "cityUrlSuffixText": "olathe",
+        "postalCode": "66062-5256",
+        "state": "KS",
+        "stateName": "KANSAS",
+        "stateUrlSuffixText": "kansas",
+        "country": "United States",
+        "latitude": 38.907652,
+        "longitude": -94.76736,
+        "directionsUrl": "http://bing.com/maps/default.aspx?v=2&lvl=9&style=r&mode=D&rtop=0~0~0~&cp=38.9076520000~-94.7673600000&rtp=adr.~pos.38.9076520000_-94.7673600000_AMC+DINE-IN+Studio+28+12075+So+Strang+Line+Road+OLATHE+KS+66062-5256",
+        "marketName": "Kansas City",
+        "marketUrlSuffixText": "kansas-city",
+        "marketId": 108
+    },
+    "media": {
+        "theatreImageIcon": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/StoreIcon/Thumb/335_studio-28-olathe_7E96.jpg",
+        "theatreImageLarge": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/Primary/Large/fallback-3.jpg",
+        "theatreImageStandard": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/Primary/Standard/fallback-3.jpg",
+        "theatreImageThumbnail": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/Primary/Thumb/fallback-3.jpg",
+        "heroDesktopDynamic": "https://amc-theatres-res.cloudinary.com/amc-cdn/production/2/movies/600/610/MovieStills/25256.jpg",
+        "heroMobileDynamic": "https://amc-theatres-res.cloudinary.com/amc-cdn/production/2/movies/600/610/MovieStills/25257.jpg",
+        "interiorDynamic": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/InteriorDynamic/Dynamic/fallback-3.jpg",
+        "exteriorDynamic": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/ExteriorDynamic/Dynamic/fallback-3.jpg",
+        "promotionDynamic": "https://amc-theatres-res.cloudinary.com/amc-cdn/theatres/images/PromotionDynamic/Dynamic/fallback-3.jpg"
+    },
+    "_links": {
+        "self": {
+            "href": "https://api.amctheatres.com/v2/theatres/610",
+            "templated": false
+        },
+        "https://api.amctheatres.com/rels/v2/media": {
+            "href": "https://api.amctheatres.com/v2/media/theatres/610/{media-type}",
+            "templated": true
+        },
+        "https://api.amctheatres.com/rels/v2/theatre-seating-layouts": {
+            "href": "https://api.amctheatres.com/v2/theatres/610/seating-layouts",
+            "templated": false
+        }
+    },
+    "redemptionMethods": [
+        "Credit Card Swipe",
+        "AMC Gift Card Swipe",
+        "AMC Stubs Card Swipe",
+        "Confirmation Code",
+        "QR Code"
+    ],
+    "westWorldMediaNumber": 4174,
+    "loyaltyVersionId": 3,
+    "onlineConcessions": true,
+    "hasMultipleKitchens": false,
+    "concessionsDeliveryOptions": [
+        "EXPRESSPICKUP"
+    ],
+    "convenienceFeeTaxPercent": 9.475,
+    "convenienceFeeTaxFlatAmount": 0,
+    "brand": "DIT",
+    "subscriptionUsageLevel": 1
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    If hasMultipleKitchens is false then concessions orders may be placed without providing a showtime id.
+    In this scenario, you can obtain a list of pickup times by issuing the following request which specifies the theatre, year, month and day.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#get-pickup-times">
+            <pre><b>GET</b>&nbsp; /v1/theatres/610/concessions/pickup-times/2019/01/27</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="get-pickup-times" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+    "theatreId": 610,
+    "showtimeId": 0,
+    "pickupTimes": [
+        {
+            "pickupDateTimeUtc": "2019-01-27T15:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T09:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T15:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T09:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T15:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T09:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T16:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T10:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T16:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T10:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T16:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T10:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T16:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T10:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T16:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T10:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T16:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T10:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T17:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T11:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T17:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T11:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T17:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T11:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T17:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T11:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T17:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T11:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T17:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T11:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T18:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T12:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T18:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T12:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T18:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T12:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T18:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T12:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T18:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T12:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T18:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T12:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T19:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T13:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T19:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T13:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T19:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T13:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T19:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T13:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T19:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T13:40:00",
+            "available": 5,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T19:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T13:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T20:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T14:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T20:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T14:10:00",
+            "available": 5,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T20:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T14:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T20:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T14:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T20:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T14:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T20:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T14:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T21:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T15:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T21:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T15:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T21:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T15:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T21:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T15:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T21:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T15:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T21:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T15:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T23:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T17:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T23:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T17:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T23:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T17:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T23:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T17:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T23:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T17:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T23:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T17:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T00:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T18:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T00:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T18:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T00:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T18:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T00:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T18:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T00:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T18:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T00:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T18:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T01:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T19:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T01:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T19:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T01:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T19:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T01:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T19:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T01:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T19:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T01:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T19:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T02:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T20:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T02:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T20:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T02:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T20:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T02:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T20:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T02:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T20:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T02:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T20:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T03:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T21:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T03:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T21:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T03:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T21:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T03:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T21:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T03:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T21:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T03:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T21:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T04:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T22:00:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T04:10:00Z",
+            "pickupDateTimeLocal": "2019-01-27T22:10:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T04:20:00Z",
+            "pickupDateTimeLocal": "2019-01-27T22:20:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T04:30:00Z",
+            "pickupDateTimeLocal": "2019-01-27T22:30:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T04:40:00Z",
+            "pickupDateTimeLocal": "2019-01-27T22:40:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T04:50:00Z",
+            "pickupDateTimeLocal": "2019-01-27T22:50:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-28T05:00:00Z",
+            "pickupDateTimeLocal": "2019-01-27T23:00:00",
+            "available": 10,
+            "isDefault": false
+        }
+    ],
+    "_links": {
+        "self": {
+            "href": "https://api.amctheatres.com/v1/theatres/610/concessions/pickup-times/2019/1/27",
+            "templated": false
+        }
+    }
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    Make note of the desired pickup time and make sure that there are spots available.
+    The following time has 5 available spots so we know the theatre's kitchen will have staff available to prepare the order.
+</p>
+<pre>"pickupDateTimeLocal": "2019-01-27T14:10:00"</pre>
+<p>
+    Alternatively, if your order contains tickets or if you have associated your concessions products with a showtime using the DeliveryShowtimeId
+    value as demonstrated in step 4 you should obtain pickup times using the following request which uses the showtime id.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#get-pickup-times-by-showtime">
+            <pre><b>GET</b>&nbsp; /v1/showtimes/76438629/concession-pickup-times</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="get-pickup-times-by-showtime" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+    "theatreId": 610,
+    "showtimeId": 76386058,
+    "pickupTimes": [
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:25:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:25:00",
+            "available": 10,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:35:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:35:00",
+            "available": 5,
+            "isDefault": false
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:45:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:45:00",
+            "available": 10,
+            "isDefault": true
+        },
+        {
+            "pickupDateTimeUtc": "2019-01-27T22:55:00Z",
+            "pickupDateTimeLocal": "2019-01-27T16:55:00",
+            "available": 10,
+            "isDefault": false
+        }
+    ],
+    "_links": {
+        "self": {
+            "href": "https://api.amctheatres.com/v1/showtimes/76386058/concession-pickup-times",
+            "templated": false
+        }
+    }
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    Again, take note of the desired pickup time and make sure that there are spots available.
+    The following time has 5 available spots so we know the theatre's kitchen will have staff available to prepare the order.
+</p>
+<pre>"pickupDateTimeLocal": "2019-01-27T16:35:00"</pre>
+<hr />
+
+<h4 id="step-3">Creating an empty order</h4>
+<p>To create a basic guest order we just need to send a quick post to the order service with an email address:</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#createEmptyOrder">
+            <pre><b>POST</b>&nbsp; /v3/orders</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="createEmptyOrder" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Request</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+    "email": "<a href="../cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="77131201121b180712050437161a14031f1216030512045914181a">[email&#160;protected]</a>"
+}
+                    </pre>
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+HTTP/1.1 201 Created
+Location: https://api.amctheatres.com/v3/orders/98096
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    Assuming our email address is valid we should get back a 201 (created) response,
+    and a Location header value which is the base URI for all operations we can perform on the order.
+</p>
+<pre>Location: https://api.amctheatres.com/v3/orders/98096 </pre>
+<p></p>
+<p>Following the new Location Url found in the Location Header we get our empty order and can use the hypermedia links to complete the order.</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#getEmptyOrder">
+            <pre><b>GET</b>&nbsp; /v3/orders/98096</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="getEmptyOrder" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+  "email": "<a href="../cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="4f2b2a392a23203f2a3d3c0f2e222c3b272a2e3b3d2a3c612c2022">[email&#160;protected]</a>",
+  "status": "Pending",
+  "createdDateUtc": "2019-01-27T08:33:14.513Z",
+  "total": 0.00,
+  "subtotal": 0.0,
+  "paid": 0.0,
+  "token": "92e325ab-2b96-429f-ae67-3815a1b3449b",
+  "paymentOptions": [
+    "creditCard",
+    "giftCard"
+  ],
+  "_embedded": {
+    "products": [],
+    "payments": []
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.amctheatres.com/v3/orders/98096",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-payments": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/payments",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-products": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/products",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-fulfillment": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/fulfill",
+      "templated": false
+    }
+  }
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    As you can see in the above example, we provide a list of links to endpoints (payments, products, and fulfill)
+    which allow you to perform order actions or review the order (self).
+</p>
+
+<hr />
+
+<h4 id="step-4a">Adding Chicken Nachos with No Sour Cream</h4>
+<p>
+    Now that we have our base order in addition to the SKU for the Chicken Nachos (the top-level product), and the SKU for the No Sour Cream modifier,
+    we're ready to add them to our order with some additional information about how we would like to receive the order after fulfillment.
+</p>
+<p>
+    We require you to include the next 3 fields for each top-level/parent express pickup concessions item.
+    First, the ConcessionOrderName value which specifies who the order is for (and who will be picking it up, i.e. the customer's firstname):
+</p>
+<pre>"ConcessionOrderName": "Stephen"</pre>
+<p>
+    Secondly the DeliveryType. There are two methods of delivery: ExpressPickup and DeliveryToSeat, you must choose one and specify it by passing the value in DeliveryType field.
+    DeliveryToSeat orders require other field values to be specified which are covered in the guide to <a href="PurchasingDeliveryToSeatConcessions.html">Purchasing Concessions for Delivery to Seat</a>.
+</p>
+<pre>"DeliveryType": "ExpressPickup"</pre>
+<p>
+    And lastly you must set a DeliveryDateTimeLocal value which we obtained in the previous step.
+</p>
+<pre>"DeliveryDateTimeLocal": "2019-01-27T16:35:00"</pre>
+<p>
+    Optionally, to associate these concessions with a particular showtime, you may set the DeliveryShowtimeId value which will allow you to
+    get pickup times specific to the provided showtime. Remember that if the hasMultipleKitchens field on the theatre is true as described in step 2, then DeliveryShowtimeId is a required field.
+</p>
+<pre>"DeliveryShowtimeId": 76438629</pre>
+<p>Now we're ready to add the Chicken Nachos and No Sour Cream modifier to the order:</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#postProduct">
+            <pre><b>POST</b>&nbsp; /v3/orders/98096/products</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="postProduct" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Request</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+    "SKU": "CONCESSIONS-12632",
+    "Quantity": 1,
+    "ConcessionOrderName": "Stephen",
+    "DeliveryType": "ExpressPickup",
+    "DeliveryDateTimeLocal": "2019-01-27T16:35:00",
+    "DeliveryShowtimeId": 76438629,
+    "Modifiers": [
+        { 
+            "SKU": "CONCESSIONS-42914",
+            "Quantity": 1
+        }
+    ]
+}
+                    </pre>
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+HTTP/1.1 201 Created
+Location: https://api.amctheatres.com/v3/orders/98096/products/1
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    Next we pull down the updated order and find our new product is added inside the embedded products list with a status of "Held" and
+    our subtotal has increased to 8.48 and the total to 9.17.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#getWithProduct">
+            <pre><b>GET</b>&nbsp; /v3/orders/98096</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="getWithProduct" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+  "email": "<a href="../cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="41252437242d2e3124333201202c2235292420353324326f222e2c">[email&#160;protected]</a>",
+  "status": "Pending",
+  "createdDateUtc": "2019-01-27T08:33:14.513Z",
+  "total": 9.17,
+  "subtotal": 8.48,
+  "paid": 0,
+  "token": "92e325ab-2b96-429f-ae67-3815a1b3449b",
+  "paymentOptions": [
+    "creditCard",
+    "giftCard"
+  ],
+  "expirationDateUtc": "2019-01-2708:40:14.513Z",
+  "_embedded": {
+    "products": [
+      {
+        "sku": "CONCESSIONS-12632",
+        "quantity": 1,
+        "status": "Held",
+        "cost": 8.48,
+        "tax": 0.69,
+        "name": "Chicken Nachos",
+        "theatre": "AMC DINE-IN Studio 28",
+        "theatreId": 610,
+        "deliveryDateTimeLocal": "2019-01-27T14:10:00",
+        "concessionOrderName": "Stephen",
+        "deliveryType": "ExpressPickup",
+        "components": [],
+        "modifiers": [
+          {
+            "name": "No Sour Cream",
+            "sku": "CONCESSIONS-42914",
+            "status": "Held",
+            "cost": 0,
+            "tax": 0,
+            "token": "628b8e0d-6b1e-4631-9035-139e90dd24f4"
+          }
+        ],
+        "token": "628b8e0d-6b1e-4631-9035-139e90dd24f4",
+        "fees": [],
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v3/orders/98096/products/1",
+            "templated": false
+          }
+        },
+        "lineItemNumber": 1
+      }
+    ],
+    "payments": []
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.amctheatres.com/v3/orders/98096",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-payments": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/payments",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-products": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/products",
+      "templated": false
+    }
+  }
+}                       
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 id="step-4b">Adding a Combo with 2 Fountain Drinks (with flavor modifiers) and a Popcorn</h4>
+<p>
+    Now that we've seen an example of how to add a standard product with modifier to our order,
+    let's have a look at how one adds a combo with its components which also have modifiers.
+</p>
+<p>
+    We will refer back to the <a href="#step-1">Step #1</a> where we retrieved the list of concessions for AMC DINE-IN Studio 28.
+    The SKU for the combo we wish to order is:
+</p>
+<pre>CONCESSIONS-1781559</pre>
+<p>
+    Next we need to identify the quanties of the component SKUs which are listed in the "comboComponents" section.
+    We can see that there are 2 Large Drink components which have the SKU:
+</p>
+<pre>CONCESSIONS-2270585</pre>
+<p>
+    And lastly there is a single Large Popcorn Tub component with the SKU:
+</p>
+<pre>CONCESSIONS-2267122</pre>
+<p>
+    Now we need to check if these components have any required modifiers by issuing a GET request against the URL provided
+    in their self links, so for the 2x Large Drinks we can see that there is a required "Freestyle Flavors" modifier group
+    within the "modifierGroups" list:
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#get-concession">
+            <pre><b>GET</b>&nbsp; /v1/concessions/2270585</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="get-concession" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+  "name": "Large Drink",
+  "displayName": "Large",
+  "description": "",
+  "nutritionalInfo": "0-880",
+  "size": "Large",
+  "price": 6.52,
+  "tax": 0.53,
+  "taxGroupId": 11,
+  "taxAtComboItemLevel": false,
+  "sku": "CONCESSIONS-19816",
+  "prepTime": 37,
+  "theatreId": 38,
+  "concessionId": 19816,
+  "media": {
+    "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/91499-small.jpg",
+    "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/91499-large.jpg"
+  },
+  "groups": [
+    {
+      "name": "2 for $10 Offer",
+      "media": {
+        "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/groups/4000219-small.jpg",
+        "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/groups/4000219-large.jpg"
+      }
+    },
+    {
+      "name": "",
+      "media": {
+        "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/groups/4000220-small.jpg",
+        "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/groups/4000220-large.jpg"
+      }
+    },
+    {
+      "name": "2 for $10 AMC to Classic A",
+      "media": {
+        "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/groups/4000229-small.jpg",
+        "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/groups/4000229-large.jpg"
+      }
+    },
+    {
+      "name": "2 for $10 AMC to Classic B",
+      "media": {
+        "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/groups/4000230-small.jpg",
+        "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/groups/4000230-large.jpg"
+      }
+    },
+    {
+      "name": "",
+      "media": {
+        "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/groups/4000242-small.jpg",
+        "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/groups/4000242-large.jpg"
+      }
+    },
+    {
+      "name": "",
+      "media": {
+        "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/groups/4000243-small.jpg",
+        "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/groups/4000243-large.jpg"
+      }
+    }
+  ],
+  "discounts": [
+    {
+      "id": 3000011,
+      "amount": -0.5,
+      "type": "Loyalty",
+      "method": "Product Replacement (Upgrade)",
+      "referenceProductId": 91300
+    }
+  ],
+  "_embedded": {
+    "categories": [
+      {
+        "name": "Coca-Cola Freestyle",
+        "level": 2,
+        "sortOrder": 0,
+        "productSortOrder": 1,
+        "categoryId": 17,
+        "media": {
+          "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/categories/17-small.jpg",
+          "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/categories/17-large.jpg"
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v1/theatres/610/concessions/categories/coca-cola+freestyle",
+            "templated": false
+          },
+          "https://api.amctheatres.com/rels/v1/concessions": {
+            "href": "https://api.amctheatres.com/v1/theatres/610/concessions?category=coca-cola+freestyle",
+            "templated": false
+          },
+          "https://api.amctheatres.com/rels/v2/media": {
+            "href": "https://api.amctheatres.com/v2/media/product-categories/17/{media-type}",
+            "templated": true
+          }
+        }
+      },
+      {
+        "name": "Drinks",
+        "level": 1,
+        "sortOrder": 3,
+        "categoryId": 4,
+        "media": {
+          "imageSmall": "https://cdn.amctheatres.com/production/2/concessions/categories/4-small.jpg",
+          "imageLarge": "https://cdn.amctheatres.com/production/2/concessions/categories/4-large.jpg"
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v1/theatres/610/concessions/categories/drinks",
+            "templated": false
+          },
+          "https://api.amctheatres.com/rels/v1/concessions": {
+            "href": "https://api.amctheatres.com/v1/theatres/610/concessions?category=drinks",
+            "templated": false
+          },
+          "https://api.amctheatres.com/rels/v2/media": {
+            "href": "https://api.amctheatres.com/v2/media/product-categories/4/{media-type}",
+            "templated": true
+          }
+        }
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.amctheatres.com/v1/concessions/2270585",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v2/media": {
+      "href": "https://api.amctheatres.com/v2/media/products/91499/{media-type}",
+      "templated": true
+    },
+    "https://api.amctheatres.com/rels/v2/theatre": {
+      "href": "https://api.amctheatres.com/v1/theatres/610",
+      "templated": false
+    }
+  }
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>Unlike delivery to seat, express pickup theatres do not provide drink modifiers as the guest is responsible for filling their own drink.
+   All that's left to do now is to submit the request to add our new product which specifies the combo, it's components, and it's component's modifiers.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#postComboProduct">
+            <pre><b>POST</b>&nbsp; /v3/orders/98096/products</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="postComboProduct" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Request</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+    "SKU": "CONCESSIONS-1781559",
+    "Quantity": 1,
+    "ConcessionOrderName": "Stephen",
+    "DeliveryType": "ExpressPickup",
+    "DeliveryDateTimeLocal": "2019-01-27T16:35:00",
+    "DeliveryShowtimeId": 76438629,
+    "Components": [
+        {
+            "SKU": "CONCESSIONS-2270585",
+            "Quantity": 1,
+        },
+        {
+            "SKU": "CONCESSIONS-2270585",
+            "Quantity": 1
+        },
+        {
+            "SKU": "CONCESSIONS-2267122",
+            "Quantity": 1
+        }
+    ]
+}
+                    </pre>
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+HTTP/1.1 201 Created
+Location: https://api.amctheatres.com/v3/orders/98096/products/1
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p>
+    Next we pull down the updated order and find our new product is now represented within the embedded products list with a status of "Held" and
+    our subtotal has increased to 27.95 and the total to 30.36.
+</p>
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default" id="">
+        <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#getWithComboProduct">
+            <pre><b>GET</b>&nbsp; /v3/orders/98096</pre>
+            <i class="fa fa-code"></i>
+        </div>
+        <div id="getWithComboProduct" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="panel-body">
+                    <h4>Response</h4>
+                    <pre class="prettyprint lang-javascript">
+{
+  "email": "<a href="../cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="583c3d2e3d3437283d2a2b1839353b2c303d392c2a3d2b763b3735">[email&#160;protected]</a>",
+  "status": "Pending",
+  "createdDateUtc": "2019-01-27T08:33:14.513Z",
+  "total": 30.36,
+  "subtotal": 27.95,
+  "paid": 0,
+  "token": "92e325ab-2b96-429f-ae67-3815a1b3449b",
+  "paymentOptions": [
+    "creditCard",
+    "giftCard"
+  ],
+  "expirationDateUtc": "2019-01-27T08:40:14.513Z",
+  "_embedded": {
+    "products": [
+      {
+        "sku": "CONCESSIONS-12632",
+        "quantity": 1,
+        "status": "Held",
+        "cost": 8.48,
+        "tax": 0.69,
+        "name": "Chicken Nachos",
+        "theatre": "AMC DINE-IN Studio 28",
+        "theatreId": 610,
+        "deliveryDateTimeLocal": "2019-01-27T16:35:00",
+        "concessionOrderName": "Stephen",
+        "deliveryType": "ExpressPickup",
+        "components": [],
+        "modifiers": [],
+        "token": "628b8e0d-6b1e-4631-9035-139e90dd24f4",
+        "fees": [],
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v3/orders/98096/products/1",
+            "templated": false
+          }
+        },
+        "lineItemNumber": 1
+      },
+      {
+        "sku": "CONCESSIONS-1781559",
+        "status": "Held",
+        "cost": 21.19,
+        "tax": 1.72,
+        "name": "Large Popcorn + 2 Large Drinks",
+        "theatre": "AMC DINE-IN Studio 28",
+        "theatreId": 610,
+        "deliveryDateTimeLocal": "2019-01-27T16:35:00",
+        "concessionOrderName": "Stephen",
+        "deliveryType": "ExpressPickup",
+        "components": [
+          {
+            "name": "Large Drink",
+            "token": "37bfc6b8-c077-46a9-99a6-5ddddbbded77",
+            "sku": "CONCESSIONS-2270585",
+            "modifiers": []
+          },
+          {
+            "name": "Large Drink",
+            "token": "60f39073-0a40-4a02-a40a-13336eb70768",
+            "sku": "CONCESSIONS-2270585",
+            "modifiers": []
+          },
+          {
+            "name": "Large Popcorn Tub",
+            "token": "cfab6a4a-8a3b-44ac-9949-cc7d169a3cae",
+            "sku": "CONCESSIONS-2267122",
+            "modifiers": []
+          }
+        ],
+        "modifiers": [],
+        "token": "5d3c2b28-9b79-47c6-9ef0-7f72fffca185",
+        "fees": [],
+        "_links": {
+          "self": {
+            "href": "https://api.amctheatres.com/v3/orders/98096/products/2",
+            "templated": false
+          }
+        },
+        "lineItemNumber": 2
+      }
+    ],
+    "payments": []
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.amctheatres.com/v3/orders/98096",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-payments": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/payments",
+      "templated": false
+    },
+    "https://api.amctheatres.com/rels/v3/order-products": {
+      "href": "https://api.amctheatres.com/v3/orders/98096/products",
+      "templated": false
+    }
+  }
+}                       
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div></div>
+            <div class="col-md-3">
+                <div class="sidebar-module">
+                    <h4>Getting Started</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="Authentication.html">Authentication</a></li>
+                        <li><a href="AffiliateDeepLinking.html">Affiliate Deep Linking</a></li>
+                        <li><a href="Sandbox.html">Sandbox</a></li>
+                    </ol>
+                        <h5>Ordering Tickets</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="PurchasingGATickets.html">General Admission Tickets</a></li>
+                            <li><a href="PurchasingRsTickets.html">Reserved Seating Tickets</a></li>
+                            <li><a href="PurchasingGenericPrivateTheatreRentals.html">Generic Private Theatre Rentals</a></li>
+                            <li><a href="PurchasingTitleSpecificPrivateTheatreRentals.html">Movie Specific Private Theatre Rentals</a></li>
+                        </ol>
+                        <h5>Ordering Concessions</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="PurchasingExpressPickupConcessions.html">Express Pickup Concessions</a></li>
+                            <li><a href="PurchasingDeliveryToSeatConcessions.html">Delivery To Seat Concessions</a></li>
+                        </ol>
+                        <h5>Order Payment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="PayingWithACreditCard.html">Credit Card Payment</a></li>
+                        </ol>
+                        <h5>Order Fulfillment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="SubmittingOrderForFulfillment.html">Order Fulfillment</a></li>
+                        </ol>
+                        <h5>Refunding Orders</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="Refunds.html">Refunds</a></li>
+                        </ol>
+                    <br>
+                    <h4>API Reference</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="../Errors.html">Errors</a></li>
+                    </ol>
+                    <hr />
+                    <ol class="list-unstyled">
+                                <li>
+                                    <a href="../Attributes.html">Attributes</a>
+                                </li>
+                                <li>
+                                    <a href="../Barcodes.html">Barcodes</a>
+                                </li>
+                                <li>
+                                    <a href="../Concessions.html">Concessions</a>
+                                </li>
+                                <li>
+                                    <a href="../ConcessionsCategories.html">Concessions Categories</a>
+                                </li>
+                                <li>
+                                    <a href="../ConcessionsDeliveryLocations.html">Concessions Delivery Locations</a>
+                                </li>
+                                <li>
+                                    <a href="../ConcessionsDeliveryTimes.html">Concessions Delivery Times</a>
+                                </li>
+                                <li>
+                                    <a href="../ConcessionsPickupTimes.html">Concessions Pickup Times</a>
+                                </li>
+                                <li>
+                                    <a href="../EmbargoedShowtimes.html">Embargoed Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="../FeeWaiver.html">Fee Waiver</a>
+                                </li>
+                                <li>
+                                    <a href="../LocationSuggestions.html">Location Suggestions</a>
+                                </li>
+                                <li>
+                                    <a href="../Locations.html">Locations</a>
+                                </li>
+                                <li>
+                                    <a href="../LoyaltyAccounts.html">Loyalty Accounts</a>
+                                </li>
+                                <li>
+                                    <a href="../LoyaltyCards.html">Loyalty Cards</a>
+                                </li>
+                                <li>
+                                    <a href="../Markets.html">Markets</a>
+                                </li>
+                                <li>
+                                    <a href="../Media.html">Media</a>
+                                </li>
+                                <li>
+                                    <a href="../MovieConfirmations.html">Movie Confirmations</a>
+                                </li>
+                                <li>
+                                    <a href="../Movies.html">Movies</a>
+                                </li>
+                                <li>
+                                    <a href="../Orders.html">Orders</a>
+                                </li>
+                                <li>
+                                    <a href="../Person.html">Person</a>
+                                </li>
+                                <li>
+                                    <a href="../Redemptions.html">Redemptions</a>
+                                </li>
+                                <li>
+                                    <a href="../RefundReasons.html">Refund Reasons</a>
+                                </li>
+                                <li>
+                                    <a href="../Refunds.html">Refunds</a>
+                                </li>
+                                <li>
+                                    <a href="../SeatingLayouts.html">Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="../Showtimes.html">Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="../States.html">States</a>
+                                </li>
+                                <li>
+                                    <a href="../TheatreSeatingLayouts.html">Theatre Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="../Theatres.html">Theatres</a>
+                                </li>
+                                <li>
+                                    <a href="../Wallet.html">Wallet</a>
+                                </li>
+                                <li>
+                                    <a href="../Webhook.html">Webhook</a>
+                                </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="../cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="../Scripts/jquery-3.6.0.min.js"></script>
+    <script src="../Scripts/modernizr-2.6.2.js"></script>
+
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" type="text/css" href="../Content/prettyprint-sunburst.css" />
+
+    <script src="../Content/themes/amc/scripts/bootstrap/bootstrap.js"></script>
+    <script src="../Content/themes/amc/scripts/site.js"></script>
+
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('a[href^="#"]').on('click', function (e) {
+                e.preventDefault();
+
+                var target = this.hash,
+                    $target = $(target);
+
+                $('html, body').stop().animate({
+                    'scrollTop': $target.offset().top - 100
+                }, 1200, 'swing', function () {
+                    window.location.hash = target;
+                });
+
+                $target.children(".panel-heading")
+                    .animate({ "background-color": "#ce2640" })
+                    .delay(2000)
+                    .animate({ "background-color": "#f5f5f5" });
+            });
+        });
+    </script>
+</body>
+</html><script id="f5_cspm">(function(){var f5_cspm={f5_p:'OOEHNLHNJPFIGJLMEDAFIEKELAGKBBPOMPMLHHDBCLAKAICJEDHHEMMEPOJILINPCGDBBGBLAAENLOJOJNHACPIKAAPBIIAMMMCCGHKBGFLGONFMOCHJDFCMPMFKECPD',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr2061084227aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script>

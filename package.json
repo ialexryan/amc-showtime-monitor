@@ -1,0 +1,30 @@
+{
+  "name": "amc-showtime-monitor",
+  "version": "1.0.0",
+  "author": "",
+  "main": "src/cli.ts",
+  "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "axios": "^1.11.0",
+    "better-sqlite3": "^12.2.0",
+    "commander": "^14.0.0",
+    "fuse.js": "^7.1.0"
+  },
+  "description": "Monitor AMC Theatres for new movie showtimes and send Telegram notifications",
+  "keywords": ["amc", "movies", "showtimes", "telegram", "notifications", "cinema"],
+  "license": "ISC",
+  "scripts": {
+    "check": "bun src/cli.ts check",
+    "test": "bun src/cli.ts test",
+    "status": "bun src/cli.ts status",
+    "setup": "bun src/cli.ts setup",
+    "dev": "bun --watch src/cli.ts",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "format": "biome format --write src/"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.3"
+  }
+}

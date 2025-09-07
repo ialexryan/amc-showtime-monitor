@@ -1,0 +1,1134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>AMC Developer Portal - Wallet</title>
+    <link href="Content/images/favicon.ico.html" rel="shortcut icon" type="image/x-icon" />
+
+    <link href="Content/Site.css" rel="stylesheet" />
+    <link href="Content/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="Content/highlight/styles/default.css" rel="stylesheet" />
+    <link href="Content/Redesign.css" rel="stylesheet" />
+
+    <link href="Content/themes/amc/bootstrap.css" rel="stylesheet" />
+    <link href="Content/themes/amc/bootstrap-docs.min.css" rel="stylesheet" />
+    <link href="Content/themes/amc/common.css" rel="stylesheet" />
+    <link href="Content/themes/amc/site.css" rel="stylesheet" />
+    <link href="Content/highlight/styles/default.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <header class="Header-wrap is-opaque">
+        <ul class="Header u-listUnstyled u-container u-flexwrap" role="menu">
+            <li class="NavGroup HeaderBranding">
+                <ul class="u-listUnstyled">
+                    <li class="NavGroupItem">
+                        <a class="Link SiteLogo" aria-disabled="" href="index.html">
+                            <i class="logo" alt="A M C Home">
+                                <!--?xml version="1.0" encoding="iso-8859-1"?-->
+                                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.7 73.7" enable-background="new 0 0 73.7 73.7" xml:space="preserve">
+                                <g>
+                                <g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#E51937" d="M73.7,36.9c0,20.4-16.5,36.8-37,36.8C16.5,73.7,0,57.2,0,36.9   C0,16.5,16.5,0,36.8,0C57.2,0,73.7,16.5,73.7,36.9z M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7   c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2   c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5   c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7   C38.9,28.8,38.4,29.2,37.8,29.5z M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7c0-1.3-0.7-2.1-1.9-2.2   c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0c1.1,0,1.8-0.8,1.8-2   c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9c0,2.7,0,5.3,0,8   c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z M59.2,43.5   c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3   c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8   c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                            </g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7  c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2  c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5  c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7  C38.9,28.8,38.4,29.2,37.8,29.5z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7  c0-1.3-0.7-2.1-1.9-2.2c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0  c1.1,0,1.8-0.8,1.8-2c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9  c0,2.7,0,5.3,0,8c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M59.2,43.5c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4  c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4  c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                        </g>
+                                <rect x="-13.3" y="8.5" display="none" fill="none" width="97" height="56"></rect>
+                                    </svg>
+                            </i>
+                        </a>
+                    </li>
+                    <li class="NavGroupItem">
+                        <a class="SiteTitle Link" href="index.html">Developer Portal</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9">
+
+<h2>Wallet</h2>
+
+    <div class="pull-right" style="position: relative; top: -45px;">
+                <a href="Wallet%EF%B9%96versionNo=4.html" class="badge badge-active">V4</a>
+    </div>
+
+
+
+
+
+
+    <p>The Wallet endpoint provides secure access to saved credit cards and gift cards for a specific account.  </p>
+
+<hr />
+
+    <a name="endpoints"></a>
+    <h3>Endpoints</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Verb</th>
+                <th>Endpoint</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>GET</td>
+                    <td>/v4/amc-accounts/{account-id}/wallet/views/on-demand</td>
+                    <td>Get a version of the external wallet for use by external billers.</td>
+                    <td><a href="#GetExternalWallet"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+        </tbody>
+    </table>
+
+
+
+    <br />
+    <a name="properties"></a>
+    <h3>Wallet Properties</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>
+creditCardCount                    </td>
+                    <td>
+                        The current count of all credit cards.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+maxCreditCardCount                    </td>
+                    <td>
+                        The maximum number of credit cards that can be stored in the wallet.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+giftCardSummary.preferredTender                    </td>
+                    <td>
+                        The account holder preferred method of payment.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+giftCardSummary.balance                    </td>
+                    <td>
+                        The current balance of all gift cards.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+giftCardSummary.count                    </td>
+                    <td>
+                        The current count of all gift cards.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+giftCardSummary.maxCount                    </td>
+                    <td>
+                        The maximum number of gift cards that can be stored in the wallet.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+loyaltySummary.autoSpend                    </td>
+                    <td>
+                        A boolean representing if the account holder wishes to always post loyalty payment if available.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+loyaltySummary.balance                    </td>
+                    <td>
+                        The current balance of all loyalty rewards available for use.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+loyaltySummary.number                    </td>
+                    <td>
+                        The account holders unique loyalty account number.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+disneyCardSummary.preferredTender                    </td>
+                    <td>
+                        The account holder preferred method of payment.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+disneyCardSummary.balance                    </td>
+                    <td>
+                        The current balance of all Disney cards.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+disneyCardSummary.count                    </td>
+                    <td>
+                        The current count of all Disney cards.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+disneyCardSummary.maxCount                    </td>
+                    <td>
+                        The maximum number of Disney cards that can be stored in the wallet.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <a href="#CreditCard">_embedded.CreditCards</a>
+                    </td>
+                    <td>
+                        A list of CreditCard Representations returned.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <a href="#GiftCard">_embedded.GiftCards</a>
+                    </td>
+                    <td>
+                        A list of GiftCard Representations returned.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <a href="#DisneyCard">_embedded.DisneyCards</a>
+                    </td>
+                    <td>
+                        A list of DisneyCard Representations returned.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <a href="#ExternalCard">_embedded.ExternalCards</a>
+                    </td>
+                    <td>
+                        A list of ExternalCard Representations returned.
+                    </td>
+                </tr>
+        </tbody>
+    </table>
+
+    <br />
+    <a name="links"></a>
+    <h3>Wallet Links</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Relation</th>
+                <th>Description</th>
+                <th>Verbs</th>
+                <th>Templated</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>self</td>
+                    <td>This Wallet.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>loyalty</td>
+                    <td>The account holders loyalty.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>creditcards</td>
+                    <td>The account holders credit cards.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>giftcards</td>
+                    <td>The account holders gift cards.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>disneycards</td>
+                    <td>The account holders Disney cards.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+        </tbody>
+    </table>
+
+<div class="well" id="Credit Card">
+
+    <h3 id="CreditCard">Credit Card</h3>
+
+        <br />
+        <h4>Credit Card Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+token                        </td>
+                        <td>
+                            Identifying token for the specific card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+cardType                        </td>
+                        <td>
+                            The type of credit card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+name                        </td>
+                        <td>
+                            The name the account holder gave the credit card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+default                        </td>
+                        <td>
+                            A boolean indicating if this is the account holder&#x27;s preferred credit card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+verified                        </td>
+                        <td>
+                            A boolean indicating if the card has been verified using a zero dollar authorization
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+verificationNonce                        </td>
+                        <td>
+                            One-time-use reference to card details from the merchant system.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+expirationDate                        </td>
+                        <td>
+                            The credit card&#x27;s expiration date.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+lastFour                        </td>
+                        <td>
+                            The credit card&#x27;s last 4 digits.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+merchantCustomer                        </td>
+                        <td>
+                            The customer id from the merchant system.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+merchantToken                        </td>
+                        <td>
+                            The token identifier for the credit card from the merchant system.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address1                        </td>
+                        <td>
+                            The main address field for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address2                        </td>
+                        <td>
+                            The secondary address field for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+city                        </td>
+                        <td>
+                            The city field for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+state                        </td>
+                        <td>
+                            The state field for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+postalCode                        </td>
+                        <td>
+                            The postalCode code field for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+cardHolderFirstName                        </td>
+                        <td>
+                            The card holder first name if different than the account holder for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+cardHolderLastName                        </td>
+                        <td>
+                            The card holder last name if different than the account holder for the credit card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+cardHolderEmail                        </td>
+                        <td>
+                            The card holder email address if different than the account holder for the credit card billing information.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+        <br />
+        <h4>Credit Card Links</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Relation</th>
+                    <th>Description</th>
+                    <th>Methods</th>
+                    <th>Templated</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>self</td>
+                        <td>This credit card.</td>
+                        <td>GET, PUT, DELETE</td>
+                        <td>No</td>
+                    </tr>
+            </tbody>
+        </table>
+    
+</div><div class="well" id="Gift Card">
+
+    <h3 id="GiftCard">Gift Card</h3>
+
+        <br />
+        <h4>Gift Card Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+token                        </td>
+                        <td>
+                            Identifying token for the specific card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+balance                        </td>
+                        <td>
+                            The gift card balance.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+name                        </td>
+                        <td>
+                            The name the account holder gave the gift card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+maskedNumber                        </td>
+                        <td>
+                            The gift card number. Values will be masked up to the last four digits.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+maskedPin                        </td>
+                        <td>
+                            Masked representation of the gift card pin.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+encryptedNumber                        </td>
+                        <td>
+                            The gift card number in its encrypted form.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+encryptedPin                        </td>
+                        <td>
+                            The gift card PIN in its encrypted form.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+qrCode                        </td>
+                        <td>
+                            The gift card qr code.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+imageUrl                        </td>
+                        <td>
+                            The Url for the location of the image on the gift card
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+merchantToken                        </td>
+                        <td>
+                            The token identifier for the gift card from the merchant system.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+balanceInquiryToken                        </td>
+                        <td>
+                            Token for balance inquiry logs. Note: This was formerly named &quot;token&quot; in V3 of the API.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+status                        </td>
+                        <td>
+                            Indicator to show whether or not the gift card is usable.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address1                        </td>
+                        <td>
+                            The main address field for the gift card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address2                        </td>
+                        <td>
+                            The secondary address field for the gift card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+city                        </td>
+                        <td>
+                            The city field for the gift card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+state                        </td>
+                        <td>
+                            The state field for the gift card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+postalCode                        </td>
+                        <td>
+                            The postalCode code field for the gift card billing information.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+        <br />
+        <h4>Gift Card Links</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Relation</th>
+                    <th>Description</th>
+                    <th>Methods</th>
+                    <th>Templated</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>self</td>
+                        <td>This gift card.</td>
+                        <td>GET, PUT, DELETE</td>
+                        <td>No</td>
+                    </tr>
+            </tbody>
+        </table>
+    
+</div><div class="well" id="Disney Card">
+
+    <h3 id="DisneyCard">Disney Card</h3>
+
+        <br />
+        <h4>Disney Card Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+token                        </td>
+                        <td>
+                            Identifying token for the specific card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+balance                        </td>
+                        <td>
+                            The Disney card balance.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+name                        </td>
+                        <td>
+                            The name the account holder gave the the Disney card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+lastFour                        </td>
+                        <td>
+                            The Disney card number last 4 digits.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+merchantToken                        </td>
+                        <td>
+                            The token identifier for the Disney card from the merchant system.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+status                        </td>
+                        <td>
+                            Indicator to show whether or not the Disney card is usable.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address1                        </td>
+                        <td>
+                            The main address field for the disney card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address2                        </td>
+                        <td>
+                            The secondary address field for the disney card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+city                        </td>
+                        <td>
+                            The city field for the disney card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+state                        </td>
+                        <td>
+                            The state field for the disney card billing information.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+postalCode                        </td>
+                        <td>
+                            The postalCode code field for the disney card billing information.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+        <br />
+        <h4>Disney Card Links</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Relation</th>
+                    <th>Description</th>
+                    <th>Methods</th>
+                    <th>Templated</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>self</td>
+                        <td>This Disney card.</td>
+                        <td>GET, PUT, DELETE</td>
+                        <td>No</td>
+                    </tr>
+            </tbody>
+        </table>
+    
+</div><div class="well" id="External Card">
+
+    <h3 id="ExternalCard">External Card</h3>
+
+        <br />
+        <h4>External Card Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+id                        </td>
+                        <td>
+                            The external card id (account stored tender type id).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+typeID                        </td>
+                        <td>
+                            Represents the tender type of the external card.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+displayName                        </td>
+                        <td>
+                            The display name seen by external users.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isPrimary                        </td>
+                        <td>
+                            Whether or not the external card is primary.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+billingAddress                        </td>
+                        <td>
+                            The billing address for the external card.
+                                <ul>
+                                        <li>name</li>
+                                        <li>lineOne</li>
+                                        <li>lineTwo</li>
+                                        <li>city</li>
+                                        <li>state</li>
+                                        <li>postalCode</li>
+                                        <li>country</li>
+                                        <li>defaultBilling</li>
+                                </ul>
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div><div class="well" id="External Bill Sale">
+
+    <h3 id="ExternalBillSale">External Bill Sale</h3>
+
+        <br />
+        <h4>External Bill Sale Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+referenceId                        </td>
+                        <td>
+                            Transaction reference identifier.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+subscriberExternalReference                        </td>
+                        <td>
+                            External reference of the subscriber (amc account id).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+saleAmount                        </td>
+                        <td>
+                            Amount of sale transaction charged to this external bill payment method.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                                      <a href="#ExternalBill">_embedded.External Bill</a>
+                        </td>
+                        <td>
+                            A External Bill Representation returned.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div><div class="well" id="External Bill Credit">
+
+    <h3 id="ExternalBillCredit">External Bill Credit</h3>
+
+        <br />
+        <h4>External Bill Credit Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+referenceId                        </td>
+                        <td>
+                            Transaction reference identifier.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+subscriberExternalReference                        </td>
+                        <td>
+                            External reference of the subscriber (amc account id).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+saleAmount                        </td>
+                        <td>
+                            Amount of credit transaction charged to this external bill payment method.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                                      <a href="#ExternalBill">_embedded.External Bill</a>
+                        </td>
+                        <td>
+                            A External Bill Representation returned.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div><div class="well" id="External Bill">
+
+    <h3 id="ExternalBill">External Bill</h3>
+
+        <br />
+        <h4>External Bill Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+accountNumber                        </td>
+                        <td>
+                            The external card id (account stored tender type id).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+externalBillType                        </td>
+                        <td>
+                            Represents the tender type of the external biller.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+referenceId                        </td>
+                        <td>
+                            Transaction reference identifier.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+billingAddress                        </td>
+                        <td>
+                            The billing address for the external biller.
+                                <ul>
+                                        <li>name</li>
+                                        <li>lineOne</li>
+                                        <li>lineTwo</li>
+                                        <li>city</li>
+                                        <li>state</li>
+                                        <li>postalCode</li>
+                                        <li>country</li>
+                                        <li>defaultBilling</li>
+                                </ul>
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div>
+
+
+    <br />
+    <a name="examples"></a>
+    <h3>Examples</h3>
+    <div class="panel-group" id="accordion">
+
+                <h5>Get a version of the external wallet for use by external billers</h5>
+                <div class="panel panel-default" id="GetExternalWallet">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Getaversionoftheexternalwalletforusebyexternalbillers">
+                        <pre><b>GET</b>&nbsp; /v4/amc-accounts/123/wallet/views/on-demand</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Getaversionoftheexternalwalletforusebyexternalbillers" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">{&#xD;&#xA;  &quot;externalWallet&quot;: [&#xD;&#xA;    {&#xD;&#xA;      &quot;id&quot;: 111,&#xD;&#xA;      &quot;typeID&quot;: 10084,&#xD;&#xA;      &quot;displayName&quot;: &quot;************0001(111)&quot;,&#xD;&#xA;      &quot;isPrimary&quot;: true,&#xD;&#xA;      &quot;BillingAddress&quot;: {&#xD;&#xA;        &quot;Name&quot;: &quot;Visa-0001-1&quot;,&#xD;&#xA;        &quot;LineOne&quot;: &quot;11500 Ash St&quot;,&#xD;&#xA;        &quot;LineTwo&quot;: &quot;Suite 250&quot;,&#xD;&#xA;        &quot;City&quot;: &quot;Leawood&quot;,&#xD;&#xA;        &quot;State&quot;: &quot;KS&quot;,&#xD;&#xA;        &quot;PostalCode&quot;: &quot;66211&quot;,&#xD;&#xA;        &quot;Country&quot;: &quot;USA&quot;,&#xD;&#xA;        &quot;DefaultBilling&quot;: true&#xD;&#xA;      }&#xD;&#xA;    },&#xD;&#xA;    {&#xD;&#xA;      &quot;id&quot;: 222,&#xD;&#xA;      &quot;typeID&quot;: 10087,&#xD;&#xA;      &quot;displayName&quot;: &quot;************0002(222)&quot;,&#xD;&#xA;      &quot;isPrimary&quot;: false,&#xD;&#xA;      &quot;BillingAddress&quot;: {&#xD;&#xA;        &quot;Name&quot;: &quot;Visa-0002-2&quot;,&#xD;&#xA;        &quot;LineOne&quot;: &quot;11500 Ash St&quot;,&#xD;&#xA;        &quot;LineTwo&quot;: &quot;Suite 250&quot;,&#xD;&#xA;        &quot;City&quot;: &quot;Leawood&quot;,&#xD;&#xA;        &quot;State&quot;: &quot;KS&quot;,&#xD;&#xA;        &quot;PostalCode&quot;: &quot;66211&quot;,&#xD;&#xA;        &quot;Country&quot;: &quot;USA&quot;,&#xD;&#xA;        &quot;DefaultBilling&quot;: false&#xD;&#xA;      }&#xD;&#xA;    }&#xD;&#xA;  ]&#xD;&#xA;}</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+
+    </div>
+</div>
+            <div class="col-md-3">
+                <div class="sidebar-module">
+                    <h4>Getting Started</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="GettingStarted/Authentication.html">Authentication</a></li>
+                        <li><a href="GettingStarted/AffiliateDeepLinking.html">Affiliate Deep Linking</a></li>
+                        <li><a href="GettingStarted/Sandbox.html">Sandbox</a></li>
+                    </ol>
+                        <h5>Ordering Tickets</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PurchasingGATickets.html">General Admission Tickets</a></li>
+                            <li><a href="GettingStarted/PurchasingRsTickets.html">Reserved Seating Tickets</a></li>
+                            <li><a href="GettingStarted/PurchasingGenericPrivateTheatreRentals.html">Generic Private Theatre Rentals</a></li>
+                            <li><a href="GettingStarted/PurchasingTitleSpecificPrivateTheatreRentals.html">Movie Specific Private Theatre Rentals</a></li>
+                        </ol>
+                        <h5>Ordering Concessions</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PurchasingExpressPickupConcessions.html">Express Pickup Concessions</a></li>
+                            <li><a href="GettingStarted/PurchasingDeliveryToSeatConcessions.html">Delivery To Seat Concessions</a></li>
+                        </ol>
+                        <h5>Order Payment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PayingWithACreditCard.html">Credit Card Payment</a></li>
+                        </ol>
+                        <h5>Order Fulfillment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/SubmittingOrderForFulfillment.html">Order Fulfillment</a></li>
+                        </ol>
+                        <h5>Refunding Orders</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/Refunds.html">Refunds</a></li>
+                        </ol>
+                    <br>
+                    <h4>API Reference</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="Errors.html">Errors</a></li>
+                    </ol>
+                    <hr />
+                    <ol class="list-unstyled">
+                                <li>
+                                    <a href="Attributes.html">Attributes</a>
+                                </li>
+                                <li>
+                                    <a href="Barcodes.html">Barcodes</a>
+                                </li>
+                                <li>
+                                    <a href="Concessions.html">Concessions</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsCategories.html">Concessions Categories</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsDeliveryLocations.html">Concessions Delivery Locations</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsDeliveryTimes.html">Concessions Delivery Times</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsPickupTimes.html">Concessions Pickup Times</a>
+                                </li>
+                                <li>
+                                    <a href="EmbargoedShowtimes.html">Embargoed Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="FeeWaiver.html">Fee Waiver</a>
+                                </li>
+                                <li>
+                                    <a href="LocationSuggestions.html">Location Suggestions</a>
+                                </li>
+                                <li>
+                                    <a href="Locations.html">Locations</a>
+                                </li>
+                                <li>
+                                    <a href="LoyaltyAccounts.html">Loyalty Accounts</a>
+                                </li>
+                                <li>
+                                    <a href="LoyaltyCards.html">Loyalty Cards</a>
+                                </li>
+                                <li>
+                                    <a href="Markets.html">Markets</a>
+                                </li>
+                                <li>
+                                    <a href="Media.html">Media</a>
+                                </li>
+                                <li>
+                                    <a href="MovieConfirmations.html">Movie Confirmations</a>
+                                </li>
+                                <li>
+                                    <a href="Movies.html">Movies</a>
+                                </li>
+                                <li>
+                                    <a href="Orders.html">Orders</a>
+                                </li>
+                                <li>
+                                    <a href="Person.html">Person</a>
+                                </li>
+                                <li>
+                                    <a href="Redemptions.html">Redemptions</a>
+                                </li>
+                                <li>
+                                    <a href="RefundReasons.html">Refund Reasons</a>
+                                </li>
+                                <li>
+                                    <a href="Refunds.html">Refunds</a>
+                                </li>
+                                <li>
+                                    <a href="SeatingLayouts.html">Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="Showtimes.html">Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="States.html">States</a>
+                                </li>
+                                <li>
+                                    <a href="TheatreSeatingLayouts.html">Theatre Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="Theatres.html">Theatres</a>
+                                </li>
+                                <li>
+                                    <a href="Wallet.html">Wallet</a>
+                                </li>
+                                <li>
+                                    <a href="Webhook.html">Webhook</a>
+                                </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Scripts/jquery-3.6.0.min.js"></script>
+    <script src="Scripts/modernizr-2.6.2.js"></script>
+
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" type="text/css" href="Content/prettyprint-sunburst.css" />
+
+    <script src="Content/themes/amc/scripts/bootstrap/bootstrap.js"></script>
+    <script src="Content/themes/amc/scripts/site.js"></script>
+
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('a[href^="#"]').on('click', function (e) {
+                e.preventDefault();
+
+                var target = this.hash,
+                    $target = $(target);
+
+                $('html, body').stop().animate({
+                    'scrollTop': $target.offset().top - 100
+                }, 1200, 'swing', function () {
+                    window.location.hash = target;
+                });
+
+                $target.children(".panel-heading")
+                    .animate({ "background-color": "#ce2640" })
+                    .delay(2000)
+                    .animate({ "background-color": "#f5f5f5" });
+            });
+        });
+    </script>
+</body>
+</html><script id="f5_cspm">(function(){var f5_cspm={f5_p:'HBNDNGAOIKODHPKBOCBMJFHNKCBNLIPPOEALBDCPIDELIBHJEFCJNAJKHEHENGOLGELBLKNFAAHHOEIBFAIAFONEAAHJACIFMDBNAJGEDNAMOHMJPNJDMDDKMJAJPOGI',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr2061084227aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script>

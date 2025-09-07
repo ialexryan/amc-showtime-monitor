@@ -1,0 +1,13 @@
+{
+  "movies": [
+    "Tron: Ares",
+    "Odyssey"
+  ],
+  "theatre": "AMC Metreon 16",
+  "pollIntervalMinutes": 15,
+  "telegram": {
+    "botToken": "your-telegram-bot-token-here",
+    "chatId": "your-telegram-chat-id-here"
+  },
+  "amcApiKey": "your-amc-api-key-here"
+}

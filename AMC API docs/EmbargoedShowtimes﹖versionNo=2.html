@@ -1,0 +1,860 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>AMC Developer Portal - Embargoed Showtimes</title>
+    <link href="Content/images/favicon.ico.html" rel="shortcut icon" type="image/x-icon" />
+
+    <link href="Content/Site.css" rel="stylesheet" />
+    <link href="Content/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="Content/highlight/styles/default.css" rel="stylesheet" />
+    <link href="Content/Redesign.css" rel="stylesheet" />
+
+    <link href="Content/themes/amc/bootstrap.css" rel="stylesheet" />
+    <link href="Content/themes/amc/bootstrap-docs.min.css" rel="stylesheet" />
+    <link href="Content/themes/amc/common.css" rel="stylesheet" />
+    <link href="Content/themes/amc/site.css" rel="stylesheet" />
+    <link href="Content/highlight/styles/default.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <header class="Header-wrap is-opaque">
+        <ul class="Header u-listUnstyled u-container u-flexwrap" role="menu">
+            <li class="NavGroup HeaderBranding">
+                <ul class="u-listUnstyled">
+                    <li class="NavGroupItem">
+                        <a class="Link SiteLogo" aria-disabled="" href="index.html">
+                            <i class="logo" alt="A M C Home">
+                                <!--?xml version="1.0" encoding="iso-8859-1"?-->
+                                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.7 73.7" enable-background="new 0 0 73.7 73.7" xml:space="preserve">
+                                <g>
+                                <g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#E51937" d="M73.7,36.9c0,20.4-16.5,36.8-37,36.8C16.5,73.7,0,57.2,0,36.9   C0,16.5,16.5,0,36.8,0C57.2,0,73.7,16.5,73.7,36.9z M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7   c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2   c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5   c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7   C38.9,28.8,38.4,29.2,37.8,29.5z M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7c0-1.3-0.7-2.1-1.9-2.2   c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0c1.1,0,1.8-0.8,1.8-2   c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9c0,2.7,0,5.3,0,8   c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z M59.2,43.5   c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3   c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8   c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                            </g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7  c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2  c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5  c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7  C38.9,28.8,38.4,29.2,37.8,29.5z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7  c0-1.3-0.7-2.1-1.9-2.2c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0  c1.1,0,1.8-0.8,1.8-2c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9  c0,2.7,0,5.3,0,8c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M59.2,43.5c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4  c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4  c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                        </g>
+                                <rect x="-13.3" y="8.5" display="none" fill="none" width="97" height="56"></rect>
+                                    </svg>
+                            </i>
+                        </a>
+                    </li>
+                    <li class="NavGroupItem">
+                        <a class="SiteTitle Link" href="index.html">Developer Portal</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9">
+
+<h2>Embargoed Showtimes</h2>
+
+    <div class="pull-right" style="position: relative; top: -45px;">
+                <a href="EmbargoedShowtimes%EF%B9%96versionNo=2.html" class="badge badge-active">V2</a>
+    </div>
+
+
+
+
+
+
+    <p>The Embargoed showtimes endpoints allow retrieval of AMC Theatres showtime information where future dated online tickets are available for purchase.</p>
+
+<hr />
+
+    <a name="endpoints"></a>
+    <h3>Endpoints</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Verb</th>
+                <th>Endpoint</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>GET</td>
+                    <td>/v2/theatres/{theatre-number}/showtimes/{date}/views/embargoed</td>
+                    <td>Returns all embargoed showtimes for the specified Theatre and Date and meeting additional search criteria provided.</td>
+                    <td><a href="#AllEmbargoedShowtimesMeetingSpecifiedSearchCriteria"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+        </tbody>
+    </table>
+
+
+
+    <br />
+    <a name="properties"></a>
+    <h3>Embargoed Showtimes Properties</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>
+pageSize                    </td>
+                    <td>
+                        The number of results included for each page, up to a maximum of 100. Defaults to 10.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+pageNumber                    </td>
+                    <td>
+                        The page number returned.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+count                    </td>
+                    <td>
+                        The total number of results available across all pages.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+lastUpdatedDateUtc                    </td>
+                    <td>
+                        The date time UTC of when any showtime in the result set was last updated.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <a href="#Showtime">_embedded.Showtimes</a>
+                    </td>
+                    <td>
+                        A list of Showtime Representations returned.
+                    </td>
+                </tr>
+        </tbody>
+    </table>
+
+    <br />
+    <a name="links"></a>
+    <h3>Embargoed Showtimes Links</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Relation</th>
+                <th>Description</th>
+                <th>Verbs</th>
+                <th>Templated</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>self</td>
+                    <td>The current list of showtimes results.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>previous</td>
+                    <td>The previous page of showtimes results.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>next</td>
+                    <td>The next page of showtimes results.</td>
+                    <td>GET</td>
+                    <td>No</td>
+                </tr>
+        </tbody>
+    </table>
+
+<div class="well" id="Showtime">
+
+    <h3 id="Showtime">Showtime</h3>
+
+        <br />
+        <h4>Showtime Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+id                        </td>
+                        <td>
+                            The showtime id.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+performanceNumber                        </td>
+                        <td>
+                            The Radiant performance number.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+movieId                        </td>
+                        <td>
+                            The movie id.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+movieName                        </td>
+                        <td>
+                            The movie title.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+genre                        </td>
+                        <td>
+                            The primary genre of the movie.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+movieUrl                        </td>
+                        <td>
+                            The movie website URL.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+sortableMovieName                        </td>
+                        <td>
+                            The movie&#x27;s sortable title name.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+showDateTimeUtc                        </td>
+                        <td>
+                            The show date/time in UTC (ISO-8601)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+showDateTimeLocal                        </td>
+                        <td>
+                            The show date/time in the theatre&#x27;s local timezone.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+sellUntilDateTimeUtc                        </td>
+                        <td>
+                            The date time UTC of when the showtime should stop being sold.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+auditorium                        </td>
+                        <td>
+                            The auditorium id where the showing is taking place.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+layoutId                        </td>
+                        <td>
+                            The auditorium layout being used for the this showtime.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+layoutVersionNumber                        </td>
+                        <td>
+                            The auditorium layout version number.  This is incremented whenever an auditorium layout is modified.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isSoldOut                        </td>
+                        <td>
+                            Indicates if tickets are sold out.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isAlmostSoldOut                        </td>
+                        <td>
+                            Indicates if tickets are almost sold out based on an AMC predefined threshold.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isCanceled                        </td>
+                        <td>
+                            Indicates if the showing has been canceled.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+inTheatreTicketingOnly                        </td>
+                        <td>
+                            Indicates if tickets for the showtime are only available in theatre.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+utcOffset                        </td>
+                        <td>
+                            The UTC offset of the showtime.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+purchaseUrl                        </td>
+                        <td>
+                            The website url where tickets may be purchased from AMC Theatres.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+mobilePurchaseUrl                        </td>
+                        <td>
+                            The mobile website url where tickets may be purchased from AMC Theatres.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+runTime                        </td>
+                        <td>
+                            The duration of the showing in minutes.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+mpaaRating                        </td>
+                        <td>
+                            The MPAA&#x27;s (Motion Picture Association of America&#x27;s) official movie rating.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+permiumFormat                        </td>
+                        <td>
+                            The premium format of the showtime.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+ticketPrices                        </td>
+                        <td>
+                            The showings ticket prices.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+lastUpdatedDateUtc                        </td>
+                        <td>
+                            The date time UTC of when the showtime was last updated.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.heroDesktopDynamic                        </td>
+                        <td>
+                            Url location of hero Desktop.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.heroMobileDynamic                        </td>
+                        <td>
+                            Url location of hero Mobile.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.posterDynamic                        </td>
+                        <td>
+                            Url location of the Movie Poster.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.posterDynamic120x74                        </td>
+                        <td>
+                            Url location of the Movie Poster sized 120x74.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.posterAlternateDynamic                        </td>
+                        <td>
+                            Url location of the Movie poster alternate.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.poster3DDynamic                        </td>
+                        <td>
+                            Url location of the Movie 3D poster.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.posterIMAXDynamic                        </td>
+                        <td>
+                            Url location of the IMAX poster.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.trailerTeaserDynamic                        </td>
+                        <td>
+                            Url location of the trailer teaser.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+media.trailerAlternateDynamic                        </td>
+                        <td>
+                            Url location of the alternate trailer.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isEmbargoed                        </td>
+                        <td>
+                            Nullable flag indicating if this showtime is embargoed. If false or null, showtime is not embargoed.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isComingSoon                        </td>
+                        <td>
+                            Nullable flag indicating if this showtime is coming soon (will be available for display soon). If false or null, showtime is not coming soon.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isDiscountMatineePriced                        </td>
+                        <td>
+                            Indicates whether this showtime is available at a discounted matinee price.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+discountMatineeMessage                        </td>
+                        <td>
+                            If a showtime is available at discounted matinee price, display message for PLF and Non PLF showtimes.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+visibilityDateTimeUtc                        </td>
+                        <td>
+                            A UTC DateTime indicating when an embargoed showtime will become displayable, and no longer be embargoed.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                                      <a href="#Attribute">attributes</a>
+                        </td>
+                        <td>
+                            A list of showtime attributes.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+estimatedFees                        </td>
+                        <td>
+                            Estimated fees per ticket where pre-purchase display is required by law.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+estimatedFees.cost                        </td>
+                        <td>
+                            The estimated fee amount excluding tax.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+estimatedFees.tax                        </td>
+                        <td>
+                            The estimated fee tax amount.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+estimatedFees.name                        </td>
+                        <td>
+                            The estimated fee type name.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+estimatedFees.name                        </td>
+                        <td>
+                            The estimated fee quantity.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                                      <a href="#TicketPrice">_embedded.TicketPrices</a>
+                        </td>
+                        <td>
+                            A list of TicketPrice Representations returned.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+        <br />
+        <h4>Showtime Links</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Relation</th>
+                    <th>Description</th>
+                    <th>Methods</th>
+                    <th>Templated</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>self</td>
+                        <td>The current showtime representation.</td>
+                        <td>GET</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td>https://api.amctheatres.com/rels/v2/movie</td>
+                        <td>The movie being shown.</td>
+                        <td>GET</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td>https://api.amctheatres.com/rels/v2/theatre</td>
+                        <td>The theatre where the showing occurs.</td>
+                        <td>GET</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td>https://api.amctheatres.com/rels/v2/seating-layout</td>
+                        <td>The auditorium&#x27;s seating layout (if showing is reserved seating).</td>
+                        <td>GET</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td>https://api.amctheatres.com/rels/v2/showtimes/private-theatre-rental-movies</td>
+                        <td>The available movies for the current showtime if it is a private theatre rental.</td>
+                        <td>GET</td>
+                        <td>No</td>
+                    </tr>
+            </tbody>
+        </table>
+    
+<div class="well" id="Ticket Price">
+
+    <h3 id="TicketPrice">Ticket Price</h3>
+
+        <br />
+        <h4>Ticket Price Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+price                        </td>
+                        <td>
+                            A decimal value representing the price of the ticket in USD. The value is not final and is for display only
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+type                        </td>
+                        <td>
+                            The ticket type, adult, child, or senior
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+sku                        </td>
+                        <td>
+                            The SKU value used to assemble the product for an order
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+agePolicy                        </td>
+                        <td>
+                            The age based policy regarding sale of the particular ticket type
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+tax                        </td>
+                        <td>
+                            A decimal value representing the tax on the ticket price in USD. The value is not final and is for display only.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div><div class="well" id="Attribute">
+
+    <h3 id="Attribute">Attribute</h3>
+
+        <br />
+        <h4>Attribute Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+name                        </td>
+                        <td>
+                            The display name
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+description                        </td>
+                        <td>
+                            The attribute description.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+code                        </td>
+                        <td>
+                            The unique identifier for queries.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div></div>
+
+
+    <br />
+    <a name="examples"></a>
+    <h3>Examples</h3>
+    <div class="panel-group" id="accordion">
+
+                <h5>Get theatre embargoed showtimes for a movie</h5>
+                <div class="panel panel-default" id="AllEmbargoedShowtimesMeetingSpecifiedSearchCriteria">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Gettheatreembargoedshowtimesforamovie">
+                        <pre><b>GET</b>&nbsp; v2/theatres/610/showtimes/9-21-2017/views/embargoed</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Gettheatreembargoedshowtimesforamovie" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">{&#xD;&#xA;  &quot;pageSize&quot;: 10,&#xD;&#xA;  &quot;pageNumber&quot;: 1,&#xD;&#xA;  &quot;count&quot;: 4,&#xD;&#xA;  &quot;lastUpdatedDateUtc&quot;: &quot;2017-08-08T23:59:18Z&quot;,&#xD;&#xA;  &quot;_links&quot;: {&#xD;&#xA;    &quot;self&quot;: {&#xD;&#xA;      &quot;href&quot;: &quot;https://api.amctheatres.com/v2/theatres/610/showtimes/9-21-2017/views/embargoed?page-number=1&amp;page-size=10&quot;,&#xD;&#xA;      &quot;templated&quot;: false&#xD;&#xA;    }&#xD;&#xA;  },&#xD;&#xA;  &quot;_embedded&quot;: {&#xD;&#xA;    &quot;showtimes&quot;: [&#xD;&#xA;      {&#xD;&#xA;        &quot;id&quot;: 58408301,&#xD;&#xA;        &quot;internalReleaseNumber&quot;: 59515,&#xD;&#xA;        &quot;performanceNumber&quot;: 13039,&#xD;&#xA;        &quot;movieId&quot;: 51251,&#xD;&#xA;        &quot;movieName&quot;: &quot;Atomic Blonde&quot;,&#xD;&#xA;        &quot;sortableMovieName&quot;: &quot;Atomic Blonde&quot;,&#xD;&#xA;        &quot;genre&quot;: &quot;ACTION&quot;,&#xD;&#xA;        &quot;showDateTimeUtc&quot;: &quot;2017-09-21T21:05:00Z&quot;,&#xD;&#xA;        &quot;showDateTimeLocal&quot;: &quot;2017-09-21T16:05:00&quot;,&#xD;&#xA;        &quot;sellUntilDateTimeUtc&quot;: &quot;2017-09-21T21:15:00Z&quot;,&#xD;&#xA;        &quot;isSoldOut&quot;: false,&#xD;&#xA;        &quot;isAlmostSoldOut&quot;: false,&#xD;&#xA;        &quot;isCanceled&quot;: false,&#xD;&#xA;        &quot;utcOffset&quot;: &quot;-05:00&quot;,&#xD;&#xA;        &quot;theatreId&quot;: 610,&#xD;&#xA;        &quot;auditorium&quot;: 6,&#xD;&#xA;        &quot;layoutId&quot;: 19,&#xD;&#xA;        &quot;layoutVersionNumber&quot;: 1,&#xD;&#xA;        &quot;runTime&quot;: 114,&#xD;&#xA;        &quot;mpaaRating&quot;: &quot;R&quot;,&#xD;&#xA;        &quot;premiumFormat&quot;: &quot;&quot;,&#xD;&#xA;        &quot;purchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408301&quot;,&#xD;&#xA;        &quot;mobilePurchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408301&quot;,&#xD;&#xA;        &quot;movieUrl&quot;: &quot;https://api.amctheatres.com/movies/atomic-blonde-51251&quot;,&#xD;&#xA;        &quot;wwmReleaseNumber&quot;: 234132,&#xD;&#xA;        &quot;lastUpdatedDateUtc&quot;: &quot;2017-08-08T23:59:18Z&quot;,&#xD;&#xA;        &quot;embargoed&quot;: true,&#xD;&#xA;        &quot;attributes&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;SPECIALENGAGEMENTS&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Special Engagements&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Some types of passes may be restricted for Special Engagements or New Releases and thus subject to a surcharge. Be sure to read the back of your pass for more details.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;RESERVEDSEATING&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Reserved Seating&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Select your seat when you buy your tickets online, on our mobile app or at the theatre.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;AMCINDEPENDENT&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;AMC independent&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;AMC independent identifies a Title sourced outside of normal distribution channels.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;DESCRIPTIVEVIDEO&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Audio Description&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Audio Description.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;CLOSEDCAPTION&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Closed Caption&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Closed Caption&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;DINEINSEATSIDESERVICE&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Dine-In Full Service&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;The perfect way to experience dinner and a movie.  Reserve your seat and enjoy a made-from-scratch menu prepared fresh by our chefs, plus a full bar.  Just push the service button at your seat to order.&quot;&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;ticketPrices&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 9.84,&#xD;&#xA;            &quot;type&quot;: &quot;ADULT&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408301-ADULT&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.85&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;CHILD&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408301-CHILD&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 2-12&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 8.2,&#xD;&#xA;            &quot;type&quot;: &quot;SENIOR&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408301-SENIOR&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 60&#x2B;&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.71&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;media&quot;: {&#xD;&#xA;          &quot;posterThumbnail&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterStandard&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterLarge&quot;: &quot;&quot;,&#xD;&#xA;          &quot;heroDesktopDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/51300/51251/HeroDesktopDynamic/32722.jpg&quot;,&#xD;&#xA;          &quot;heroMobileDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/51300/51251/Poster/234132R1.JPG&quot;,&#xD;&#xA;          &quot;posterAlternateDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;poster3DDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterIMAXDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerTeaserDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerAlternateDynamic&quot;: &quot;&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;languages&quot;: {&#xD;&#xA;          &quot;spoken&quot;: &quot;English&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;_links&quot;: {&#xD;&#xA;          &quot;self&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/showtimes/58408301&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/movie&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/movies/51251&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/theatre&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/theatres/610&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v1/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v1/seating-layouts/610/13039&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/seating-layouts/610/13039&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          }&#xD;&#xA;        }&#xD;&#xA;      },&#xD;&#xA;      {&#xD;&#xA;        &quot;id&quot;: 58408418,&#xD;&#xA;        &quot;internalReleaseNumber&quot;: 59515,&#xD;&#xA;        &quot;performanceNumber&quot;: 13087,&#xD;&#xA;        &quot;movieId&quot;: 51251,&#xD;&#xA;        &quot;movieName&quot;: &quot;Atomic Blonde&quot;,&#xD;&#xA;        &quot;sortableMovieName&quot;: &quot;Atomic Blonde&quot;,&#xD;&#xA;        &quot;genre&quot;: &quot;ACTION&quot;,&#xD;&#xA;        &quot;showDateTimeUtc&quot;: &quot;2017-09-21T21:05:00Z&quot;,&#xD;&#xA;        &quot;showDateTimeLocal&quot;: &quot;2017-09-21T16:05:00&quot;,&#xD;&#xA;        &quot;sellUntilDateTimeUtc&quot;: &quot;2017-09-21T21:15:00Z&quot;,&#xD;&#xA;        &quot;isSoldOut&quot;: false,&#xD;&#xA;        &quot;isAlmostSoldOut&quot;: false,&#xD;&#xA;        &quot;isCanceled&quot;: false,&#xD;&#xA;        &quot;utcOffset&quot;: &quot;-05:00&quot;,&#xD;&#xA;        &quot;theatreId&quot;: 610,&#xD;&#xA;        &quot;auditorium&quot;: 22,&#xD;&#xA;        &quot;layoutId&quot;: 20,&#xD;&#xA;        &quot;layoutVersionNumber&quot;: 1,&#xD;&#xA;        &quot;runTime&quot;: 114,&#xD;&#xA;        &quot;mpaaRating&quot;: &quot;R&quot;,&#xD;&#xA;        &quot;premiumFormat&quot;: &quot;&quot;,&#xD;&#xA;        &quot;purchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408418&quot;,&#xD;&#xA;        &quot;mobilePurchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408418&quot;,&#xD;&#xA;        &quot;movieUrl&quot;: &quot;https://api.amctheatres.com/movies/atomic-blonde-51251&quot;,&#xD;&#xA;        &quot;wwmReleaseNumber&quot;: 234132,&#xD;&#xA;        &quot;lastUpdatedDateUtc&quot;: &quot;2017-08-08T23:59:18Z&quot;,&#xD;&#xA;        &quot;embargoed&quot;: true,&#xD;&#xA;        &quot;attributes&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;SPECIALENGAGEMENTS&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Special Engagements&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Some types of passes may be restricted for Special Engagements or New Releases and thus subject to a surcharge. Be sure to read the back of your pass for more details.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;RESERVEDSEATING&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Reserved Seating&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Select your seat when you buy your tickets online, on our mobile app or at the theatre.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;AMCINDEPENDENT&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;AMC independent&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;AMC independent identifies a Title sourced outside of normal distribution channels.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;DESCRIPTIVEVIDEO&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Audio Description&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Audio Description.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;CLOSEDCAPTION&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Closed Caption&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Closed Caption&quot;&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;ticketPrices&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 8.2,&#xD;&#xA;            &quot;type&quot;: &quot;ADULT&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408418-ADULT&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.71&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;CHILD&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408418-CHILD&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 2-12&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;SENIOR&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408418-SENIOR&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 60&#x2B;&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;media&quot;: {&#xD;&#xA;          &quot;posterThumbnail&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterStandard&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterLarge&quot;: &quot;&quot;,&#xD;&#xA;          &quot;heroDesktopDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/51300/51251/HeroDesktopDynamic/32722.jpg&quot;,&#xD;&#xA;          &quot;heroMobileDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/51300/51251/Poster/234132R1.JPG&quot;,&#xD;&#xA;          &quot;posterAlternateDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;poster3DDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterIMAXDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerTeaserDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerAlternateDynamic&quot;: &quot;&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;languages&quot;: {&#xD;&#xA;          &quot;spoken&quot;: &quot;English&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;_links&quot;: {&#xD;&#xA;          &quot;self&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/showtimes/58408418&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/movie&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/movies/51251&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/theatre&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/theatres/610&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v1/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v1/seating-layouts/610/13087&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/seating-layouts/610/13087&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          }&#xD;&#xA;        }&#xD;&#xA;      },&#xD;&#xA;      {&#xD;&#xA;        &quot;id&quot;: 58408458,&#xD;&#xA;        &quot;internalReleaseNumber&quot;: 59515,&#xD;&#xA;        &quot;performanceNumber&quot;: 13097,&#xD;&#xA;        &quot;movieId&quot;: 51251,&#xD;&#xA;        &quot;movieName&quot;: &quot;Atomic Blonde&quot;,&#xD;&#xA;        &quot;sortableMovieName&quot;: &quot;Atomic Blonde&quot;,&#xD;&#xA;        &quot;genre&quot;: &quot;ACTION&quot;,&#xD;&#xA;        &quot;showDateTimeUtc&quot;: &quot;2017-09-21T21:05:00Z&quot;,&#xD;&#xA;        &quot;showDateTimeLocal&quot;: &quot;2017-09-21T16:05:00&quot;,&#xD;&#xA;        &quot;sellUntilDateTimeUtc&quot;: &quot;2017-09-21T21:15:00Z&quot;,&#xD;&#xA;        &quot;isSoldOut&quot;: false,&#xD;&#xA;        &quot;isAlmostSoldOut&quot;: false,&#xD;&#xA;        &quot;isCanceled&quot;: false,&#xD;&#xA;        &quot;utcOffset&quot;: &quot;-05:00&quot;,&#xD;&#xA;        &quot;theatreId&quot;: 610,&#xD;&#xA;        &quot;auditorium&quot;: 27,&#xD;&#xA;        &quot;layoutId&quot;: 21,&#xD;&#xA;        &quot;layoutVersionNumber&quot;: 1,&#xD;&#xA;        &quot;runTime&quot;: 114,&#xD;&#xA;        &quot;mpaaRating&quot;: &quot;R&quot;,&#xD;&#xA;        &quot;premiumFormat&quot;: &quot;&quot;,&#xD;&#xA;        &quot;purchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408458&quot;,&#xD;&#xA;        &quot;mobilePurchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408458&quot;,&#xD;&#xA;        &quot;movieUrl&quot;: &quot;https://api.amctheatres.com/movies/atomic-blonde-51251&quot;,&#xD;&#xA;        &quot;wwmReleaseNumber&quot;: 234132,&#xD;&#xA;        &quot;lastUpdatedDateUtc&quot;: &quot;2017-08-08T23:59:18Z&quot;,&#xD;&#xA;        &quot;embargoed&quot;: true,&#xD;&#xA;        &quot;attributes&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;SPECIALENGAGEMENTS&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Special Engagements&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Some types of passes may be restricted for Special Engagements or New Releases and thus subject to a surcharge. Be sure to read the back of your pass for more details.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;RESERVEDSEATING&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Reserved Seating&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Select your seat when you buy your tickets online, on our mobile app or at the theatre.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;AMCINDEPENDENT&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;AMC independent&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;AMC independent identifies a Title sourced outside of normal distribution channels.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;DESCRIPTIVEVIDEO&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Audio Description&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Audio Description.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;CLOSEDCAPTION&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Closed Caption&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Closed Caption&quot;&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;ticketPrices&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 8.2,&#xD;&#xA;            &quot;type&quot;: &quot;ADULT&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408458-ADULT&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.71&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;CHILD&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408458-CHILD&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 2-12&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;SENIOR&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408458-SENIOR&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 60&#x2B;&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;media&quot;: {&#xD;&#xA;          &quot;posterThumbnail&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterStandard&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterLarge&quot;: &quot;&quot;,&#xD;&#xA;          &quot;heroDesktopDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/51300/51251/HeroDesktopDynamic/32722.jpg&quot;,&#xD;&#xA;          &quot;heroMobileDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/51300/51251/Poster/234132R1.JPG&quot;,&#xD;&#xA;          &quot;posterAlternateDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;poster3DDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterIMAXDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerTeaserDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerAlternateDynamic&quot;: &quot;&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;languages&quot;: {&#xD;&#xA;          &quot;spoken&quot;: &quot;English&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;_links&quot;: {&#xD;&#xA;          &quot;self&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/showtimes/58408458&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/movie&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/movies/51251&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/theatre&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/theatres/610&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v1/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v1/seating-layouts/610/13097&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/seating-layouts/610/13097&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          }&#xD;&#xA;        }&#xD;&#xA;      },&#xD;&#xA;      {&#xD;&#xA;        &quot;id&quot;: 58408484,&#xD;&#xA;        &quot;internalReleaseNumber&quot;: 57377,&#xD;&#xA;        &quot;performanceNumber&quot;: 13103,&#xD;&#xA;        &quot;movieId&quot;: 45837,&#xD;&#xA;        &quot;movieName&quot;: &quot;Guardians Of The Galaxy Vol. 2&quot;,&#xD;&#xA;        &quot;sortableMovieName&quot;: &quot;Guardians Of The Galaxy Vol. 2&quot;,&#xD;&#xA;        &quot;genre&quot;: &quot;ACTION&quot;,&#xD;&#xA;        &quot;showDateTimeUtc&quot;: &quot;2017-09-21T21:05:00Z&quot;,&#xD;&#xA;        &quot;showDateTimeLocal&quot;: &quot;2017-09-21T16:05:00&quot;,&#xD;&#xA;        &quot;sellUntilDateTimeUtc&quot;: &quot;2017-09-21T21:15:00Z&quot;,&#xD;&#xA;        &quot;isSoldOut&quot;: false,&#xD;&#xA;        &quot;isAlmostSoldOut&quot;: false,&#xD;&#xA;        &quot;isCanceled&quot;: false,&#xD;&#xA;        &quot;utcOffset&quot;: &quot;-05:00&quot;,&#xD;&#xA;        &quot;theatreId&quot;: 610,&#xD;&#xA;        &quot;auditorium&quot;: 30,&#xD;&#xA;        &quot;layoutId&quot;: 22,&#xD;&#xA;        &quot;layoutVersionNumber&quot;: 1,&#xD;&#xA;        &quot;runTime&quot;: 136,&#xD;&#xA;        &quot;mpaaRating&quot;: &quot;PG13&quot;,&#xD;&#xA;        &quot;premiumFormat&quot;: &quot;&quot;,&#xD;&#xA;        &quot;purchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408484&quot;,&#xD;&#xA;        &quot;mobilePurchaseUrl&quot;: &quot;https://api.amctheatres.com/showtimes/all/2017-09-21/studio/all/58408484&quot;,&#xD;&#xA;        &quot;movieUrl&quot;: &quot;https://api.amctheatres.com/movies/guardians-of-the-galaxy-vol-2-45837&quot;,&#xD;&#xA;        &quot;wwmReleaseNumber&quot;: 191861,&#xD;&#xA;        &quot;lastUpdatedDateUtc&quot;: &quot;2017-08-08T23:59:18Z&quot;,&#xD;&#xA;        &quot;embargoed&quot;: true,&#xD;&#xA;        &quot;attributes&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;RESERVEDSEATING&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Reserved Seating&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Select your seat when you buy your tickets online, on our mobile app or at the theatre.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;NOGREENRED&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;No Green or Red Tickets&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;No green or red tickets accepted for feature presentation.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;DESCRIPTIVEVIDEO&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Audio Description&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Audio Description.&quot;&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;code&quot;: &quot;CLOSEDCAPTION&quot;,&#xD;&#xA;            &quot;name&quot;: &quot;Closed Caption&quot;,&#xD;&#xA;            &quot;description&quot;: &quot;Closed Caption&quot;&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;ticketPrices&quot;: [&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 8.2,&#xD;&#xA;            &quot;type&quot;: &quot;ADULT&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408484-ADULT&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.71&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;CHILD&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408484-CHILD&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 2-12&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          },&#xD;&#xA;          {&#xD;&#xA;            &quot;price&quot;: 6.56,&#xD;&#xA;            &quot;type&quot;: &quot;SENIOR&quot;,&#xD;&#xA;            &quot;sku&quot;: &quot;TICKET-RS-58408484-SENIOR&quot;,&#xD;&#xA;            &quot;agePolicy&quot;: &quot;Age 60&#x2B;&quot;,&#xD;&#xA;            &quot;tax&quot;: 0.57&#xD;&#xA;          }&#xD;&#xA;        ],&#xD;&#xA;        &quot;media&quot;: {&#xD;&#xA;          &quot;posterThumbnail&quot;: &quot;https://cdn.amctheatres.com/titles/images/Poster/Thumb/3354_guardians-of-the-galaxy-2_679D.jpg&quot;,&#xD;&#xA;          &quot;posterStandard&quot;: &quot;https://cdn.amctheatres.com/titles/images/Poster/Standard/3354_guardians-of-the-galaxy-2_562B.jpg&quot;,&#xD;&#xA;          &quot;posterLarge&quot;: &quot;&quot;,&#xD;&#xA;          &quot;heroDesktopDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/45800/45837/MovieStills/28276.jpg&quot;,&#xD;&#xA;          &quot;heroMobileDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterDynamic&quot;: &quot;https://cdn.amctheatres.com/production/2/movies/45800/45837/Poster/208429R1.JPG&quot;,&#xD;&#xA;          &quot;posterAlternateDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;poster3DDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;posterIMAXDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerTeaserDynamic&quot;: &quot;&quot;,&#xD;&#xA;          &quot;trailerAlternateDynamic&quot;: &quot;&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;languages&quot;: {&#xD;&#xA;          &quot;spoken&quot;: &quot;English&quot;&#xD;&#xA;        },&#xD;&#xA;        &quot;_links&quot;: {&#xD;&#xA;          &quot;self&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/showtimes/58408484&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/movie&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/movies/45837&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/theatre&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/theatres/610&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v1/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v1/seating-layouts/610/13103&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          },&#xD;&#xA;          &quot;https://api.amctheatres.com/rels/v2/seating-layout&quot;: {&#xD;&#xA;            &quot;href&quot;: &quot;https://api.amctheatres.com/v2/seating-layouts/610/13103&quot;,&#xD;&#xA;            &quot;templated&quot;: false&#xD;&#xA;          }&#xD;&#xA;        }&#xD;&#xA;      }&#xD;&#xA;    ]&#xD;&#xA;  }&#xD;&#xA;}</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+
+    </div>
+</div>
+            <div class="col-md-3">
+                <div class="sidebar-module">
+                    <h4>Getting Started</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="GettingStarted/Authentication.html">Authentication</a></li>
+                        <li><a href="GettingStarted/AffiliateDeepLinking.html">Affiliate Deep Linking</a></li>
+                        <li><a href="GettingStarted/Sandbox.html">Sandbox</a></li>
+                    </ol>
+                        <h5>Ordering Tickets</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PurchasingGATickets.html">General Admission Tickets</a></li>
+                            <li><a href="GettingStarted/PurchasingRsTickets.html">Reserved Seating Tickets</a></li>
+                            <li><a href="GettingStarted/PurchasingGenericPrivateTheatreRentals.html">Generic Private Theatre Rentals</a></li>
+                            <li><a href="GettingStarted/PurchasingTitleSpecificPrivateTheatreRentals.html">Movie Specific Private Theatre Rentals</a></li>
+                        </ol>
+                        <h5>Ordering Concessions</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PurchasingExpressPickupConcessions.html">Express Pickup Concessions</a></li>
+                            <li><a href="GettingStarted/PurchasingDeliveryToSeatConcessions.html">Delivery To Seat Concessions</a></li>
+                        </ol>
+                        <h5>Order Payment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PayingWithACreditCard.html">Credit Card Payment</a></li>
+                        </ol>
+                        <h5>Order Fulfillment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/SubmittingOrderForFulfillment.html">Order Fulfillment</a></li>
+                        </ol>
+                        <h5>Refunding Orders</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/Refunds.html">Refunds</a></li>
+                        </ol>
+                    <br>
+                    <h4>API Reference</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="Errors.html">Errors</a></li>
+                    </ol>
+                    <hr />
+                    <ol class="list-unstyled">
+                                <li>
+                                    <a href="Attributes.html">Attributes</a>
+                                </li>
+                                <li>
+                                    <a href="Barcodes.html">Barcodes</a>
+                                </li>
+                                <li>
+                                    <a href="Concessions.html">Concessions</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsCategories.html">Concessions Categories</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsDeliveryLocations.html">Concessions Delivery Locations</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsDeliveryTimes.html">Concessions Delivery Times</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsPickupTimes.html">Concessions Pickup Times</a>
+                                </li>
+                                <li>
+                                    <a href="EmbargoedShowtimes.html">Embargoed Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="FeeWaiver.html">Fee Waiver</a>
+                                </li>
+                                <li>
+                                    <a href="LocationSuggestions.html">Location Suggestions</a>
+                                </li>
+                                <li>
+                                    <a href="Locations.html">Locations</a>
+                                </li>
+                                <li>
+                                    <a href="LoyaltyAccounts.html">Loyalty Accounts</a>
+                                </li>
+                                <li>
+                                    <a href="LoyaltyCards.html">Loyalty Cards</a>
+                                </li>
+                                <li>
+                                    <a href="Markets.html">Markets</a>
+                                </li>
+                                <li>
+                                    <a href="Media.html">Media</a>
+                                </li>
+                                <li>
+                                    <a href="MovieConfirmations.html">Movie Confirmations</a>
+                                </li>
+                                <li>
+                                    <a href="Movies.html">Movies</a>
+                                </li>
+                                <li>
+                                    <a href="Orders.html">Orders</a>
+                                </li>
+                                <li>
+                                    <a href="Person.html">Person</a>
+                                </li>
+                                <li>
+                                    <a href="Redemptions.html">Redemptions</a>
+                                </li>
+                                <li>
+                                    <a href="RefundReasons.html">Refund Reasons</a>
+                                </li>
+                                <li>
+                                    <a href="Refunds.html">Refunds</a>
+                                </li>
+                                <li>
+                                    <a href="SeatingLayouts.html">Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="Showtimes.html">Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="States.html">States</a>
+                                </li>
+                                <li>
+                                    <a href="TheatreSeatingLayouts.html">Theatre Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="Theatres.html">Theatres</a>
+                                </li>
+                                <li>
+                                    <a href="Wallet.html">Wallet</a>
+                                </li>
+                                <li>
+                                    <a href="Webhook.html">Webhook</a>
+                                </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Scripts/jquery-3.6.0.min.js"></script>
+    <script src="Scripts/modernizr-2.6.2.js"></script>
+
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" type="text/css" href="Content/prettyprint-sunburst.css" />
+
+    <script src="Content/themes/amc/scripts/bootstrap/bootstrap.js"></script>
+    <script src="Content/themes/amc/scripts/site.js"></script>
+
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('a[href^="#"]').on('click', function (e) {
+                e.preventDefault();
+
+                var target = this.hash,
+                    $target = $(target);
+
+                $('html, body').stop().animate({
+                    'scrollTop': $target.offset().top - 100
+                }, 1200, 'swing', function () {
+                    window.location.hash = target;
+                });
+
+                $target.children(".panel-heading")
+                    .animate({ "background-color": "#ce2640" })
+                    .delay(2000)
+                    .animate({ "background-color": "#f5f5f5" });
+            });
+        });
+    </script>
+</body>
+</html><script id="f5_cspm">(function(){var f5_cspm={f5_p:'OKKALCLFPODAENEAOAOCAIDOELOMFCEOJAHNGNOCMCOMGGBPPEOGJELEGNIJIOOGEMJBOMBEAAGLFJMKCMPAEMAIAAKEPLCOCHHFJPNMIAJOHLJNBAMBBKBEOJNGHLMK',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr2061084227aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script>

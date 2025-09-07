@@ -1,0 +1,822 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>AMC Developer Portal - Loyalty Accounts</title>
+    <link href="Content/images/favicon.ico.html" rel="shortcut icon" type="image/x-icon" />
+
+    <link href="Content/Site.css" rel="stylesheet" />
+    <link href="Content/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="Content/highlight/styles/default.css" rel="stylesheet" />
+    <link href="Content/Redesign.css" rel="stylesheet" />
+
+    <link href="Content/themes/amc/bootstrap.css" rel="stylesheet" />
+    <link href="Content/themes/amc/bootstrap-docs.min.css" rel="stylesheet" />
+    <link href="Content/themes/amc/common.css" rel="stylesheet" />
+    <link href="Content/themes/amc/site.css" rel="stylesheet" />
+    <link href="Content/highlight/styles/default.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <header class="Header-wrap is-opaque">
+        <ul class="Header u-listUnstyled u-container u-flexwrap" role="menu">
+            <li class="NavGroup HeaderBranding">
+                <ul class="u-listUnstyled">
+                    <li class="NavGroupItem">
+                        <a class="Link SiteLogo" aria-disabled="" href="index.html">
+                            <i class="logo" alt="A M C Home">
+                                <!--?xml version="1.0" encoding="iso-8859-1"?-->
+                                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 73.7 73.7" enable-background="new 0 0 73.7 73.7" xml:space="preserve">
+                                <g>
+                                <g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#E51937" d="M73.7,36.9c0,20.4-16.5,36.8-37,36.8C16.5,73.7,0,57.2,0,36.9   C0,16.5,16.5,0,36.8,0C57.2,0,73.7,16.5,73.7,36.9z M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7   c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2   c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5   c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7   C38.9,28.8,38.4,29.2,37.8,29.5z M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7c0-1.3-0.7-2.1-1.9-2.2   c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0c1.1,0,1.8-0.8,1.8-2   c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9c0,2.7,0,5.3,0,8   c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z M59.2,43.5   c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3   c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8   c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                            </g>
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M37.8,29.5c-2.3-1.8-3.5-2.2-5.8-2.2c-4.1,0.1-6.7,2.6-6.7,6.7  c0,2.1,0,4.2,0,6.3c0,1.5,0.8,2.4,2,2.4c1.2,0,1.9-0.9,1.9-2.3c0-2,0-4.1,0-6.1c0-2.1,1.2-3.2,3.3-3.1c1.9,0,3.1,1.2,3.2,3.2  c0,2.1,0,4.2,0,6.3c0,1.6,1.4,2.5,2.8,1.9c0.9-0.4,1.2-1.2,1.2-2.1c0-1.9,0-3.9,0-5.8c0-2.1,1.3-3.5,3.3-3.4c2,0,3.1,1.3,3.2,3.5  c0,1.9,0,3.9,0,5.8c0,1.4,0.8,2.3,2,2.3c1.2,0,1.9-0.8,1.9-2.2c0-2.2,0-4.3,0-6.5c0-3.3-1.7-5.4-4.8-6.3c-2.1-0.6-4.1-0.4-5.9,0.7  C38.9,28.8,38.4,29.2,37.8,29.5z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M24.5,35.2C24.5,35.2,24.5,35.2,24.5,35.2c0-1.9,0-3.8,0-5.7  c0-1.3-0.7-2.1-1.9-2.2c-6.8-0.6-13.3,2.9-16.4,9.1c-0.7,1.4-1,3-1.3,4.6c-0.2,1,0.4,1.8,1.3,1.8c3.7,0,7.5,0.1,11.2,0  c1.1,0,1.8-0.8,1.8-2c0-1.2-0.8-2-2.2-2c-2.1,0-4.2,0-6.3,0c-0.7,0-0.8-0.3-0.6-0.8c1.7-4.1,5.5-6.5,9.5-6.9c0.7-0.1,1,0.2,1,0.9  c0,2.7,0,5.3,0,8c0,0.3,0,0.6,0.1,0.9c0.2,1.2,1.1,1.8,2.2,1.8c1.1-0.1,1.7-0.8,1.7-2.1C24.5,38.9,24.5,37.1,24.5,35.2z"></path> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M59.2,43.5c3.5,0,6.5-1.9,7.6-4.8c0.4-1.1,0.1-2-0.9-2.4  c-1-0.4-2,0-2.5,0.9c-1,2-2.6,2.8-4.8,2.6c-2.2-0.3-3.9-2.1-4-4.3c-0.1-2.2,1.3-4.2,3.4-4.7c2.5-0.6,4.6,0.3,5.5,2.4  c0.3,0.7,0.8,1.1,1.5,1.1c1.5,0.2,2.5-1.1,1.9-2.6c-1.2-3.1-3.6-4.5-6.8-4.8c-4.8-0.5-9,3.1-9.2,8C50.7,39.6,54.6,43.5,59.2,43.5z"></path>
+                                        </g>
+                                <rect x="-13.3" y="8.5" display="none" fill="none" width="97" height="56"></rect>
+                                    </svg>
+                            </i>
+                        </a>
+                    </li>
+                    <li class="NavGroupItem">
+                        <a class="SiteTitle Link" href="index.html">Developer Portal</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9">
+
+<h2>Loyalty Accounts</h2>
+
+    <div class="pull-right" style="position: relative; top: -45px;">
+                <a href="LoyaltyAccounts%EF%B9%96versionNo=4.html" class="badge badge-active">V4</a>
+    </div>
+
+
+
+
+
+
+    <p>The Loyalty Account endpoints provide access to account information stored within the loyalty program. This information is stored in Kobie as well as an internal LoyaltyAccount.</p>
+
+<hr />
+
+    <a name="endpoints"></a>
+    <h3>Endpoints</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Verb</th>
+                <th>Endpoint</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>GET</td>
+                    <td>/v4/loyalty-accounts/{loyalty-account-id}</td>
+                    <td>Get Loyalty Account.</td>
+                    <td><a href="#GetLoyaltyAccountById"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+                <tr>
+                    <td>GET</td>
+                    <td>/v4/loyalty-accounts/email-{email-address}</td>
+                    <td>Get Loyalty Account by Email.</td>
+                    <td><a href="#GetLoyaltyAccountByEmail"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+                <tr>
+                    <td>POST</td>
+                    <td>/v4/loyalty-accounts/email-{email-address}/{campaign}/registration</td>
+                    <td>Register for Loyalty Campaign by Email.</td>
+                    <td><a href="#EmailRegistrationForCampaign"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+                <tr>
+                    <td>GET</td>
+                    <td>/v4/loyalty-accounts/card-{card-number}</td>
+                    <td>Get Loyalty Account by Card.</td>
+                    <td><a href="#GetLoyaltyAccountByCard"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+                <tr>
+                    <td>POST</td>
+                    <td>/v4/loyalty-accounts/card-{card-number}/{campaign}/registration</td>
+                    <td>Register for Loyalty Campaign by Loyalty Card Number.</td>
+                    <td><a href="#CardRegistrationForCampaign"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+                <tr>
+                    <td>GET</td>
+                    <td>/v4/loyalty-accounts/phone-{phone}</td>
+                    <td>Get Loyalty Account by mobile phone number.</td>
+                    <td><a href="#GetLoyaltyAccountByPhone"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+                <tr>
+                    <td>DELETE</td>
+                    <td>/v4/amc-accounts/{amc-account-id}/loyalty</td>
+                    <td>Unlinks the loyalty account from the AMC account.  Closes the loyalty account.</td>
+                    <td><a href="#DeleteLoyaltyAccount"><span class="glyphicon glyphicon-wrench"></span></a></td>
+                </tr>
+        </tbody>
+    </table>
+
+
+
+
+
+<div class="well" id="Loyalty Account">
+
+    <h3 id="LoyaltyAccount">Loyalty Account</h3>
+
+        <br />
+        <h4>Loyalty Account Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+address                        </td>
+                        <td>
+                            The current address of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+loyaltyAccountId                        </td>
+                        <td>
+                            The id of the loyalty account.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+cardNumber                        </td>
+                        <td>
+                            The card number associated with the loyalty account.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+email                        </td>
+                        <td>
+                            The current email of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+firstName                        </td>
+                        <td>
+                            The first name of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+middleInitial                        </td>
+                        <td>
+                            The middle initial of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+lastName                        </td>
+                        <td>
+                            The last name of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+ssn                        </td>
+                        <td>
+                            The social security number of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+gender                        </td>
+                        <td>
+                            The gender of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+birthDate                        </td>
+                        <td>
+                            The birth date of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+status                        </td>
+                        <td>
+                            The current loyalty account status.
+                                <ul>
+                                        <li>Active</li>
+                                        <li>Inactive</li>
+                                        <li>Closed</li>
+                                </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+statusInfo                        </td>
+                        <td>
+                            The current loyalty account sub-status
+                                <ul>
+                                        <li>Active</li>
+                                        <li>Not Activated</li>
+                                        <li>Closed</li>
+                                        <li>Fraud</li>
+                                        <li>Lost/Stolen</li>
+                                        <li>Expired</li>
+                                        <li>Expiring</li>
+                                        <li>Cancelled</li>
+                                        <li>Suspended</li>
+                                </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+mobilePhoneNumber                        </td>
+                        <td>
+                            The current phone number of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+favoriteTheatreId                        </td>
+                        <td>
+                            The preferred theatre id of the loyalty account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+areTermsAndConditionsAccepted                        </td>
+                        <td>
+                            Whether or not the terms and conditions have been accepted.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+termsAndConditionsAcceptedVersion                        </td>
+                        <td>
+                            The version of the terms and conditions that were accepted.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+acceptedTermsAndConditionsDate                        </td>
+                        <td>
+                            The date when the terms and conditions were accepted.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+numberOfCardsIssued                        </td>
+                        <td>
+                            The number of cards that are associated with the loyalty account.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+activationType                        </td>
+                        <td>
+                            The type of activation of the loyalty account.
+                                <ul>
+                                        <li>ASSO</li>
+                                        <li>WELC</li>
+                                </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+activationDate                        </td>
+                        <td>
+                            The date that the loyalty account was activiated.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isEarn                        </td>
+                        <td>
+                            Whether or not the loyalty account is earn enabled.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+isRedeem                        </td>
+                        <td>
+                            Whether or not the loyalty account is redeem enabled.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+enrollDate                        </td>
+                        <td>
+                            The enrollment date of the loyalty account.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+receivesNotificationsViaEmail                        </td>
+                        <td>
+                            Whether or not the loyalty account holder wants to receive notifications via email.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+receivesNotificationsViaMobile                        </td>
+                        <td>
+                            Whether or not the loyalty account holder wants to receive notifications via text.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+receivesOffersViaEmail                        </td>
+                        <td>
+                            Whether or not the loyalty account holder wants to receive offers via email.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+receivesOffersViaMobile                        </td>
+                        <td>
+                            Whether or not the loyalty account holder wants to receive offers via text.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+receivesWeeklyEmails                        </td>
+                        <td>
+                            Whether or not the loyalty account holder wants to receive email updates.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+WebsiteLastUpdateCstDateTime                        </td>
+                        <td>
+                            WebsiteLastUpdateDate in CST on Kobie
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+ValidationErrors                        </td>
+                        <td>
+                            List all the fields with error messages in case of any invalid data on Kobie.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+PortfolioId                        </td>
+                        <td>
+                            The loyalty account&#x2019;s portfolio ID
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+PortfolioType                        </td>
+                        <td>
+                            The loyalty account&#x2019;s portfolio type
+                                <ul>
+                                        <li>AMC Stubs A-List</li>
+                                        <li>AMC Stubs Associate</li>
+                                        <li>AMC Stubs Insider</li>
+                                        <li>AMC Stubs Legacy</li>
+                                        <li>AMC Stubs Premiere</li>
+                                        <li>AMC Stubs Premiere Go</li>
+                                </ul>
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+        <br />
+        <h4>Loyalty Account Links</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Relation</th>
+                    <th>Description</th>
+                    <th>Methods</th>
+                    <th>Templated</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>self</td>
+                        <td>This loyalty account</td>
+                        <td>GET</td>
+                        <td>No</td>
+                    </tr>
+            </tbody>
+        </table>
+    
+<div class="well" id="Address">
+
+    <h3 id="Address">Address</h3>
+
+        <br />
+        <h4>Address Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+address1                        </td>
+                        <td>
+                            The street address of the account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+address2                        </td>
+                        <td>
+                            The secondary street address of the account holder, usually a suite or apartment number.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+city                        </td>
+                        <td>
+                            The city or municipality of the account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+postalCode                        </td>
+                        <td>
+                            The zip or postal code of the account holder.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+state                        </td>
+                        <td>
+                            The state or province of the account holder.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div><div class="well" id="LoyaltyEarnProduct">
+
+    <h3 id="LoyaltyEarnProduct">LoyaltyEarnProduct</h3>
+
+        <br />
+        <h4>LoyaltyEarnProduct Properties</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+productId                        </td>
+                        <td>
+                            The id of the earn product.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+description                        </td>
+                        <td>
+                            The description of the earn product.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+category                        </td>
+                        <td>
+                            The category of the earn product.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+subCategory                        </td>
+                        <td>
+                            The sub category of the earn product.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+class                        </td>
+                        <td>
+                            The class of the earn product.
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+
+    <br />
+    
+</div></div>
+
+
+    <br />
+    <a name="examples"></a>
+    <h3>Examples</h3>
+    <div class="panel-group" id="accordion">
+
+                <h5>Get the loyalty account with the given id.</h5>
+                <div class="panel panel-default" id="GetLoyaltyAccountById">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Gettheloyaltyaccountwiththegivenid">
+                        <pre><b>GET</b>&nbsp; /v4/loyalty-accounts/123456789123456</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Gettheloyaltyaccountwiththegivenid" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">{&#xD;&#xA;  &quot;address&quot;: {&#xD;&#xA;    &quot;address1&quot;: &quot;11500 Ash St&quot;,&#xD;&#xA;    &quot;address2&quot;: &quot;Suite 250&quot;,&#xD;&#xA;    &quot;city&quot;: &quot;Leawood&quot;,&#xD;&#xA;    &quot;state&quot;: &quot;Kansas&quot;,&#xD;&#xA;    &quot;postalCode&quot;: &quot;66211&quot;&#xD;&#xA;  },&#xD;&#xA;  &quot;loyaltyAccountId&quot;: 802300000006406,&#xD;&#xA;  &quot;cardNumber&quot;: &quot;1101000112007386&quot;,&#xD;&#xA;  &quot;email&quot;: &quot;<a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="d7b3b2a1b2bbb8a7b2a5a497b6bab4a3bfb2b6a3a5b2a4f9b4b8ba">[email&#160;protected]</a>&quot;,&#xD;&#xA;  &quot;firstName&quot;: &quot;Ima&quot;,&#xD;&#xA;  &quot;middleInitial&quot;: &quot;W&quot;,&#xD;&#xA;  &quot;lastName&quot;: &quot;Developer&quot;,&#xD;&#xA;  &quot;ssn&quot;: 0,&#xD;&#xA;  &quot;gender&quot;: &quot;M&quot;,&#xD;&#xA;  &quot;birthDate&quot;: &quot;1984-02-13T00:00:00&quot;,&#xD;&#xA;  &quot;status&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;statusInfo&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;mobilePhoneNumber&quot;: &quot;9135551212&quot;,&#xD;&#xA;  &quot;favoriteTheatreId&quot;: 610,&#xD;&#xA;  &quot;areTermsAndConditionsAccepted&quot;: true,&#xD;&#xA;  &quot;termsAndConditionsAcceptedVersion&quot;: 3,&#xD;&#xA;  &quot;acceptedTermsAndConditionsDate&quot;: &quot;2016-10-04T13:47:59&quot;,&#xD;&#xA;  &quot;numberOfCardsIssued&quot;: 1,&#xD;&#xA;  &quot;activationType&quot;: &quot;WELC&quot;,&#xD;&#xA;  &quot;activationDate&quot;: &quot;2016-10-04T00:00:00&quot;,&#xD;&#xA;  &quot;isEarn&quot;: true,&#xD;&#xA;  &quot;isRedeem&quot;: true,&#xD;&#xA;  &quot;enrollDate&quot;: &quot;2017-02-15T13:30:00.2&quot;,&#xD;&#xA;  &quot;receivesNotificationsViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesNotificationsViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesWeeklyEmails&quot;: false,&#xD;&#xA;  &quot;websiteLastUpdateCstDateTime&quot;: &quot;2018-10-11T14:49:14&quot;,&#xD;&#xA;  &quot;ValidationErrors&quot;: &quot;Invalid BirthDate, Preferred Theatre is required&quot;,&#xD;&#xA;  &quot;_links&quot;: {&#xD;&#xA;    &quot;self&quot;: {&#xD;&#xA;      &quot;href&quot;: &quot;https://api.amctheatres.com/v4/loyalty-accounts/802300000006406&quot;,&#xD;&#xA;      &quot;templated&quot;: false&#xD;&#xA;    }&#xD;&#xA;  }&#xD;&#xA;}</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5>Get the loyalty account with the given email</h5>
+                <div class="panel panel-default" id="GetLoyaltyAccountByEmail">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Gettheloyaltyaccountwiththegivenemail">
+                        <pre><b>GET</b>&nbsp; /v4/loyalty-accounts/<a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="4a2f272b232667232439232e2f380a2b27293e222f2b3e382f3964292527">[email&#160;protected]</a></pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Gettheloyaltyaccountwiththegivenemail" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">{&#xD;&#xA;  &quot;address&quot;: {&#xD;&#xA;    &quot;address1&quot;: &quot;11500 Ash St&quot;,&#xD;&#xA;    &quot;address2&quot;: &quot;Suite 250&quot;,&#xD;&#xA;    &quot;city&quot;: &quot;Leawood&quot;,&#xD;&#xA;    &quot;state&quot;: &quot;Kansas&quot;,&#xD;&#xA;    &quot;postalCode&quot;: &quot;66211&quot;&#xD;&#xA;  },&#xD;&#xA;  &quot;loyaltyAccountId&quot;: 802300000006406,&#xD;&#xA;  &quot;cardNumber&quot;: &quot;1101000112007386&quot;,&#xD;&#xA;  &quot;email&quot;: &quot;<a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="33575645565f5c4356414073525e50475b5652474156401d505c5e">[email&#160;protected]</a>&quot;,&#xD;&#xA;  &quot;firstName&quot;: &quot;Ima&quot;,&#xD;&#xA;  &quot;middleInitial&quot;: &quot;W&quot;,&#xD;&#xA;  &quot;lastName&quot;: &quot;Developer&quot;,&#xD;&#xA;  &quot;ssn&quot;: 0,&#xD;&#xA;  &quot;gender&quot;: &quot;M&quot;,&#xD;&#xA;  &quot;birthDate&quot;: &quot;1984-02-13T00:00:00&quot;,&#xD;&#xA;  &quot;status&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;statusInfo&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;mobilePhoneNumber&quot;: &quot;9135551212&quot;,&#xD;&#xA;  &quot;favoriteTheatreId&quot;: 610,&#xD;&#xA;  &quot;areTermsAndConditionsAccepted&quot;: true,&#xD;&#xA;  &quot;termsAndConditionsAcceptedVersion&quot;: 3,&#xD;&#xA;  &quot;acceptedTermsAndConditionsDate&quot;: &quot;2016-10-04T13:47:59&quot;,&#xD;&#xA;  &quot;numberOfCardsIssued&quot;: 1,&#xD;&#xA;  &quot;activationType&quot;: &quot;WELC&quot;,&#xD;&#xA;  &quot;activationDate&quot;: &quot;2016-10-04T00:00:00&quot;,&#xD;&#xA;  &quot;isEarn&quot;: true,&#xD;&#xA;  &quot;isRedeem&quot;: true,&#xD;&#xA;  &quot;enrollDate&quot;: &quot;2017-02-15T13:30:00.2&quot;,&#xD;&#xA;  &quot;receivesNotificationsViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesNotificationsViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesWeeklyEmails&quot;: false,&#xD;&#xA;  &quot;_links&quot;: {&#xD;&#xA;    &quot;self&quot;: {&#xD;&#xA;      &quot;href&quot;: &quot;https://api.amctheatres.com/v4/loyalty-accounts/802300000006406&quot;,&#xD;&#xA;      &quot;templated&quot;: false&#xD;&#xA;    }&#xD;&#xA;  }&#xD;&#xA;}</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5>Register for a loyalty campaign using an email address</h5>
+                <div class="panel panel-default" id="EmailRegistrationForCampaign">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Registerforaloyaltycampaignusinganemailaddress">
+                        <pre><b>POST</b>&nbsp; /v4/loyalty-accounts/<a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="06636b676f6a2b6f68756f62637446676b65726e6367727463752865696b">[email&#160;protected]</a>/A%20loyalty%20campaign/registration</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Registerforaloyaltycampaignusinganemailaddress" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">HTTP/1.1 200 OK</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5>Get the loyalty account with the given card.</h5>
+                <div class="panel panel-default" id="GetLoyaltyAccountByCard">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Gettheloyaltyaccountwiththegivencard">
+                        <pre><b>GET</b>&nbsp; /v4/loyalty-accounts/card-1101000112007386</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Gettheloyaltyaccountwiththegivencard" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">{&#xD;&#xA;  &quot;address&quot;: {&#xD;&#xA;    &quot;address1&quot;: &quot;11500 Ash St&quot;,&#xD;&#xA;    &quot;address2&quot;: &quot;Suite 250&quot;,&#xD;&#xA;    &quot;city&quot;: &quot;Leawood&quot;,&#xD;&#xA;    &quot;state&quot;: &quot;Kansas&quot;,&#xD;&#xA;    &quot;postalCode&quot;: &quot;66211&quot;&#xD;&#xA;  },&#xD;&#xA;  &quot;loyaltyAccountId&quot;: 802300000006406,&#xD;&#xA;  &quot;cardNumber&quot;: &quot;1101000112007386&quot;,&#xD;&#xA;  &quot;email&quot;: &quot;<a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="385c5d4e5d5457485d4a4b7859555b4c505d594c4a5d4b165b5755">[email&#160;protected]</a>&quot;,&#xD;&#xA;  &quot;firstName&quot;: &quot;Ima&quot;,&#xD;&#xA;  &quot;middleInitial&quot;: &quot;W&quot;,&#xD;&#xA;  &quot;lastName&quot;: &quot;Developer&quot;,&#xD;&#xA;  &quot;ssn&quot;: 0,&#xD;&#xA;  &quot;gender&quot;: &quot;M&quot;,&#xD;&#xA;  &quot;birthDate&quot;: &quot;1984-02-13T00:00:00&quot;,&#xD;&#xA;  &quot;status&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;statusInfo&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;mobilePhoneNumber&quot;: &quot;9135551212&quot;,&#xD;&#xA;  &quot;favoriteTheatreId&quot;: 610,&#xD;&#xA;  &quot;areTermsAndConditionsAccepted&quot;: true,&#xD;&#xA;  &quot;termsAndConditionsAcceptedVersion&quot;: 3,&#xD;&#xA;  &quot;acceptedTermsAndConditionsDate&quot;: &quot;2016-10-04T13:47:59&quot;,&#xD;&#xA;  &quot;numberOfCardsIssued&quot;: 1,&#xD;&#xA;  &quot;activationType&quot;: &quot;WELC&quot;,&#xD;&#xA;  &quot;activationDate&quot;: &quot;2016-10-04T00:00:00&quot;,&#xD;&#xA;  &quot;isEarn&quot;: true,&#xD;&#xA;  &quot;isRedeem&quot;: true,&#xD;&#xA;  &quot;enrollDate&quot;: &quot;2017-02-15T13:30:00.2&quot;,&#xD;&#xA;  &quot;receivesNotificationsViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesNotificationsViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesWeeklyEmails&quot;: false,&#xD;&#xA;  &quot;websiteLastUpdateCstDateTime&quot;: &quot;2018-10-11T14:49:14&quot;,&#xD;&#xA;  &quot;ValidationErrors&quot;: &quot;Invalid BirthDate, Preferred Theatre is required&quot;,&#xD;&#xA;  &quot;_links&quot;: {&#xD;&#xA;    &quot;self&quot;: {&#xD;&#xA;      &quot;href&quot;: &quot;https://api.amctheatres.com/v4/loyalty-accounts/802300000006406&quot;,&#xD;&#xA;      &quot;templated&quot;: false&#xD;&#xA;    }&#xD;&#xA;  }&#xD;&#xA;}</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5>Register for a loyalty campaign using the loyalty card number</h5>
+                <div class="panel panel-default" id="CardRegistrationForCampaign">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Registerforaloyaltycampaignusingtheloyaltycardnumber">
+                        <pre><b>POST</b>&nbsp; /v4/loyalty-accounts/card-1101000112007386/A%20loyalty%20campaign/registration</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Registerforaloyaltycampaignusingtheloyaltycardnumber" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">HTTP/1.1 200 OK</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5>Get the loyalty account with the given mobile phone number</h5>
+                <div class="panel panel-default" id="GetLoyaltyAccountByPhone">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#Gettheloyaltyaccountwiththegivenmobilephonenumber">
+                        <pre><b>GET</b>&nbsp; /v4/loyalty-accounts/phone-9135551212</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="Gettheloyaltyaccountwiththegivenmobilephonenumber" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">{&#xD;&#xA;  &quot;address&quot;: {&#xD;&#xA;    &quot;address1&quot;: &quot;11500 Ash St&quot;,&#xD;&#xA;    &quot;address2&quot;: &quot;Suite 250&quot;,&#xD;&#xA;    &quot;city&quot;: &quot;Leawood&quot;,&#xD;&#xA;    &quot;state&quot;: &quot;Kansas&quot;,&#xD;&#xA;    &quot;postalCode&quot;: &quot;66211&quot;&#xD;&#xA;  },&#xD;&#xA;  &quot;loyaltyAccountId&quot;: 802300000006406,&#xD;&#xA;  &quot;cardNumber&quot;: &quot;1101000112007386&quot;,&#xD;&#xA;  &quot;email&quot;: &quot;<a href="cdn-cgi/l/email-protection.html" class="__cf_email__" data-cfemail="b9dddccfdcd5d6c9dccbcaf9d8d4dacdd1dcd8cdcbdcca97dad6d4">[email&#160;protected]</a>&quot;,&#xD;&#xA;  &quot;firstName&quot;: &quot;Ima&quot;,&#xD;&#xA;  &quot;middleInitial&quot;: &quot;W&quot;,&#xD;&#xA;  &quot;lastName&quot;: &quot;Developer&quot;,&#xD;&#xA;  &quot;ssn&quot;: 0,&#xD;&#xA;  &quot;gender&quot;: &quot;M&quot;,&#xD;&#xA;  &quot;birthDate&quot;: &quot;1984-02-13T00:00:00&quot;,&#xD;&#xA;  &quot;status&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;statusInfo&quot;: &quot;Active&quot;,&#xD;&#xA;  &quot;mobilePhoneNumber&quot;: &quot;9135551212&quot;,&#xD;&#xA;  &quot;favoriteTheatreId&quot;: 610,&#xD;&#xA;  &quot;areTermsAndConditionsAccepted&quot;: true,&#xD;&#xA;  &quot;termsAndConditionsAcceptedVersion&quot;: 3,&#xD;&#xA;  &quot;acceptedTermsAndConditionsDate&quot;: &quot;2016-10-04T13:47:59&quot;,&#xD;&#xA;  &quot;numberOfCardsIssued&quot;: 1,&#xD;&#xA;  &quot;activationType&quot;: &quot;WELC&quot;,&#xD;&#xA;  &quot;activationDate&quot;: &quot;2016-10-04T00:00:00&quot;,&#xD;&#xA;  &quot;isEarn&quot;: true,&#xD;&#xA;  &quot;isRedeem&quot;: true,&#xD;&#xA;  &quot;enrollDate&quot;: &quot;2017-02-15T13:30:00.2&quot;,&#xD;&#xA;  &quot;receivesNotificationsViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesNotificationsViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaEmail&quot;: false,&#xD;&#xA;  &quot;receivesOffersViaMobile&quot;: false,&#xD;&#xA;  &quot;receivesWeeklyEmails&quot;: false,&#xD;&#xA;  &quot;_links&quot;: {&#xD;&#xA;    &quot;self&quot;: {&#xD;&#xA;      &quot;href&quot;: &quot;https://api.amctheatres.com/v4/loyalty-accounts/802300000006406&quot;,&#xD;&#xA;      &quot;templated&quot;: false&#xD;&#xA;    }&#xD;&#xA;  }&#xD;&#xA;}</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h5>Delete an existing Loyalty Account</h5>
+                <div class="panel panel-default" id="DeleteLoyaltyAccount">
+                    <div class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#DeleteanexistingLoyaltyAccount">
+                        <pre><b>DELETE</b>&nbsp; /v4/amc-accounts/654321/loyalty</pre>
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div id="DeleteanexistingLoyaltyAccount" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div class="panel-body">
+                                                                                                                                                                    <h4>Response</h4>
+                                    <pre class="prettyprint lang-javascript">HTTP/1.1 200 OK</pre>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+
+    </div>
+</div>
+            <div class="col-md-3">
+                <div class="sidebar-module">
+                    <h4>Getting Started</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="GettingStarted/Authentication.html">Authentication</a></li>
+                        <li><a href="GettingStarted/AffiliateDeepLinking.html">Affiliate Deep Linking</a></li>
+                        <li><a href="GettingStarted/Sandbox.html">Sandbox</a></li>
+                    </ol>
+                        <h5>Ordering Tickets</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PurchasingGATickets.html">General Admission Tickets</a></li>
+                            <li><a href="GettingStarted/PurchasingRsTickets.html">Reserved Seating Tickets</a></li>
+                            <li><a href="GettingStarted/PurchasingGenericPrivateTheatreRentals.html">Generic Private Theatre Rentals</a></li>
+                            <li><a href="GettingStarted/PurchasingTitleSpecificPrivateTheatreRentals.html">Movie Specific Private Theatre Rentals</a></li>
+                        </ol>
+                        <h5>Ordering Concessions</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PurchasingExpressPickupConcessions.html">Express Pickup Concessions</a></li>
+                            <li><a href="GettingStarted/PurchasingDeliveryToSeatConcessions.html">Delivery To Seat Concessions</a></li>
+                        </ol>
+                        <h5>Order Payment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/PayingWithACreditCard.html">Credit Card Payment</a></li>
+                        </ol>
+                        <h5>Order Fulfillment</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/SubmittingOrderForFulfillment.html">Order Fulfillment</a></li>
+                        </ol>
+                        <h5>Refunding Orders</h5>
+                        <ol class="list-unstyled">
+                            <li><a href="GettingStarted/Refunds.html">Refunds</a></li>
+                        </ol>
+                    <br>
+                    <h4>API Reference</h4>
+                    <ol class="list-unstyled">
+                        <li><a href="Errors.html">Errors</a></li>
+                    </ol>
+                    <hr />
+                    <ol class="list-unstyled">
+                                <li>
+                                    <a href="Attributes.html">Attributes</a>
+                                </li>
+                                <li>
+                                    <a href="Barcodes.html">Barcodes</a>
+                                </li>
+                                <li>
+                                    <a href="Concessions.html">Concessions</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsCategories.html">Concessions Categories</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsDeliveryLocations.html">Concessions Delivery Locations</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsDeliveryTimes.html">Concessions Delivery Times</a>
+                                </li>
+                                <li>
+                                    <a href="ConcessionsPickupTimes.html">Concessions Pickup Times</a>
+                                </li>
+                                <li>
+                                    <a href="EmbargoedShowtimes.html">Embargoed Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="FeeWaiver.html">Fee Waiver</a>
+                                </li>
+                                <li>
+                                    <a href="LocationSuggestions.html">Location Suggestions</a>
+                                </li>
+                                <li>
+                                    <a href="Locations.html">Locations</a>
+                                </li>
+                                <li>
+                                    <a href="LoyaltyAccounts.html">Loyalty Accounts</a>
+                                </li>
+                                <li>
+                                    <a href="LoyaltyCards.html">Loyalty Cards</a>
+                                </li>
+                                <li>
+                                    <a href="Markets.html">Markets</a>
+                                </li>
+                                <li>
+                                    <a href="Media.html">Media</a>
+                                </li>
+                                <li>
+                                    <a href="MovieConfirmations.html">Movie Confirmations</a>
+                                </li>
+                                <li>
+                                    <a href="Movies.html">Movies</a>
+                                </li>
+                                <li>
+                                    <a href="Orders.html">Orders</a>
+                                </li>
+                                <li>
+                                    <a href="Person.html">Person</a>
+                                </li>
+                                <li>
+                                    <a href="Redemptions.html">Redemptions</a>
+                                </li>
+                                <li>
+                                    <a href="RefundReasons.html">Refund Reasons</a>
+                                </li>
+                                <li>
+                                    <a href="Refunds.html">Refunds</a>
+                                </li>
+                                <li>
+                                    <a href="SeatingLayouts.html">Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="Showtimes.html">Showtimes</a>
+                                </li>
+                                <li>
+                                    <a href="States.html">States</a>
+                                </li>
+                                <li>
+                                    <a href="TheatreSeatingLayouts.html">Theatre Seating Layouts</a>
+                                </li>
+                                <li>
+                                    <a href="Theatres.html">Theatres</a>
+                                </li>
+                                <li>
+                                    <a href="Wallet.html">Wallet</a>
+                                </li>
+                                <li>
+                                    <a href="Webhook.html">Webhook</a>
+                                </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="Scripts/jquery-3.6.0.min.js"></script>
+    <script src="Scripts/modernizr-2.6.2.js"></script>
+
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" type="text/css" href="Content/prettyprint-sunburst.css" />
+
+    <script src="Content/themes/amc/scripts/bootstrap/bootstrap.js"></script>
+    <script src="Content/themes/amc/scripts/site.js"></script>
+
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('a[href^="#"]').on('click', function (e) {
+                e.preventDefault();
+
+                var target = this.hash,
+                    $target = $(target);
+
+                $('html, body').stop().animate({
+                    'scrollTop': $target.offset().top - 100
+                }, 1200, 'swing', function () {
+                    window.location.hash = target;
+                });
+
+                $target.children(".panel-heading")
+                    .animate({ "background-color": "#ce2640" })
+                    .delay(2000)
+                    .animate({ "background-color": "#f5f5f5" });
+            });
+        });
+    </script>
+</body>
+</html><script id="f5_cspm">(function(){var f5_cspm={f5_p:'OPKJCHFMIHGBGHNLJEOKBAHPPLMILGNCNKEIIBPPHFMIDPKNAIEKHEMGAECGDGMMKFEBMNNFBLFJNMEFOLAALOOCAEIAOADPFKBLLKBOEKIHKCAAOGDFJBBDMHLPOIAE',setCharAt:function(str,index,chr){if(index>str.length-1)return str;return str.substr(0,index)+chr+str.substr(index+1);},get_byte:function(str,i){var s=(i/16)|0;i=(i&15);s=s*32;return((str.charCodeAt(i+16+s)-65)<<4)|(str.charCodeAt(i+s)-65);},set_byte:function(str,i,b){var s=(i/16)|0;i=(i&15);s=s*32;str=f5_cspm.setCharAt(str,(i+16+s),String.fromCharCode((b>>4)+65));str=f5_cspm.setCharAt(str,(i+s),String.fromCharCode((b&15)+65));return str;},set_latency:function(str,latency){latency=latency&0xffff;str=f5_cspm.set_byte(str,40,(latency>>8));str=f5_cspm.set_byte(str,41,(latency&0xff));str=f5_cspm.set_byte(str,35,2);return str;},wait_perf_data:function(){try{var wp=window.performance.timing;if(wp.loadEventEnd>0){var res=wp.loadEventEnd-wp.navigationStart;if(res<60001){var cookie_val=f5_cspm.set_latency(f5_cspm.f5_p,res);window.document.cookie='f5avr2061084227aaaaaaaaaaaaaaaa_cspm_='+encodeURIComponent(cookie_val)+';path=/;'+'';}
+return;}}
+catch(err){return;}
+setTimeout(f5_cspm.wait_perf_data,100);return;},go:function(){var chunk=window.document.cookie.split(/\s*;\s*/);for(var i=0;i<chunk.length;++i){var pair=chunk[i].split(/\s*=\s*/);if(pair[0]=='f5_cspm'&&pair[1]=='1234')
+{var d=new Date();d.setTime(d.getTime()-1000);window.document.cookie='f5_cspm=;expires='+d.toUTCString()+';path=/;'+';';setTimeout(f5_cspm.wait_perf_data,100);}}}}
+f5_cspm.go();}());</script>
