@@ -45,7 +45,7 @@ export class ShowtimeDatabase {
     // Create tables with proper indexes
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS theatres (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY NOT NULL,
         name TEXT UNIQUE NOT NULL,
         slug TEXT UNIQUE NOT NULL,
         location TEXT NOT NULL,
@@ -92,16 +92,22 @@ export class ShowtimeDatabase {
   }
 
   // Theatre operations
-  upsertTheatre(theatre: Omit<Theatre, 'id'>): number {
+  upsertTheatre(theatre: Theatre): number {
     const stmt = this.db.prepare(`
-      INSERT INTO theatres (name, slug, location) 
-      VALUES (?, ?, ?)
-      ON CONFLICT(slug) DO UPDATE SET
+      INSERT INTO theatres (id, name, slug, location) 
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
+        slug = excluded.slug,
         location = excluded.location
       RETURNING id
     `);
-    const result = stmt.get(theatre.name, theatre.slug, theatre.location) as {
+    const result = stmt.get(
+      theatre.id,
+      theatre.name,
+      theatre.slug,
+      theatre.location
+    ) as {
       id: number;
     };
     return result.id;

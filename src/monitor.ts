@@ -32,19 +32,16 @@ export class ShowtimeMonitor {
       throw new Error(`Theatre not found: ${this.config.theatre}`);
     }
 
-    // Store theatre in database
-    const theatreId = this.database.upsertTheatre({
-      name: amcTheatre.name,
-      slug: amcTheatre.slug,
-      location: `${amcTheatre.location.city}, ${amcTheatre.location.state}`,
-    });
-
-    this.theatre = {
-      id: theatreId,
+    // Store theatre in database using AMC's theatre ID
+    const theatreData = {
+      id: amcTheatre.id,
       name: amcTheatre.name,
       slug: amcTheatre.slug,
       location: `${amcTheatre.location.city}, ${amcTheatre.location.state}`,
     };
+
+    this.database.upsertTheatre(theatreData);
+    this.theatre = theatreData;
 
     console.log(
       `✅ Theatre found: ${this.theatre.name} (ID: ${this.theatre.id})`
