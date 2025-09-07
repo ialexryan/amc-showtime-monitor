@@ -127,27 +127,6 @@ export class ShowtimeMonitor {
     movies: AMCMovie[],
     searchTerm: string
   ): AMCMovie[] {
-    // Normalize function to handle common articles
-    const normalizeTitle = (title: string): string => {
-      return title
-        .toLowerCase()
-        .replace(/^(the|a|an)\s+/i, '') // Remove leading articles
-        .trim();
-    };
-
-    // First try exact matches after removing articles
-    const normalizedSearchTerm = normalizeTitle(searchTerm);
-    const exactMatches = movies.filter(
-      (movie) => normalizeTitle(movie.name) === normalizedSearchTerm
-    );
-
-    if (exactMatches.length > 0) {
-      console.log(
-        `   ✅ Found exact matches (ignoring articles): ${exactMatches.map((m) => m.name).join(', ')}`
-      );
-      return exactMatches;
-    }
-
     // Use fuzzy search to find movies that closely match our search term
     const fuse = new Fuse(movies, {
       keys: ['name'],
