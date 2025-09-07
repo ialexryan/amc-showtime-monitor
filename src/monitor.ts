@@ -151,7 +151,7 @@ export class ShowtimeMonitor {
     // Use fuzzy search to find movies that closely match our search term
     const fuse = new Fuse(movies, {
       keys: ['name'],
-      threshold: 0.6, // More relaxed to handle articles like "The", "A", etc.
+      threshold: 0.4, // Balanced threshold for reasonable matching
       includeScore: true,
     });
 
@@ -162,10 +162,20 @@ export class ShowtimeMonitor {
       results.map((r) => `${r.item.name} (score: ${r.score?.toFixed(3)})`)
     );
 
-    // Return movies with good similarity scores
-    return results
-      .filter((result) => (result.score ?? 1) < 0.7) // More lenient for common article words
-      .map((result) => result.item);
+    // Return movies with good similarity scores - be more strict
+    const filteredResults = results.filter(
+      (result) => (result.score ?? 1) < 0.4
+    );
+
+    if (filteredResults.length > 0) {
+      console.log(
+        `   ✅ Found ${filteredResults.length} fuzzy matches with good scores`
+      );
+    } else {
+      console.log(`   ⚠️  No good fuzzy matches found (scores too low)`);
+    }
+
+    return filteredResults.map((result) => result.item);
   }
 
   private async processMovieShowtimes(

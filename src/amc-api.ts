@@ -161,18 +161,57 @@ export class AMCApiClient {
     try {
       console.log(`Searching for movie: ${movieName}`);
 
-      // Search in advance movies (upcoming releases)
-      const advanceResponse: AxiosResponse<
-        AMCApiResponse<{ movies: AMCMovie[] }>
-      > = await this.client.get('/movies/views/advance', {
-        params: {
-          name: movieName,
-          'page-size': 20,
-        },
-      });
+      const movieMap = new Map<number, AMCMovie>();
 
-      let movies = advanceResponse.data._embedded.movies || [];
-      console.log(`Found ${movies.length} advance movies for: ${movieName}`);
+      // Search in advance movies (upcoming releases)
+      try {
+        const advanceResponse: AxiosResponse<
+          AMCApiResponse<{ movies: AMCMovie[] }>
+        > = await this.client.get('/movies/views/advance', {
+          params: {
+            name: movieName,
+            'page-size': 100,
+          },
+        });
+
+        const advanceMovies = advanceResponse.data._embedded.movies || [];
+        console.log(
+          `Found ${advanceMovies.length} advance movies for: ${movieName}`
+        );
+        for (const movie of advanceMovies) {
+          movieMap.set(movie.id, movie);
+        }
+      } catch (error) {
+        console.log(
+          'Error searching advance movies (continuing with other searches):',
+          error.message
+        );
+      }
+
+      // Also search in now-playing movies
+      try {
+        const nowPlayingResponse: AxiosResponse<
+          AMCApiResponse<{ movies: AMCMovie[] }>
+        > = await this.client.get('/movies/views/now-playing', {
+          params: {
+            name: movieName,
+            'page-size': 100,
+          },
+        });
+
+        const nowPlayingMovies = nowPlayingResponse.data._embedded.movies || [];
+        console.log(
+          `Found ${nowPlayingMovies.length} now-playing movies for: ${movieName}`
+        );
+        for (const movie of nowPlayingMovies) {
+          movieMap.set(movie.id, movie);
+        }
+      } catch (error) {
+        console.log(
+          'Error searching now-playing movies (continuing with other searches):',
+          error.message
+        );
+      }
 
       // Also search in coming soon movies
       try {
@@ -181,7 +220,7 @@ export class AMCApiClient {
         > = await this.client.get('/movies/views/coming-soon', {
           params: {
             name: movieName,
-            'page-size': 20,
+            'page-size': 100,
           },
         });
 
@@ -189,31 +228,29 @@ export class AMCApiClient {
         console.log(
           `Found ${comingSoonMovies.length} coming-soon movies for: ${movieName}`
         );
-
-        // Merge results, avoiding duplicates
-        const existingIds = new Set(movies.map((m) => m.id));
-        const newMovies = comingSoonMovies.filter(
-          (m) => !existingIds.has(m.id)
-        );
-        movies = [...movies, ...newMovies];
+        for (const movie of comingSoonMovies) {
+          movieMap.set(movie.id, movie);
+        }
       } catch (error) {
         console.log(
-          'Error searching coming-soon movies (continuing with advance movies):',
+          'Error searching coming-soon movies (continuing with other searches):',
           error.message
         );
       }
+
+      const movies = Array.from(movieMap.values());
 
       // Use fuzzy matching to filter results
       if (movies.length > 0) {
         const fuse = new Fuse(movies, {
           keys: ['name'],
-          threshold: 0.6, // More relaxed threshold to catch "The Movie" vs "Movie"
+          threshold: 0.3, // Stricter matching for initial API results
           includeScore: true,
         });
 
         const fuzzyResults = fuse.search(movieName);
         const filteredMovies = fuzzyResults
-          .filter((result) => (result.score ?? 1) < 0.7) // More lenient scoring for articles like "The"
+          .filter((result) => (result.score ?? 1) < 0.4) // Good matches only
           .map((result) => result.item);
 
         console.log(`Filtered to ${filteredMovies.length} relevant movies`);
@@ -268,37 +305,6 @@ export class AMCApiClient {
       return futureShowtimes;
     } catch (error) {
       console.error('Error getting showtimes:', error);
-      throw error;
-    }
-  }
-
-  async getAllFutureShowtimesAtTheatre(
-    theatreId: number
-  ): Promise<AMCShowtime[]> {
-    try {
-      console.log(`Getting all future showtimes at theatre ${theatreId}`);
-
-      const response: AxiosResponse<
-        AMCApiResponse<{ showtimes: AMCShowtime[] }>
-      > = await this.client.get(`/theatres/${theatreId}/showtimes`, {
-        params: {
-          'page-size': 100,
-        },
-      });
-
-      const showtimes = response.data._embedded.showtimes || [];
-
-      // Filter out past showtimes
-      const now = new Date();
-      const futureShowtimes = showtimes.filter((showtime) => {
-        const showDate = new Date(showtime.showDateTimeUtc);
-        return showDate > now;
-      });
-
-      console.log(`Found ${futureShowtimes.length} future showtimes`);
-      return futureShowtimes;
-    } catch (error) {
-      console.error('Error getting all showtimes:', error);
       throw error;
     }
   }
