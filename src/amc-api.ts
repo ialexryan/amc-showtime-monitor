@@ -93,55 +93,63 @@ export class AMCApiClient {
     );
   }
 
-  async findTheatreByName(theatreName: string): Promise<AMCTheatre | null> {
+  async findTheatreByName(
+    theatreNameOrSlug: string
+  ): Promise<AMCTheatre | null> {
     try {
       // Check cache first
-      const cached = this.theatreCache.get(theatreName.toLowerCase());
+      const cached = this.theatreCache.get(theatreNameOrSlug.toLowerCase());
       if (cached) return cached;
 
-      console.log(`Searching for theatre: ${theatreName}`);
+      console.log(`Looking up theatre: ${theatreNameOrSlug}`);
 
-      // Get all theatres (AMC API doesn't seem to support name filtering)
+      // If it looks like a slug (contains hyphens and no spaces), try direct lookup first
+      if (theatreNameOrSlug.includes('-') && !theatreNameOrSlug.includes(' ')) {
+        try {
+          console.log(`Attempting direct slug lookup: ${theatreNameOrSlug}`);
+          const directResponse: AxiosResponse<AMCTheatre> =
+            await this.client.get(`/theatres/${theatreNameOrSlug}`);
+          const theatre = directResponse.data;
+          console.log(`✅ Found theatre: ${theatre.name} (ID: ${theatre.id})`);
+
+          // Cache the result
+          this.theatreCache.set(theatreNameOrSlug.toLowerCase(), theatre);
+          return theatre;
+        } catch (_error) {
+          console.log(`Direct slug lookup failed, falling back to search...`);
+        }
+      }
+
+      // Use AMC's name search parameter
+      console.log(`Searching by name: ${theatreNameOrSlug}`);
       const response: AxiosResponse<
         AMCApiResponse<{ theatres: AMCTheatre[] }>
       > = await this.client.get('/theatres', {
         params: {
-          'page-size': 100, // Get more results to improve matching
+          name: theatreNameOrSlug,
         },
       });
 
-      const theatres = response.data._embedded.theatres;
+      const theatres = response.data._embedded.theatres || [];
+      console.log(`Found ${theatres.length} theatres matching name search`);
 
-      // Use fuzzy search to find the best match
-      const fuse = new Fuse(theatres, {
-        keys: ['name', 'longName', 'slug'],
-        threshold: 0.4, // Allow some fuzziness
-        includeScore: true,
-      });
+      if (theatres.length > 0) {
+        // Prefer exact matches, fall back to first result
+        const exactMatch = theatres.find(
+          (t) =>
+            t.name.toLowerCase() === theatreNameOrSlug.toLowerCase() ||
+            t.longName.toLowerCase() === theatreNameOrSlug.toLowerCase()
+        );
 
-      const results = fuse.search(theatreName);
-      if (results.length > 0 && (results[0].score ?? 1) < 0.5) {
-        const theatre = results[0].item;
-        // Cache the result
-        this.theatreCache.set(theatreName.toLowerCase(), theatre);
-        console.log(`Found theatre: ${theatre.name} (ID: ${theatre.id})`);
-        return theatre;
+        const selectedTheatre = exactMatch || theatres[0];
+        this.theatreCache.set(theatreNameOrSlug.toLowerCase(), selectedTheatre);
+        console.log(
+          `✅ Found theatre: ${selectedTheatre.name} (ID: ${selectedTheatre.id})`
+        );
+        return selectedTheatre;
       }
 
-      // If no good fuzzy match, try exact partial matches
-      const exactMatch = theatres.find(
-        (t) =>
-          t.name.toLowerCase().includes(theatreName.toLowerCase()) ||
-          t.longName.toLowerCase().includes(theatreName.toLowerCase())
-      );
-
-      if (exactMatch) {
-        this.theatreCache.set(theatreName.toLowerCase(), exactMatch);
-        console.log(`Found theatre: ${exactMatch.name} (ID: ${exactMatch.id})`);
-        return exactMatch;
-      }
-
-      console.log(`No theatre found matching: ${theatreName}`);
+      console.log(`❌ Theatre not found: ${theatreNameOrSlug}`);
       return null;
     } catch (error) {
       console.error('Error searching for theatre:', error);

@@ -10,7 +10,6 @@
   },
   "description": "Monitor AMC Theatres for new movie showtimes and send Telegram notifications",
   "keywords": ["amc", "movies", "showtimes", "telegram", "notifications", "cinema"],
-  "license": "ISC",
   "scripts": {
     "check": "bun src/cli.ts check",
     "test": "bun src/cli.ts test",
