@@ -4,13 +4,14 @@ import { existsSync, unlinkSync } from 'node:fs';
 import { Command } from 'commander';
 import { loadConfig } from './config.js';
 import { ShowtimeMonitor } from './monitor.js';
+import packageJson from '../package.json' with { type: 'json' };
 
 const program = new Command();
 
 program
-  .name('amc-showtime-monitor')
-  .description('Monitor AMC showtimes and send Telegram notifications')
-  .version('1.0.0');
+  .name(packageJson.name)
+  .description(packageJson.description)
+  .version(packageJson.version);
 
 program
   .command('monitor')
