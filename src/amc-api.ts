@@ -1,5 +1,4 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import Fuse from 'fuse.js';
 
 export interface AMCTheatre {
   id: number;
@@ -157,6 +156,31 @@ export class AMCApiClient {
     }
   }
 
+  // Helper method to fetch movies from a specific endpoint
+  private async fetchMoviesFromEndpoint(
+    endpoint: string,
+    endpointName: string
+  ): Promise<AMCMovie[]> {
+    try {
+      const response: AxiosResponse<AMCApiResponse<{ movies: AMCMovie[] }>> =
+        await this.client.get(endpoint, {
+          params: {
+            'page-size': 1000,
+          },
+        });
+
+      const movies = response.data._embedded.movies || [];
+      console.log(`Found ${movies.length} ${endpointName} movies`);
+      return movies;
+    } catch (error) {
+      console.log(
+        `Error fetching ${endpointName} movies (continuing with other searches):`,
+        error.message
+      );
+      return [];
+    }
+  }
+
   // Fetch all movies from all endpoints once per run
   async getAllMovies(): Promise<AMCMovie[]> {
     try {
@@ -164,70 +188,21 @@ export class AMCApiClient {
 
       const movieMap = new Map<number, AMCMovie>();
 
-      // Search in advance movies (upcoming releases)
-      try {
-        const advanceResponse: AxiosResponse<
-          AMCApiResponse<{ movies: AMCMovie[] }>
-        > = await this.client.get('/movies/views/advance', {
-          params: {
-            'page-size': 1000,
-          },
-        });
+      // Fetch movies from all endpoints
+      const endpoints = [
+        { path: '/movies/views/advance', name: 'advance' },
+        { path: '/movies/views/now-playing', name: 'now-playing' },
+        { path: '/movies/views/coming-soon', name: 'coming-soon' },
+      ];
 
-        const advanceMovies = advanceResponse.data._embedded.movies || [];
-        console.log(`Found ${advanceMovies.length} advance movies`);
-        for (const movie of advanceMovies) {
+      for (const endpoint of endpoints) {
+        const movies = await this.fetchMoviesFromEndpoint(
+          endpoint.path,
+          endpoint.name
+        );
+        for (const movie of movies) {
           movieMap.set(movie.id, movie);
         }
-      } catch (error) {
-        console.log(
-          'Error fetching advance movies (continuing with other searches):',
-          error.message
-        );
-      }
-
-      // Also search in now-playing movies
-      try {
-        const nowPlayingResponse: AxiosResponse<
-          AMCApiResponse<{ movies: AMCMovie[] }>
-        > = await this.client.get('/movies/views/now-playing', {
-          params: {
-            'page-size': 1000,
-          },
-        });
-
-        const nowPlayingMovies = nowPlayingResponse.data._embedded.movies || [];
-        console.log(`Found ${nowPlayingMovies.length} now-playing movies`);
-        for (const movie of nowPlayingMovies) {
-          movieMap.set(movie.id, movie);
-        }
-      } catch (error) {
-        console.log(
-          'Error fetching now-playing movies (continuing with other searches):',
-          error.message
-        );
-      }
-
-      // Also search in coming-soon movies
-      try {
-        const comingSoonResponse: AxiosResponse<
-          AMCApiResponse<{ movies: AMCMovie[] }>
-        > = await this.client.get('/movies/views/coming-soon', {
-          params: {
-            'page-size': 1000,
-          },
-        });
-
-        const comingSoonMovies = comingSoonResponse.data._embedded.movies || [];
-        console.log(`Found ${comingSoonMovies.length} coming-soon movies`);
-        for (const movie of comingSoonMovies) {
-          movieMap.set(movie.id, movie);
-        }
-      } catch (error) {
-        console.log(
-          'Error fetching coming-soon movies (continuing with other searches):',
-          error.message
-        );
       }
 
       const allMovies = Array.from(movieMap.values());
@@ -235,122 +210,6 @@ export class AMCApiClient {
       return allMovies;
     } catch (error) {
       console.error('Error fetching all movies:', error);
-      throw error;
-    }
-  }
-
-  async searchMoviesByName(movieName: string): Promise<AMCMovie[]> {
-    try {
-      console.log(`Searching for movie: ${movieName}`);
-
-      const movieMap = new Map<number, AMCMovie>();
-
-      // Search in advance movies (upcoming releases)
-      try {
-        const advanceResponse: AxiosResponse<
-          AMCApiResponse<{ movies: AMCMovie[] }>
-        > = await this.client.get('/movies/views/advance', {
-          params: {
-            name: movieName,
-            'page-size': 100,
-          },
-        });
-
-        const advanceMovies = advanceResponse.data._embedded.movies || [];
-        console.log(
-          `Found ${advanceMovies.length} advance movies for: ${movieName}`
-        );
-        for (const movie of advanceMovies) {
-          movieMap.set(movie.id, movie);
-        }
-      } catch (error) {
-        console.log(
-          'Error searching advance movies (continuing with other searches):',
-          error.message
-        );
-      }
-
-      // Also search in now-playing movies
-      try {
-        const nowPlayingResponse: AxiosResponse<
-          AMCApiResponse<{ movies: AMCMovie[] }>
-        > = await this.client.get('/movies/views/now-playing', {
-          params: {
-            name: movieName,
-            'page-size': 100,
-          },
-        });
-
-        const nowPlayingMovies = nowPlayingResponse.data._embedded.movies || [];
-        console.log(
-          `Found ${nowPlayingMovies.length} now-playing movies for: ${movieName}`
-        );
-        for (const movie of nowPlayingMovies) {
-          movieMap.set(movie.id, movie);
-        }
-      } catch (error) {
-        console.log(
-          'Error searching now-playing movies (continuing with other searches):',
-          error.message
-        );
-      }
-
-      // Also search in coming soon movies
-      try {
-        const comingSoonResponse: AxiosResponse<
-          AMCApiResponse<{ movies: AMCMovie[] }>
-        > = await this.client.get('/movies/views/coming-soon', {
-          params: {
-            name: movieName,
-            'page-size': 100,
-          },
-        });
-
-        const comingSoonMovies = comingSoonResponse.data._embedded.movies || [];
-        console.log(
-          `Found ${comingSoonMovies.length} coming-soon movies for: ${movieName}`
-        );
-        for (const movie of comingSoonMovies) {
-          movieMap.set(movie.id, movie);
-        }
-      } catch (error) {
-        console.log(
-          'Error searching coming-soon movies (continuing with other searches):',
-          error.message
-        );
-      }
-
-      const movies = Array.from(movieMap.values());
-
-      // Use fuzzy matching to filter results
-      if (movies.length > 0) {
-        const fuse = new Fuse(movies, {
-          keys: ['name'],
-          threshold: 0.3, // Stricter matching for initial API results
-          includeScore: true,
-        });
-
-        const fuzzyResults = fuse.search(movieName);
-        const filteredMovies = fuzzyResults
-          .filter((result) => (result.score ?? 1) < 0.4) // Good matches only
-          .map((result) => result.item);
-
-        console.log(`Filtered to ${filteredMovies.length} relevant movies`);
-        if (filteredMovies.length > 0) {
-          console.log(
-            `Best matches:`,
-            filteredMovies.map(
-              (m) =>
-                `${m.name} (score: ${fuzzyResults.find((r) => r.item.id === m.id)?.score?.toFixed(3)})`
-            )
-          );
-        }
-        return filteredMovies;
-      }
-
-      return movies;
-    } catch (error) {
-      console.error('Error searching for movies:', error);
       throw error;
     }
   }
