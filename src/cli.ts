@@ -1,14 +1,9 @@
 #!/usr/bin/env bun
 
 import { existsSync, unlinkSync } from 'node:fs';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { loadConfig } from './config.js';
 import { ShowtimeMonitor } from './monitor.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const program = new Command();
 
