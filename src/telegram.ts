@@ -209,8 +209,9 @@ Time: ${new Date().toLocaleString()}`;
       const response = await this.client.get('/getUpdates', {
         params: {
           offset: this.lastUpdateId + 1,
-          limit: 10,
-          timeout: 5,
+          limit: 20,
+          timeout: 0, // No long polling - return immediately
+          allowed_updates: ['message'], // Only message updates, not other types
         },
       });
 
