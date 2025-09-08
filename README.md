@@ -5,6 +5,7 @@ Monitor AMC Theatres for new movie showtimes and send Telegram notifications whe
 ## Features
 
 - **Real-time monitoring**: Check for new showtimes at configurable intervals
+- **Telegram bot commands**: Manage your movie watchlist via Telegram chat
 - **Fuzzy movie matching**: Find movies even with slight title variations
 - **Premium format detection**: Highlights IMAX, Dolby Cinema, and other premium formats
 - **Direct ticket links**: Each showtime links directly to AMC's seat selection page
@@ -41,7 +42,6 @@ Monitor AMC Theatres for new movie showtimes and send Telegram notifications whe
 4. **Edit config.json** with your settings:
    ```json
    {
-     "movies": ["Tron: Ares", "The Odyssey"],
      "theatre": "AMC Metreon 16",
      "pollIntervalMinutes": 15,
      "telegram": {
@@ -51,6 +51,12 @@ Monitor AMC Theatres for new movie showtimes and send Telegram notifications whe
      "amcApiKey": "your-amc-api-key-here"
    }
    ```
+
+5. **Add movies to your watchlist** via Telegram:
+   - Send `/add Tron: Ares` to your bot
+   - Send `/add The Odyssey` to your bot  
+   - Use `/list` to view your watchlist
+   - Use `/help` for all available commands
 
 ## Usage
 
@@ -68,6 +74,13 @@ bun test
 ```bash
 bun status
 ```
+
+### Manage watchlist via Telegram
+- `/add <movie name>` - Add a movie to watchlist
+- `/remove <movie name>` - Remove a movie from watchlist  
+- `/list` - Show current watchlist
+- `/status` - Show monitoring status
+- `/help` - Show all commands
 
 ### Run with verbose logging
 ```bash
@@ -108,7 +121,9 @@ Create `~/Library/LaunchAgents/com.user.amc-monitor.plist`:
 
 ## Configuration
 
-### Movies
+### Watchlist Management
+Movies are now managed via Telegram bot commands instead of the config file:
+- Use `/add <movie name>` to add movies to your watchlist
 - Use exact movie titles or close variations
 - Fuzzy matching handles minor differences
 - Include "The", "A", "An" articles for better matching
@@ -134,7 +149,7 @@ Some movies may show "vendor exclusive" errors and not appear in search results.
 
 **What this means**: Movies like "The Odyssey" might not be accessible until closer to their release date, even though they appear on AMC's website.
 
-**Workaround**: Keep these movies in your config - they'll automatically start working once AMC makes them publicly available through the API.
+**Workaround**: Keep these movies in your watchlist via `/add` - they'll automatically start working once AMC makes them publicly available through the API.
 
 ## Notification Format
 
@@ -165,18 +180,19 @@ bun run format      # Format code
 ```
 
 ### Database
-- SQLite database (`showtimes.db`) stores theatres, movies, and showtime history
+- SQLite database (`showtimes.db`) stores theatres, movies, watchlist, and showtime history
 - Database is created automatically on first run
-- Delete database file to reset all tracking
+- Use `bun src/cli.ts reset-db` to reset all tracking (includes watchlist)
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Theatre not found**: Try using the exact name from AMC's website or the theatre slug
-2. **Movie not found**: Check spelling, try with/without articles ("The", "A")
-3. **API rate limiting**: Reduce polling frequency in config
-4. **Vendor exclusive movies**: Wait for movie to become publicly available
+2. **Movie not found**: Check spelling with `/add`, try with/without articles ("The", "A")
+3. **Empty watchlist**: Use `/add <movie name>` to add movies to your watchlist
+4. **API rate limiting**: Reduce polling frequency in config
+5. **Vendor exclusive movies**: Wait for movie to become publicly available
 
 ### Debug Mode
 Run with verbose logging to see detailed search results:

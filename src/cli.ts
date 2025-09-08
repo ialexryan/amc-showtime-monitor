@@ -44,7 +44,6 @@ program
       if (options.verbose) {
         console.log('📋 Config loaded:');
         console.log(`   Theatre: ${config.theatre}`);
-        console.log(`   Movies: ${config.movies.join(', ')}`);
         console.log(`   Poll interval: ${config.pollIntervalMinutes} minutes`);
       }
 
@@ -116,7 +115,7 @@ program
       console.log('================================');
       console.log(`Theatre: ${status.theatre?.name || 'Not configured'}`);
       console.log(`Location: ${status.theatre?.location || 'N/A'}`);
-      console.log(`Tracked Movies: ${status.trackedMovies.length}`);
+      console.log(`Watchlist: ${status.trackedMovies.length} movies`);
       for (const movie of status.trackedMovies) {
         console.log(`  • ${movie}`);
       }
@@ -156,22 +155,7 @@ program
     console.log('9. Add both values to your config.json file');
     console.log();
     console.log('Example config.json:');
-    console.log(
-      JSON.stringify(
-        {
-          movies: ['Tron: Ares', 'Odyssey'],
-          theatre: 'AMC Metreon 16',
-          pollIntervalMinutes: 15,
-          telegram: {
-            botToken: 'YOUR_BOT_TOKEN_HERE',
-            chatId: 'YOUR_CHAT_ID_HERE',
-          },
-          amcApiKey: 'your-amc-api-key-here',
-        },
-        null,
-        2
-      )
-    );
+    console.log('See config.example.json for the template structure.');
   });
 
 program
@@ -179,26 +163,23 @@ program
   .description('Initialize a new config file')
   .action(async () => {
     const configPath = './config.json';
+    const exampleConfigPath = './config.example.json';
 
     if (existsSync(configPath)) {
       console.error('❌ config.json already exists');
       process.exit(1);
     }
 
-    const exampleConfig = {
-      movies: ['Tron: Ares', 'Odyssey'],
-      theatre: 'AMC Metreon 16',
-      pollIntervalMinutes: 15,
-      telegram: {
-        botToken: 'your-telegram-bot-token-here',
-        chatId: 'your-telegram-chat-id-here',
-      },
-      amcApiKey: 'your-amc-api-key-here',
-    };
+    if (!existsSync(exampleConfigPath)) {
+      console.error('❌ config.example.json not found');
+      process.exit(1);
+    }
 
-    await Bun.write(configPath, JSON.stringify(exampleConfig, null, 2));
+    const exampleConfigFile = Bun.file(exampleConfigPath);
+    const exampleConfigContent = await exampleConfigFile.text();
+    await Bun.write(configPath, exampleConfigContent);
 
-    console.log('✅ Created config.json');
+    console.log('✅ Created config.json from config.example.json');
     console.log('🔧 Edit the config.json file with your settings');
     console.log(
       '🤖 Run "bun src/cli.ts setup" for Telegram bot setup instructions'

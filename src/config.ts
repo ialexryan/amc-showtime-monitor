@@ -1,5 +1,4 @@
 export interface Config {
-  movies: string[];
   theatre: string;
   pollIntervalMinutes?: number;
   telegram: {
@@ -22,8 +21,10 @@ export async function loadConfig(
     const config: Config = JSON.parse(configText);
 
     // Validate required fields
-    if (!config.movies || config.movies.length === 0) {
-      throw new Error('Config must include at least one movie to monitor');
+    if (config.movies) {
+      throw new Error(
+        'Config must not include movies - use Telegram bot commands to manage watchlist'
+      );
     }
 
     if (!config.theatre) {

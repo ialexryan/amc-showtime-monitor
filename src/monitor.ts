@@ -68,9 +68,9 @@ export class ShowtimeMonitor {
     console.log('🔍 Checking for new showtimes...');
     const newNotifications: TelegramMessage[] = [];
 
-    // Get watchlist from database (fallback to config for now)
+    // Get watchlist from database
     const watchlist = this.database.getWatchlist();
-    const moviesToCheck = watchlist.length > 0 ? watchlist : this.config.movies;
+    const moviesToCheck = watchlist;
 
     for (const movieName of moviesToCheck) {
       try {
@@ -84,7 +84,7 @@ export class ShowtimeMonitor {
           continue;
         }
 
-        // Use fuzzy matching to find the best matches for the configured movie name
+        // Use fuzzy matching to find the best matches for the watchlist movie name
         const relevantMovies = this.filterRelevantMovies(amcMovies, movieName);
 
         if (relevantMovies.length === 0) {
@@ -258,10 +258,11 @@ export class ShowtimeMonitor {
     unnotifiedShowtimes: number;
   }> {
     const unnotifiedShowtimes = this.database.getUnnotifiedShowtimes();
+    const watchlist = this.database.getWatchlist();
 
     return {
       theatre: this.theatre,
-      trackedMovies: this.config.movies,
+      trackedMovies: watchlist,
       totalShowtimes: 0, // Could add a method to get this count
       unnotifiedShowtimes: unnotifiedShowtimes.length,
     };
