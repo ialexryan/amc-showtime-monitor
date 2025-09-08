@@ -1,6 +1,5 @@
 export interface Config {
   theatre: string;
-  pollIntervalMinutes?: number;
   telegram: {
     botToken: string;
     chatId: string;
@@ -8,9 +7,7 @@ export interface Config {
   amcApiKey: string;
 }
 
-export interface AppConfig extends Config {
-  pollIntervalMinutes: number;
-}
+export type AppConfig = Config;
 
 export async function loadConfig(
   configPath: string = './config.json'
@@ -39,10 +36,7 @@ export async function loadConfig(
       throw new Error('Config must include AMC API key');
     }
 
-    return {
-      ...config,
-      pollIntervalMinutes: config.pollIntervalMinutes ?? 1,
-    };
+    return config;
   } catch (error) {
     if (error instanceof Error && error.message.includes('No such file')) {
       throw new Error(

@@ -42,7 +42,6 @@ program
       if (options.verbose) {
         console.log('📋 Config loaded:');
         console.log(`   Theatre: ${config.theatre}`);
-        console.log(`   Poll interval: ${config.pollIntervalMinutes} minutes`);
       }
 
       const monitor = new ShowtimeMonitor(config, options.database);
@@ -118,7 +117,6 @@ program
         console.log(`  • ${movie}`);
       }
       console.log(`Unnotified Showtimes: ${status.unnotifiedShowtimes}`);
-      console.log(`Poll Interval: ${config.pollIntervalMinutes} minutes`);
 
       monitor.close();
     } catch (error) {

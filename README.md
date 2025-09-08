@@ -39,7 +39,6 @@ Send Telegram notifications when AMC posts showtimes for movies you are monitori
    ```json
    {
      "theatre": "AMC Metreon 16",
-     "pollIntervalMinutes": 15,
      "telegram": {
        "botToken": "your-bot-token",
        "chatId": "your-chat-id"
@@ -137,10 +136,11 @@ Movies are managed via Telegram bot commands:
 - Or the theatre slug ("amc-metreon-16")
 - Theatre lookup supports fuzzy matching
 
-### Polling Interval
-- Default: 1 minute for responsive notifications
+### Scheduling
+- Monitoring frequency is controlled by your system scheduler (launchd/cron)
+- Default LaunchAgent setup runs every minute for responsive notifications
 - Be respectful of AMC's API rate limits
-- If you encounter rate limiting, increase the interval
+- If you encounter rate limiting, increase the LaunchAgent interval
 
 ## API Limitations
 
@@ -195,7 +195,7 @@ bun run format      # Format code
 1. **Theatre not found**: Try using the exact name from AMC's website or the theatre slug
 2. **Movie not found**: Check spelling with `/add`, try with/without articles ("The", "A")
 3. **Empty watchlist**: Use `/add <movie name>` to add movies to your watchlist
-4. **API rate limiting**: Increase polling interval in config if you encounter 429 errors
+4. **API rate limiting**: Increase LaunchAgent interval in plist file if you encounter 429 errors
 5. **Vendor exclusive movies**: Wait for movie to become publicly available
 
 ### Debug Mode

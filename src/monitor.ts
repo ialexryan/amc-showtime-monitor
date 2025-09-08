@@ -400,7 +400,7 @@ Show monitoring status and statistics
 <b>/help</b>
 Show this help message
 
-<i>The bot checks for new showtimes every ${this.config.pollIntervalMinutes} minutes and will notify you when tickets become available!</i>`;
+<i>The bot checks for new showtimes continuously and will notify you when tickets become available!</i>`;
 
     await this.telegram.sendResponse(helpMessage);
   }
