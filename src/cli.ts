@@ -13,7 +13,7 @@ program
   .version('1.0.0');
 
 program
-  .command('run')
+  .command('monitor')
   .description(
     'Run the main monitoring loop (check showtimes and process Telegram commands)'
   )

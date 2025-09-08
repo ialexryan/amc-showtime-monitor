@@ -58,7 +58,7 @@ Send Telegram notifications when AMC posts showtimes for movies you are monitori
 
 ### Run the monitoring loop
 ```bash
-bun run
+bun monitor
 ```
 
 ### Test Telegram connection
@@ -80,7 +80,7 @@ bun show-status
 
 ### Run with verbose logging
 ```bash
-bun src/cli.ts run -v
+bun src/cli.ts monitor -v
 ```
 
 ## Automation
