@@ -157,6 +157,88 @@ export class AMCApiClient {
     }
   }
 
+  // Fetch all movies from all endpoints once per run
+  async getAllMovies(): Promise<AMCMovie[]> {
+    try {
+      console.log('Fetching all movies from AMC API...');
+
+      const movieMap = new Map<number, AMCMovie>();
+
+      // Search in advance movies (upcoming releases)
+      try {
+        const advanceResponse: AxiosResponse<
+          AMCApiResponse<{ movies: AMCMovie[] }>
+        > = await this.client.get('/movies/views/advance', {
+          params: {
+            'page-size': 1000,
+          },
+        });
+
+        const advanceMovies = advanceResponse.data._embedded.movies || [];
+        console.log(`Found ${advanceMovies.length} advance movies`);
+        for (const movie of advanceMovies) {
+          movieMap.set(movie.id, movie);
+        }
+      } catch (error) {
+        console.log(
+          'Error fetching advance movies (continuing with other searches):',
+          error.message
+        );
+      }
+
+      // Also search in now-playing movies
+      try {
+        const nowPlayingResponse: AxiosResponse<
+          AMCApiResponse<{ movies: AMCMovie[] }>
+        > = await this.client.get('/movies/views/now-playing', {
+          params: {
+            'page-size': 1000,
+          },
+        });
+
+        const nowPlayingMovies = nowPlayingResponse.data._embedded.movies || [];
+        console.log(`Found ${nowPlayingMovies.length} now-playing movies`);
+        for (const movie of nowPlayingMovies) {
+          movieMap.set(movie.id, movie);
+        }
+      } catch (error) {
+        console.log(
+          'Error fetching now-playing movies (continuing with other searches):',
+          error.message
+        );
+      }
+
+      // Also search in coming-soon movies
+      try {
+        const comingSoonResponse: AxiosResponse<
+          AMCApiResponse<{ movies: AMCMovie[] }>
+        > = await this.client.get('/movies/views/coming-soon', {
+          params: {
+            'page-size': 1000,
+          },
+        });
+
+        const comingSoonMovies = comingSoonResponse.data._embedded.movies || [];
+        console.log(`Found ${comingSoonMovies.length} coming-soon movies`);
+        for (const movie of comingSoonMovies) {
+          movieMap.set(movie.id, movie);
+        }
+      } catch (error) {
+        console.log(
+          'Error fetching coming-soon movies (continuing with other searches):',
+          error.message
+        );
+      }
+
+      const allMovies = Array.from(movieMap.values());
+      console.log(`Total unique movies: ${allMovies.length}`);
+      return allMovies;
+    } catch (error) {
+      console.error('Error fetching all movies:', error);
+      throw error;
+    }
+  }
+
   async searchMoviesByName(movieName: string): Promise<AMCMovie[]> {
     try {
       console.log(`Searching for movie: ${movieName}`);
@@ -287,7 +369,7 @@ export class AMCApiClient {
       > = await this.client.get(`/theatres/${theatreId}/showtimes`, {
         params: {
           'movie-id': movieId,
-          'page-size': 100, // Get all showtimes
+          'page-size': 1000, // Get all showtimes
         },
       });
 

@@ -72,20 +72,15 @@ export class ShowtimeMonitor {
     const watchlist = this.database.getWatchlist();
     const moviesToCheck = watchlist;
 
+    // Fetch all movies once at the start
+    const allMovies = await this.amcClient.getAllMovies();
+
     for (const movieName of moviesToCheck) {
       try {
         console.log(`\n📽️  Processing: ${movieName}`);
 
-        // Search for movies matching this name
-        const amcMovies = await this.amcClient.searchMoviesByName(movieName);
-
-        if (amcMovies.length === 0) {
-          console.log(`   ⚠️  No movies found for: ${movieName}`);
-          continue;
-        }
-
-        // Use fuzzy matching to find the best matches for the watchlist movie name
-        const relevantMovies = this.filterRelevantMovies(amcMovies, movieName);
+        // Use fuzzy matching to find relevant movies from cached data
+        const relevantMovies = this.filterRelevantMovies(allMovies, movieName);
 
         if (relevantMovies.length === 0) {
           console.log(`   ⚠️  No relevant movies found for: ${movieName}`);
