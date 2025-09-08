@@ -108,15 +108,15 @@ Create `~/Library/LaunchAgents/com.user.amc-monitor.plist`:
     <key>WorkingDirectory</key>
     <string>/path/to/amc-showtime-monitor</string>
     <key>StartInterval</key>
-    <integer>900</integer>
+    <integer>60</integer>
 </dict>
 </plist>
 ```
 
 ### Linux (cron)
 ```bash
-# Run every 15 minutes
-*/15 * * * * cd /path/to/amc-showtime-monitor && bun check
+# Run every minute
+* * * * * cd /path/to/amc-showtime-monitor && bun check
 ```
 
 ## Configuration
@@ -134,9 +134,9 @@ Movies are now managed via Telegram bot commands instead of the config file:
 - Theatre lookup supports fuzzy matching
 
 ### Polling Interval
-- Minimum recommended: 15 minutes
+- Default: 1 minute for responsive notifications
 - Be respectful of AMC's API rate limits
-- Higher frequency may trigger rate limiting
+- If you encounter rate limiting, increase the interval
 
 ## API Limitations
 
@@ -191,7 +191,7 @@ bun run format      # Format code
 1. **Theatre not found**: Try using the exact name from AMC's website or the theatre slug
 2. **Movie not found**: Check spelling with `/add`, try with/without articles ("The", "A")
 3. **Empty watchlist**: Use `/add <movie name>` to add movies to your watchlist
-4. **API rate limiting**: Reduce polling frequency in config
+4. **API rate limiting**: Increase polling interval in config if you encounter 429 errors
 5. **Vendor exclusive movies**: Wait for movie to become publicly available
 
 ### Debug Mode

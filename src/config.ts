@@ -41,7 +41,7 @@ export async function loadConfig(
 
     return {
       ...config,
-      pollIntervalMinutes: config.pollIntervalMinutes ?? 15,
+      pollIntervalMinutes: config.pollIntervalMinutes ?? 1,
     };
   } catch (error) {
     if (error instanceof Error && error.message.includes('No such file')) {
