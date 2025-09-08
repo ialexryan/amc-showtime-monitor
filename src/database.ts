@@ -36,7 +36,7 @@ export interface Showtime {
 export class ShowtimeDatabase {
   private db: Database;
 
-  constructor(dbPath: string = './showtimes.db') {
+  constructor(dbPath: string = './amc-monitor.db') {
     this.db = new Database(dbPath);
     this.initTables();
   }

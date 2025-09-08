@@ -18,7 +18,7 @@ program
     'Run the main monitoring loop (check showtimes and process Telegram commands)'
   )
   .option('-c, --config <path>', 'Path to config file', './config.json')
-  .option('-d, --database <path>', 'Path to database file', './showtimes.db')
+  .option('-d, --database <path>', 'Path to database file', './amc-monitor.db')
   .option('-v, --verbose', 'Verbose logging', false)
   .action(async (options) => {
     try {
@@ -94,7 +94,7 @@ program
   .command('show-status')
   .description('Show current monitoring status and watchlist')
   .option('-c, --config <path>', 'Path to config file', './config.json')
-  .option('-d, --database <path>', 'Path to database file', './showtimes.db')
+  .option('-d, --database <path>', 'Path to database file', './amc-monitor.db')
   .action(async (options) => {
     try {
       if (!existsSync(options.config)) {
@@ -188,7 +188,7 @@ program
   .description(
     'Reset the database (removes all tracked showtimes and watchlist)'
   )
-  .option('-d, --database <path>', 'Path to database file', './showtimes.db')
+  .option('-d, --database <path>', 'Path to database file', './amc-monitor.db')
   .option('--yes', 'Skip confirmation prompt')
   .action(async (options) => {
     try {

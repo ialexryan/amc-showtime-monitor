@@ -184,7 +184,7 @@ bun run format      # Format code
 ```
 
 ### Database
-- SQLite database (`showtimes.db`) stores theatres, movies, watchlist, and showtime history
+- SQLite database (`amc-monitor.db`) stores theatres, movies, watchlist, and showtime history
 - Database is created automatically on first run
 - Use `bun src/cli.ts reset-db` to reset all tracking (includes watchlist)
 
