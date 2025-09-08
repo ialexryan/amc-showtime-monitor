@@ -13,8 +13,10 @@ program
   .version('1.0.0');
 
 program
-  .command('check')
-  .description('Check for new showtimes and send notifications')
+  .command('run')
+  .description(
+    'Run the main monitoring loop (check showtimes and process Telegram commands)'
+  )
   .option('-c, --config <path>', 'Path to config file', './config.json')
   .option('-d, --database <path>', 'Path to database file', './showtimes.db')
   .option('-v, --verbose', 'Verbose logging', false)
@@ -63,8 +65,8 @@ program
   });
 
 program
-  .command('test')
-  .description('Test Telegram bot connection')
+  .command('test-telegram')
+  .description('Test Telegram bot connection and send test message')
   .option('-c, --config <path>', 'Path to config file', './config.json')
   .action(async (options) => {
     try {
@@ -89,8 +91,8 @@ program
   });
 
 program
-  .command('status')
-  .description('Show current monitoring status')
+  .command('show-status')
+  .description('Show current monitoring status and watchlist')
   .option('-c, --config <path>', 'Path to config file', './config.json')
   .option('-d, --database <path>', 'Path to database file', './showtimes.db')
   .action(async (options) => {
@@ -125,8 +127,8 @@ program
   });
 
 program
-  .command('setup')
-  .description('Interactive setup for Telegram bot')
+  .command('telegram-setup')
+  .description('Show step-by-step instructions for setting up Telegram bot')
   .action(async () => {
     console.log('🤖 Telegram Bot Setup Guide');
     console.log('============================');
@@ -154,8 +156,8 @@ program
   });
 
 program
-  .command('init')
-  .description('Initialize a new config file')
+  .command('create-config')
+  .description('Create a new config.json file from template')
   .action(async () => {
     const configPath = './config.json';
     const exampleConfigPath = './config.example.json';
@@ -177,13 +179,15 @@ program
     console.log('✅ Created config.json from config.example.json');
     console.log('🔧 Edit the config.json file with your settings');
     console.log(
-      '🤖 Run "bun src/cli.ts setup" for Telegram bot setup instructions'
+      '🤖 Run "bun src/cli.ts telegram-setup" for Telegram bot setup instructions'
     );
   });
 
 program
   .command('reset-db')
-  .description('Reset the database (removes all tracked showtimes)')
+  .description(
+    'Reset the database (removes all tracked showtimes and watchlist)'
+  )
   .option('-d, --database <path>', 'Path to database file', './showtimes.db')
   .option('--yes', 'Skip confirmation prompt')
   .action(async (options) => {

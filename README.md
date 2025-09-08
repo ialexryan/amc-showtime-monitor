@@ -1,23 +1,19 @@
 # AMC Showtime Monitor
 
-Monitor AMC Theatres for new movie showtimes and send Telegram notifications when showtimes are posted for your favorite movies.
+Send Telegram notifications when AMC posts showtimes for movies you are monitoring.
 
 ## Features
 
-- **Real-time monitoring**: Check for new showtimes at configurable intervals
+- **Telegram notifications**: Get instant alerts when new showtimes are posted
 - **Telegram bot commands**: Manage your movie watchlist via Telegram chat
 - **Fuzzy movie matching**: Find movies even with slight title variations
 - **Premium format detection**: Highlights IMAX, Dolby Cinema, and other premium formats
 - **Direct ticket links**: Each showtime links directly to AMC's seat selection page
-- **Telegram notifications**: Get instant alerts when new showtimes are posted
-- **Duplicate prevention**: Tracks announced showtimes to avoid repeat notifications
-- **SQLite persistence**: Maintains state across runs
 
 ## Requirements
 
 - [Bun](https://bun.sh/) runtime
-- AMC API key (included in example config)
-- Telegram bot token and chat ID
+- AMC API key (apply for one [here](https://developers.amctheatres.com/GettingStarted/NewVendorRequest))
 
 ## Setup
 
@@ -30,12 +26,12 @@ Monitor AMC Theatres for new movie showtimes and send Telegram notifications whe
 
 2. **Create configuration file**:
    ```bash
-   bun src/cli.ts init
+   bun src/cli.ts create-config
    ```
 
 3. **Set up Telegram bot**:
    ```bash
-   bun src/cli.ts setup
+   bun src/cli.ts telegram-setup
    ```
    Follow the interactive guide to create your Telegram bot.
 
@@ -60,19 +56,19 @@ Monitor AMC Theatres for new movie showtimes and send Telegram notifications whe
 
 ## Usage
 
-### Check for new showtimes
+### Run the monitoring loop
 ```bash
-bun check
+bun run
 ```
 
 ### Test Telegram connection
 ```bash
-bun test
+bun test-telegram
 ```
 
 ### View monitoring status
 ```bash
-bun status
+bun show-status
 ```
 
 ### Manage watchlist via Telegram
@@ -84,7 +80,7 @@ bun status
 
 ### Run with verbose logging
 ```bash
-bun src/cli.ts check -v
+bun src/cli.ts run -v
 ```
 
 ## Automation
@@ -122,7 +118,7 @@ Create `~/Library/LaunchAgents/com.user.amc-monitor.plist`:
 ## Configuration
 
 ### Watchlist Management
-Movies are now managed via Telegram bot commands instead of the config file:
+Movies are managed via Telegram bot commands:
 - Use `/add <movie name>` to add movies to your watchlist
 - Use exact movie titles or close variations
 - Fuzzy matching handles minor differences
