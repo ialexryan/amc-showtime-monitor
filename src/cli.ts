@@ -2,9 +2,9 @@
 
 import { existsSync, unlinkSync } from 'node:fs';
 import { Command } from 'commander';
+import packageJson from '../package.json' with { type: 'json' };
 import { loadConfig } from './config.js';
 import { ShowtimeMonitor } from './monitor.js';
-import packageJson from '../package.json' with { type: 'json' };
 
 const program = new Command();
 
@@ -49,12 +49,15 @@ program
       // Initialize the monitor
       await monitor.initialize();
 
-      // Run the check
+      // Process any pending Telegram commands
+      await monitor.processTelegramCommands();
+
+      // Run the showtime check
       await monitor.checkForNewShowtimes();
 
       // Clean up
       monitor.close();
-      console.log('🎉 Check completed successfully');
+      console.log('🎉 Monitor run completed successfully');
     } catch (error) {
       console.error('❌ Error during check:', error.message);
       if (options.verbose) {

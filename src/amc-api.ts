@@ -109,7 +109,6 @@ export class AMCApiClient {
           const directResponse: AxiosResponse<AMCTheatre> =
             await this.client.get(`/theatres/${theatreNameOrSlug}`);
           const theatre = directResponse.data;
-          console.log(`✅ Found theatre: ${theatre.name} (ID: ${theatre.id})`);
 
           // Cache the result
           this.theatreCache.set(theatreNameOrSlug.toLowerCase(), theatre);
@@ -142,9 +141,6 @@ export class AMCApiClient {
 
         const selectedTheatre = exactMatch || theatres[0];
         this.theatreCache.set(theatreNameOrSlug.toLowerCase(), selectedTheatre);
-        console.log(
-          `✅ Found theatre: ${selectedTheatre.name} (ID: ${selectedTheatre.id})`
-        );
         return selectedTheatre;
       }
 

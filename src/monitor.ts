@@ -62,9 +62,6 @@ export class ShowtimeMonitor {
       throw new Error('Monitor not initialized. Call initialize() first.');
     }
 
-    // First, check for Telegram commands
-    await this.processTelegramCommands();
-
     console.log('🔍 Checking for new showtimes...');
     const newNotifications: TelegramMessage[] = [];
 
@@ -123,7 +120,7 @@ export class ShowtimeMonitor {
       console.log('\n📭 No new showtimes found');
     }
 
-    console.log('🏁 Check complete');
+    console.log('🏁 Checking for new showtimes complete');
   }
 
   private filterRelevantMovies(
@@ -267,7 +264,8 @@ export class ShowtimeMonitor {
     this.database.close();
   }
 
-  private async processTelegramCommands(): Promise<void> {
+  async processTelegramCommands(): Promise<void> {
+    console.log('🔍 Checking for Telegram commands...');
     try {
       const commands = await this.telegram.checkForCommands();
 
@@ -299,6 +297,7 @@ export class ShowtimeMonitor {
     } catch (error) {
       console.error('❌ Error processing Telegram commands:', error.message);
     }
+    console.log('🏁 Checking for Telegram commands complete');
   }
 
   private async handleAddCommand(movieName: string): Promise<void> {
