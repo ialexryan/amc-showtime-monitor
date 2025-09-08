@@ -85,34 +85,42 @@ bun src/cli.ts monitor -v
 
 ## Automation
 
-Set up automated monitoring using your system's scheduler:
+### macOS (LaunchAgent) - Recommended
 
-### macOS (launchd)
-Create `~/Library/LaunchAgents/com.user.amc-monitor.plist`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.user.amc-monitor</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/path/to/bun</string>
-        <string>check</string>
-    </array>
-    <key>WorkingDirectory</key>
-    <string>/path/to/amc-showtime-monitor</string>
-    <key>StartInterval</key>
-    <integer>60</integer>
-</dict>
-</plist>
+The cleanest way to run the monitor automatically on macOS:
+
+```bash
+./setup-launchd.sh
 ```
 
-### Linux (cron)
+This will:
+- Create a LaunchAgent that runs every minute
+- Set up proper logging to `logs/` directory
+- Handle path resolution automatically
+- Start the service immediately
+
+**Management commands:**
 ```bash
-# Run every minute
-* * * * * cd /path/to/amc-showtime-monitor && bun check
+# Check status
+launchctl list | grep amc-showtime-monitor
+
+# View logs
+tail -f logs/stdout.log
+tail -f logs/stderr.log
+
+# Stop the service
+launchctl unload ~/Library/LaunchAgents/com.user.amc-showtime-monitor.plist
+
+# Start the service
+launchctl load ~/Library/LaunchAgents/com.user.amc-showtime-monitor.plist
+```
+
+### Alternative: Manual cron setup
+
+For other systems or if you prefer cron:
+```bash
+# Run every minute  
+* * * * * cd /path/to/amc-showtime-monitor && bun monitor
 ```
 
 ## Configuration
