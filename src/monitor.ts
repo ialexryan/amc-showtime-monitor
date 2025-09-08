@@ -17,7 +17,8 @@ export class ShowtimeMonitor {
     this.database = new ShowtimeDatabase(dbPath);
     this.telegram = new TelegramBot(
       config.telegram.botToken,
-      config.telegram.chatId
+      config.telegram.chatId,
+      this.database
     );
   }
 
@@ -61,10 +62,17 @@ export class ShowtimeMonitor {
       throw new Error('Monitor not initialized. Call initialize() first.');
     }
 
+    // First, check for Telegram commands
+    await this.processTelegramCommands();
+
     console.log('🔍 Checking for new showtimes...');
     const newNotifications: TelegramMessage[] = [];
 
-    for (const movieName of this.config.movies) {
+    // Get watchlist from database (fallback to config for now)
+    const watchlist = this.database.getWatchlist();
+    const moviesToCheck = watchlist.length > 0 ? watchlist : this.config.movies;
+
+    for (const movieName of moviesToCheck) {
       try {
         console.log(`\n📽️  Processing: ${movieName}`);
 
@@ -261,5 +269,143 @@ export class ShowtimeMonitor {
 
   close(): void {
     this.database.close();
+  }
+
+  private async processTelegramCommands(): Promise<void> {
+    try {
+      const commands = await this.telegram.checkForCommands();
+
+      for (const { command, args } of commands) {
+        console.log(`📱 Processing command: ${command} ${args}`);
+
+        switch (command) {
+          case '/add':
+            await this.handleAddCommand(args);
+            break;
+          case '/remove':
+            await this.handleRemoveCommand(args);
+            break;
+          case '/list':
+            await this.handleListCommand();
+            break;
+          case '/status':
+            await this.handleStatusCommand();
+            break;
+          case '/help':
+            await this.handleHelpCommand();
+            break;
+          default:
+            await this.telegram.sendResponse(
+              `❌ Unknown command: ${command}\n\nSend /help for available commands.`
+            );
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error processing Telegram commands:', error.message);
+    }
+  }
+
+  private async handleAddCommand(movieName: string): Promise<void> {
+    if (!movieName.trim()) {
+      await this.telegram.sendResponse(
+        '❌ Please specify a movie name.\n\nExample: /add Deadpool & Wolverine'
+      );
+      return;
+    }
+
+    const added = this.database.addToWatchlist(movieName.trim());
+    if (added) {
+      await this.telegram.sendResponse(
+        `✅ Added "${movieName}" to your watchlist.`
+      );
+    } else {
+      await this.telegram.sendResponse(
+        `⚠️ "${movieName}" is already in your watchlist.`
+      );
+    }
+  }
+
+  private async handleRemoveCommand(movieName: string): Promise<void> {
+    if (!movieName.trim()) {
+      await this.telegram.sendResponse(
+        '❌ Please specify a movie name.\n\nExample: /remove Tron: Ares'
+      );
+      return;
+    }
+
+    const removed = this.database.removeFromWatchlist(movieName.trim());
+    if (removed) {
+      await this.telegram.sendResponse(
+        `✅ Removed "${movieName}" from your watchlist.`
+      );
+    } else {
+      await this.telegram.sendResponse(
+        `⚠️ "${movieName}" was not found in your watchlist.`
+      );
+    }
+  }
+
+  private async handleListCommand(): Promise<void> {
+    const watchlist = this.database.getWatchlist();
+
+    if (watchlist.length === 0) {
+      await this.telegram.sendResponse(
+        '📋 Your watchlist is empty.\n\nAdd movies with /add <movie name>'
+      );
+      return;
+    }
+
+    const movieList = watchlist
+      .map((movie, index) => `${index + 1}. ${movie}`)
+      .join('\n');
+    await this.telegram.sendResponse(
+      `📋 <b>Your Watchlist</b>\n\n${movieList}\n\nUse /add or /remove to modify your list.`
+    );
+  }
+
+  private async handleStatusCommand(): Promise<void> {
+    const status = await this.getStatus();
+    const watchlist = this.database.getWatchlist();
+
+    let message = `📊 <b>AMC Showtime Monitor Status</b>\n\n`;
+    message += `🏛️ <b>Theatre:</b> ${status.theatre?.name || 'Not configured'}\n`;
+    message += `📍 <b>Location:</b> ${status.theatre?.location || 'N/A'}\n`;
+    message += `🎬 <b>Watchlist:</b> ${watchlist.length} movies\n`;
+
+    if (watchlist.length > 0) {
+      message += `\n<b>Tracked Movies:</b>\n`;
+      watchlist.forEach((movie) => {
+        message += `• ${movie}\n`;
+      });
+    }
+
+    message += `\n📊 <b>Unnotified Showtimes:</b> ${status.unnotifiedShowtimes}`;
+
+    await this.telegram.sendResponse(message);
+  }
+
+  private async handleHelpCommand(): Promise<void> {
+    const helpMessage = `🤖 <b>AMC Showtime Monitor Commands</b>
+
+<b>/add &lt;movie name&gt;</b>
+Add a movie to your watchlist
+Example: /add Deadpool & Wolverine
+
+<b>/remove &lt;movie name&gt;</b>
+Remove a movie from your watchlist
+Example: /remove Tron: Ares
+
+<b>/list</b>
+Show your current watchlist
+
+<b>/status</b>
+Show monitoring status and statistics
+
+<b>/help</b>
+Show this help message
+
+<i>The bot checks for new showtimes every ${this.config.pollIntervalMinutes} minutes and will notify you when tickets become available!</i>`;
+
+    await this.telegram.sendResponse(helpMessage);
   }
 }

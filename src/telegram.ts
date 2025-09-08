@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
+import type { ShowtimeDatabase } from './database.js';
 
 export interface TelegramMessage {
   movieName: string;
@@ -14,15 +15,23 @@ export interface TelegramMessage {
 
 export class TelegramBot {
   private client: AxiosInstance;
+  private lastUpdateId: number = 0;
 
   constructor(
     botToken: string,
-    private chatId: string
+    private chatId: string,
+    private database?: ShowtimeDatabase
   ) {
     this.client = axios.create({
       baseURL: `https://api.telegram.org/bot${botToken}`,
       timeout: 10000,
     });
+
+    // Load last update ID from database
+    if (this.database) {
+      const lastId = this.database.getBotState('last_update_id');
+      this.lastUpdateId = lastId ? parseInt(lastId, 10) : 0;
+    }
   }
 
   async sendBatchNotification(messages: TelegramMessage[]): Promise<void> {
@@ -191,6 +200,70 @@ Time: ${new Date().toLocaleString()}`;
     } catch (error) {
       console.error('❌ Failed to send test message:', error.message);
       throw error;
+    }
+  }
+
+  // Check for new messages and return commands
+  async checkForCommands(): Promise<Array<{ command: string; args: string }>> {
+    try {
+      const response = await this.client.get('/getUpdates', {
+        params: {
+          offset: this.lastUpdateId + 1,
+          limit: 10,
+          timeout: 5,
+        },
+      });
+
+      const updates = response.data.result;
+      const commands: Array<{ command: string; args: string }> = [];
+
+      for (const update of updates) {
+        this.lastUpdateId = update.update_id;
+
+        // Only process messages from the configured chat
+        if (
+          update.message?.chat?.id?.toString() === this.chatId &&
+          update.message.text
+        ) {
+          const text = update.message.text.trim();
+
+          // Check if it's a command (starts with /)
+          if (text.startsWith('/')) {
+            const parts = text.split(' ');
+            const command = parts[0].toLowerCase();
+            const args = parts.slice(1).join(' ');
+
+            commands.push({ command, args });
+          }
+        }
+      }
+
+      // Save the last update ID to database
+      if (this.database && this.lastUpdateId > 0) {
+        this.database.setBotState(
+          'last_update_id',
+          this.lastUpdateId.toString()
+        );
+      }
+
+      return commands;
+    } catch (error) {
+      console.error('❌ Error checking for commands:', error.message);
+      return [];
+    }
+  }
+
+  // Send a response message
+  async sendResponse(message: string): Promise<void> {
+    try {
+      await this.client.post('/sendMessage', {
+        chat_id: this.chatId,
+        text: message,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      });
+    } catch (error) {
+      console.error('❌ Failed to send response:', error.message);
     }
   }
 }

@@ -83,11 +83,24 @@ export class ShowtimeDatabase {
         UNIQUE(movie_id, theatre_id, show_date_time, auditorium)
       );
 
+      CREATE TABLE IF NOT EXISTS watchlist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        movie_name TEXT UNIQUE NOT NULL,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS bot_state (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       -- Indexes for performance
       CREATE INDEX IF NOT EXISTS idx_showtimes_movie_theatre ON showtimes (movie_id, theatre_id);
       CREATE INDEX IF NOT EXISTS idx_showtimes_notified ON showtimes (notified);
       CREATE INDEX IF NOT EXISTS idx_showtimes_first_seen ON showtimes (first_seen);
       CREATE INDEX IF NOT EXISTS idx_movies_last_checked ON movies (last_checked);
+      CREATE INDEX IF NOT EXISTS idx_watchlist_movie_name ON watchlist (movie_name);
     `);
   }
 
@@ -230,6 +243,84 @@ export class ShowtimeDatabase {
       'UPDATE showtimes SET notified = TRUE WHERE id = ?'
     );
     stmt.run(showtimeId);
+  }
+
+  // Watchlist operations
+  addToWatchlist(movieName: string): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT OR IGNORE INTO watchlist (movie_name) VALUES (?)
+      `);
+      const result = stmt.run(movieName);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error adding to watchlist:', error);
+      return false;
+    }
+  }
+
+  removeFromWatchlist(movieName: string): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        DELETE FROM watchlist WHERE movie_name = ? COLLATE NOCASE
+      `);
+      const result = stmt.run(movieName);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error removing from watchlist:', error);
+      return false;
+    }
+  }
+
+  getWatchlist(): string[] {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT movie_name FROM watchlist ORDER BY added_at ASC
+      `);
+      const rows = stmt.all() as Array<{ movie_name: string }>;
+      return rows.map((row) => row.movie_name);
+    } catch (error) {
+      console.error('Error getting watchlist:', error);
+      return [];
+    }
+  }
+
+  isInWatchlist(movieName: string): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT 1 FROM watchlist WHERE movie_name = ? COLLATE NOCASE
+      `);
+      return !!stmt.get(movieName);
+    } catch (error) {
+      console.error('Error checking watchlist:', error);
+      return false;
+    }
+  }
+
+  // Bot state operations
+  setBotState(key: string, value: string): void {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT OR REPLACE INTO bot_state (key, value, updated_at) 
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+      `);
+      stmt.run(key, value);
+    } catch (error) {
+      console.error('Error setting bot state:', error);
+    }
+  }
+
+  getBotState(key: string): string | null {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT value FROM bot_state WHERE key = ?
+      `);
+      const result = stmt.get(key) as { value: string } | undefined;
+      return result?.value || null;
+    } catch (error) {
+      console.error('Error getting bot state:', error);
+      return null;
+    }
   }
 
   close() {
