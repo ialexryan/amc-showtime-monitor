@@ -304,6 +304,12 @@ export class AMCApiClient {
       console.log(`${futureShowtimes.length} future showtimes after filtering`);
       return futureShowtimes;
     } catch (error) {
+      if (error.response?.status === 404) {
+        console.log(
+          `No showtimes available for movie ${movieId} at theatre ${theatreId}`
+        );
+        return [];
+      }
       console.error('Error getting showtimes:', error);
       throw error;
     }
