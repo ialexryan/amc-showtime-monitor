@@ -1,6 +1,6 @@
 {
   "name": "amc-showtime-monitor",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": "",
   "main": "src/cli.ts",
   "dependencies": {
