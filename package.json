@@ -18,10 +18,11 @@
     "cinema"
   ],
   "scripts": {
-    "check": "bun src/cli.ts check",
-    "test": "bun src/cli.ts test",
-    "status": "bun src/cli.ts status",
-    "setup": "bun src/cli.ts setup",
+    "monitor": "bun src/cli.ts monitor",
+    "test-telegram": "bun src/cli.ts test-telegram",
+    "show-status": "bun src/cli.ts show-status",
+    "telegram-setup": "bun src/cli.ts telegram-setup",
+    "create-config": "bun src/cli.ts create-config",
     "reset-db": "bun src/cli.ts reset-db",
     "dev": "bun --watch src/cli.ts",
     "lint": "biome check src/",
