@@ -1,13 +1,15 @@
-export interface Config {
-  theatre: string;
-  telegram: {
-    botToken: string;
-    chatId: string;
-  };
-  amcApiKey: string;
-}
+import { z, ZodError } from 'zod';
 
-export type AppConfig = Config;
+export const ConfigSchema = z.object({
+  theatre: z.string().min(1, 'Theatre name cannot be empty'),
+  telegram: z.object({
+    botToken: z.string().min(1, 'Telegram bot token cannot be empty'),
+    chatId: z.string().min(1, 'Telegram chat ID cannot be empty'),
+  }),
+  amcApiKey: z.string().min(1, 'AMC API key cannot be empty'),
+});
+
+export type AppConfig = z.infer<typeof ConfigSchema>;
 
 export async function loadConfig(
   configPath: string = './config.json'
@@ -15,27 +17,23 @@ export async function loadConfig(
   try {
     const configFile = Bun.file(configPath);
     const configText = await configFile.text();
-    const config: Config = JSON.parse(configText);
+    const rawConfig = JSON.parse(configText);
 
-    if (!config.theatre) {
-      throw new Error('Config must include theatre name');
-    }
-
-    if (!config.telegram?.botToken || !config.telegram?.chatId) {
-      throw new Error('Config must include Telegram bot token and chat ID');
-    }
-
-    if (!config.amcApiKey) {
-      throw new Error('Config must include AMC API key');
-    }
-
-    return config;
+    return ConfigSchema.parse(rawConfig);
   } catch (error) {
     if (error instanceof Error && error.message.includes('No such file')) {
       throw new Error(
         `Config file not found at ${configPath}. Please create it with your settings.`
       );
     }
+
+    if (error instanceof ZodError) {
+      const errorMessages = error.errors
+        .map((err) => `${err.path.join('.')}: ${err.message}`)
+        .join('\n');
+      throw new Error(`Config validation failed:\n${errorMessages}`);
+    }
+
     throw error;
   }
 }
