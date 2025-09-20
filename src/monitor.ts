@@ -21,7 +21,8 @@ export class ShowtimeMonitor {
     this.telegram = new TelegramBot(
       config.telegram.botToken,
       config.telegram.chatId,
-      this.database
+      this.database,
+      this.logger
     );
   }
 
@@ -118,7 +119,9 @@ export class ShowtimeMonitor {
 
     // Send notifications for new showtimes
     if (newNotifications.length > 0) {
-      console.log(`\n📱 Sending ${newNotifications.length} notifications...`);
+      this.logger.info(
+        `\n📱 Sending ${newNotifications.length} notifications...`
+      );
       try {
         await this.telegram.sendBatchNotification(newNotifications);
 
@@ -128,9 +131,9 @@ export class ShowtimeMonitor {
           // This is handled in processMovieShowtimes when we create notifications
         }
 
-        console.log('✅ All notifications sent successfully');
+        this.logger.info('✅ All notifications sent successfully');
       } catch (error) {
-        console.error('❌ Failed to send notifications:', error.message);
+        this.logger.error(`❌ Failed to send notifications: ${error.message}`);
       }
     } else {
       this.logger.info('\n📭 No new showtimes found');
@@ -152,9 +155,8 @@ export class ShowtimeMonitor {
 
     const results = fuse.search(searchTerm);
 
-    console.log(
-      `   🔍 Fuzzy search results for "${searchTerm}":`,
-      results.map((r) => `${r.item.name} (score: ${r.score?.toFixed(3)})`)
+    this.logger.info(
+      `   🔍 Fuzzy search results for "${searchTerm}": ${results.map((r) => `${r.item.name} (score: ${r.score?.toFixed(3)})`).join(', ')}`
     );
 
     // Return movies with good similarity scores - be more strict
@@ -163,11 +165,11 @@ export class ShowtimeMonitor {
     );
 
     if (filteredResults.length > 0) {
-      console.log(
+      this.logger.info(
         `   ✅ Found ${filteredResults.length} fuzzy matches with good scores`
       );
     } else {
-      console.log(`   ⚠️  No good fuzzy matches found (scores too low)`);
+      this.logger.warn(`   ⚠️  No good fuzzy matches found (scores too low)`);
     }
 
     return filteredResults.map((result) => result.item);
@@ -180,7 +182,9 @@ export class ShowtimeMonitor {
       throw new Error('Theatre not set');
     }
 
-    console.log(`   🎬 Processing showtimes for: ${amcMovie.name}`);
+    this.logger.info(`   🎬 Processing showtimes for: ${amcMovie.name}`, {
+      movie: amcMovie.name,
+    });
 
     // Store/update movie in database
     const movieId = this.database.upsertMovie({
@@ -198,7 +202,9 @@ export class ShowtimeMonitor {
       this.theatre.id
     );
 
-    console.log(`   📅 Found ${amcShowtimes.length} showtimes`);
+    this.logger.info(`   📅 Found ${amcShowtimes.length} showtimes`, {
+      movie: amcMovie.name,
+    });
 
     const newNotifications: TelegramMessage[] = [];
 
@@ -221,8 +227,9 @@ export class ShowtimeMonitor {
 
       // If this is a new showtime, create a notification
       if (result.isNew) {
-        console.log(
-          `   🆕 New showtime: ${new Date(amcShowtime.showDateTimeLocal).toLocaleString()}`
+        this.logger.info(
+          `   🆕 New showtime: ${new Date(amcShowtime.showDateTimeLocal).toLocaleString()}`,
+          { movie: amcMovie.name }
         );
 
         newNotifications.push({
@@ -246,8 +253,9 @@ export class ShowtimeMonitor {
     this.database.updateMovieLastChecked(movieId);
 
     if (newNotifications.length > 0) {
-      console.log(
-        `   ✨ ${newNotifications.length} new showtimes for ${amcMovie.name}`
+      this.logger.info(
+        `   ✨ ${newNotifications.length} new showtimes for ${amcMovie.name}`,
+        { movie: amcMovie.name }
       );
     }
 
@@ -255,7 +263,7 @@ export class ShowtimeMonitor {
   }
 
   async sendTestNotification(): Promise<void> {
-    console.log('📱 Sending test notification...');
+    this.logger.info('📱 Sending test notification...');
     await this.telegram.sendTestMessage();
   }
 
@@ -288,7 +296,7 @@ export class ShowtimeMonitor {
       const commands = await this.telegram.checkForCommands();
 
       for (const { command, args } of commands) {
-        console.log(`📱 Processing command: ${command} ${args}`);
+        this.logger.info(`📱 Processing command: ${command} ${args}`);
 
         switch (command) {
           case '/add':
@@ -313,7 +321,9 @@ export class ShowtimeMonitor {
         }
       }
     } catch (error) {
-      console.error('❌ Error processing Telegram commands:', error.message);
+      this.logger.error(
+        `❌ Error processing Telegram commands: ${error.message}`
+      );
     }
     this.logger.info('🏁 Checking for Telegram commands complete');
   }

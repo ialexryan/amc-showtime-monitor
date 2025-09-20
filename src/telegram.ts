@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 import type { ShowtimeDatabase } from './database.js';
+import type { Logger } from './logger.js';
 
 export interface TelegramMessage {
   movieName: string;
@@ -20,7 +21,8 @@ export class TelegramBot {
   constructor(
     botToken: string,
     private chatId: string,
-    private database?: ShowtimeDatabase
+    private database?: ShowtimeDatabase,
+    private logger?: Logger
   ) {
     this.client = axios.create({
       baseURL: `https://api.telegram.org/bot${botToken}`,
@@ -58,8 +60,9 @@ export class TelegramBot {
           disable_web_page_preview: true,
         });
 
-        console.log(
-          `✅ Batch notification sent for ${movieName} (${movieMessages.length} showtimes)`
+        this.logger?.info(
+          `✅ Batch notification sent for ${movieName} (${movieMessages.length} showtimes)`,
+          { movie: movieName }
         );
 
         // Small delay between messages to avoid rate limiting
@@ -67,9 +70,9 @@ export class TelegramBot {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
       } catch (error) {
-        console.error(
-          `❌ Failed to send batch notification for ${movieName}:`,
-          error.message
+        this.logger?.error(
+          `❌ Failed to send batch notification for ${movieName}: ${error.message}`,
+          { movie: movieName }
         );
         throw error;
       }
@@ -171,12 +174,14 @@ ${showtimeList}`;
   async testConnection(): Promise<boolean> {
     try {
       const response = await this.client.get('/getMe');
-      console.log(
+      this.logger?.info(
         `✅ Telegram bot connected: ${response.data.result.username}`
       );
       return true;
     } catch (error) {
-      console.error('❌ Failed to connect to Telegram bot:', error.message);
+      this.logger?.error(
+        `❌ Failed to connect to Telegram bot: ${error.message}`
+      );
       return false;
     }
   }
@@ -196,9 +201,9 @@ Time: ${new Date().toLocaleString()}`;
         parse_mode: 'HTML',
       });
 
-      console.log('✅ Test message sent successfully');
+      this.logger?.info('✅ Test message sent successfully');
     } catch (error) {
-      console.error('❌ Failed to send test message:', error.message);
+      this.logger?.error(`❌ Failed to send test message: ${error.message}`);
       throw error;
     }
   }
@@ -249,7 +254,7 @@ Time: ${new Date().toLocaleString()}`;
 
       return commands;
     } catch (error) {
-      console.error('❌ Error checking for commands:', error.message);
+      this.logger?.error(`❌ Error checking for commands: ${error.message}`);
       return [];
     }
   }
@@ -264,7 +269,7 @@ Time: ${new Date().toLocaleString()}`;
         disable_web_page_preview: true,
       });
     } catch (error) {
-      console.error('❌ Failed to send response:', error.message);
+      this.logger?.error(`❌ Failed to send response: ${error.message}`);
     }
   }
 }
