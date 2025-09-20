@@ -95,12 +95,25 @@ export class ShowtimeDatabase {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        level TEXT NOT NULL DEFAULT 'INFO',
+        message TEXT NOT NULL,
+        movie TEXT,
+        theatre TEXT,
+        data TEXT -- JSON for additional structured data
+      );
+
       -- Indexes for performance
       CREATE INDEX IF NOT EXISTS idx_showtimes_movie_theatre ON showtimes (movie_id, theatre_id);
       CREATE INDEX IF NOT EXISTS idx_showtimes_notified ON showtimes (notified);
       CREATE INDEX IF NOT EXISTS idx_showtimes_first_seen ON showtimes (first_seen);
       CREATE INDEX IF NOT EXISTS idx_movies_last_checked ON movies (last_checked);
       CREATE INDEX IF NOT EXISTS idx_watchlist_movie_name ON watchlist (movie_name);
+      CREATE INDEX IF NOT EXISTS idx_logs_run_id ON logs (run_id);
+      CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs (timestamp);
     `);
   }
 
@@ -320,6 +333,65 @@ export class ShowtimeDatabase {
     } catch (error) {
       console.error('Error getting bot state:', error);
       return null;
+    }
+  }
+
+  // Log operations
+  addLog(
+    runId: string,
+    level: string,
+    message: string,
+    movie?: string,
+    theatre?: string,
+    data?: any
+  ): void {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO logs (run_id, level, message, movie, theatre, data)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      stmt.run(
+        runId,
+        level,
+        message,
+        movie || null,
+        theatre || null,
+        data ? JSON.stringify(data) : null
+      );
+    } catch (error) {
+      console.error('Error adding log:', error);
+    }
+  }
+
+  getRecentLogs(limit: number = 100): Array<{
+    id: number;
+    run_id: string;
+    timestamp: string;
+    level: string;
+    message: string;
+    movie?: string;
+    theatre?: string;
+    data?: string;
+  }> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM logs 
+        ORDER BY timestamp DESC 
+        LIMIT ?
+      `);
+      return stmt.all(limit) as Array<{
+        id: number;
+        run_id: string;
+        timestamp: string;
+        level: string;
+        message: string;
+        movie?: string;
+        theatre?: string;
+        data?: string;
+      }>;
+    } catch (error) {
+      console.error('Error getting recent logs:', error);
+      return [];
     }
   }
 

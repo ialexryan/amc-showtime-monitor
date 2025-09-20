@@ -3,16 +3,19 @@ import { AMCApiClient, type AMCMovie } from './amc-api.js';
 import type { AppConfig } from './config.js';
 import { ShowtimeDatabase, type Theatre } from './database.js';
 import { TelegramBot, type TelegramMessage } from './telegram.js';
+import { Logger } from './logger.js';
 
 export class ShowtimeMonitor {
   private amcClient: AMCApiClient;
   private database: ShowtimeDatabase;
   private telegram: TelegramBot;
   private config: AppConfig;
+  private logger: Logger;
   private theatre: Theatre | null = null;
 
-  constructor(config: AppConfig, dbPath?: string) {
+  constructor(config: AppConfig, logger: Logger, dbPath?: string) {
     this.config = config;
+    this.logger = logger;
     this.amcClient = new AMCApiClient(config.amcApiKey);
     this.database = new ShowtimeDatabase(dbPath);
     this.telegram = new TelegramBot(
@@ -23,7 +26,7 @@ export class ShowtimeMonitor {
   }
 
   async initialize(): Promise<void> {
-    console.log('🚀 Initializing AMC Showtime Monitor...');
+    this.logger.info('🚀 Initializing AMC Showtime Monitor...');
 
     // Find and cache the theatre
     const amcTheatre = await this.amcClient.findTheatreByName(
@@ -44,8 +47,10 @@ export class ShowtimeMonitor {
     this.database.upsertTheatre(theatreData);
     this.theatre = theatreData;
 
-    console.log(
-      `✅ Theatre found: ${this.theatre.name} (ID: ${this.theatre.id})`
+    this.logger.info(
+      `✅ Theatre found: ${this.theatre.name} (ID: ${this.theatre.id})`,
+      undefined,
+      this.theatre.name
     );
 
     // Test Telegram connection
@@ -54,7 +59,7 @@ export class ShowtimeMonitor {
       throw new Error('Failed to connect to Telegram bot');
     }
 
-    console.log('✅ Initialization complete');
+    this.logger.info('✅ Initialization complete');
   }
 
   async checkForNewShowtimes(): Promise<void> {
@@ -62,7 +67,7 @@ export class ShowtimeMonitor {
       throw new Error('Monitor not initialized. Call initialize() first.');
     }
 
-    console.log('🔍 Checking for new showtimes...');
+    this.logger.info('🔍 Checking for new showtimes...');
     const newNotifications: TelegramMessage[] = [];
 
     // Get watchlist from database
@@ -74,17 +79,23 @@ export class ShowtimeMonitor {
 
     for (const movieName of moviesToCheck) {
       try {
-        console.log(`\n📽️  Processing: ${movieName}`);
+        this.logger.info(`\n📽️  Processing: ${movieName}`, movieName);
 
         // Use fuzzy matching to find relevant movies from cached data
         const relevantMovies = this.filterRelevantMovies(allMovies, movieName);
 
         if (relevantMovies.length === 0) {
-          console.log(`   ⚠️  No relevant movies found for: ${movieName}`);
+          this.logger.warn(
+            `   ⚠️  No relevant movies found for: ${movieName}`,
+            movieName
+          );
           continue;
         }
 
-        console.log(`   ✅ Found ${relevantMovies.length} relevant movies`);
+        this.logger.info(
+          `   ✅ Found ${relevantMovies.length} relevant movies`,
+          movieName
+        );
 
         // Check showtimes for each relevant movie
         for (const amcMovie of relevantMovies) {
@@ -92,9 +103,9 @@ export class ShowtimeMonitor {
           newNotifications.push(...notifications);
         }
       } catch (error) {
-        console.error(
-          `❌ Error processing movie "${movieName}":`,
-          error.message
+        this.logger.error(
+          `❌ Error processing movie "${movieName}": ${error.message}`,
+          movieName
         );
         // Continue with other movies instead of failing completely
       }
@@ -117,10 +128,10 @@ export class ShowtimeMonitor {
         console.error('❌ Failed to send notifications:', error.message);
       }
     } else {
-      console.log('\n📭 No new showtimes found');
+      this.logger.info('\n📭 No new showtimes found');
     }
 
-    console.log('🏁 Checking for new showtimes complete');
+    this.logger.info('🏁 Checking for new showtimes complete');
   }
 
   private filterRelevantMovies(
@@ -265,7 +276,7 @@ export class ShowtimeMonitor {
   }
 
   async processTelegramCommands(): Promise<void> {
-    console.log('🔍 Checking for Telegram commands...');
+    this.logger.info('🔍 Checking for Telegram commands...');
     try {
       const commands = await this.telegram.checkForCommands();
 
@@ -297,7 +308,7 @@ export class ShowtimeMonitor {
     } catch (error) {
       console.error('❌ Error processing Telegram commands:', error.message);
     }
-    console.log('🏁 Checking for Telegram commands complete');
+    this.logger.info('🏁 Checking for Telegram commands complete');
   }
 
   private async handleAddCommand(movieName: string): Promise<void> {

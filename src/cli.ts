@@ -5,6 +5,8 @@ import { Command } from 'commander';
 import packageJson from '../package.json' with { type: 'json' };
 import { loadConfig } from './config.js';
 import { ShowtimeMonitor } from './monitor.js';
+import { Logger } from './logger.js';
+import { ShowtimeDatabase } from './database.js';
 
 const program = new Command();
 
@@ -44,7 +46,11 @@ program
         console.log(`   Theatre: ${config.theatre}`);
       }
 
-      const monitor = new ShowtimeMonitor(config, options.database);
+      // Create database and logger
+      const database = new ShowtimeDatabase(options.database);
+      const logger = new Logger(database);
+
+      const monitor = new ShowtimeMonitor(config, logger, options.database);
 
       // Initialize the monitor
       await monitor.initialize();
@@ -55,9 +61,13 @@ program
       // Run the showtime check
       await monitor.checkForNewShowtimes();
 
+      // Save logs to database
+      logger.flush();
+
       // Clean up
       monitor.close();
-      console.log('🎉 Monitor run completed successfully');
+      database.close();
+      logger.info('🎉 Monitor run completed successfully');
     } catch (error) {
       console.error('❌ Error during check:', error.message);
       if (options.verbose) {
