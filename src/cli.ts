@@ -243,6 +243,64 @@ program
     }
   });
 
+program
+  .command('logs')
+  .description('Show logs from the most recent run')
+  .option('-a, --all', 'Show all runs instead of just the most recent')
+  .option(
+    '-n, --lines <number>',
+    'Number of recent runs to show (with --all)',
+    '5'
+  )
+  .action(async (options) => {
+    try {
+      const database = new ShowtimeDatabase();
+
+      if (options.all) {
+        // Show recent runs
+        const logs = database.getRecentLogs(Number(options.lines) * 20); // Estimate logs per run
+
+        if (logs.length === 0) {
+          console.log('No logs found');
+          return;
+        }
+
+        let currentRunId = '';
+        for (const log of logs.reverse()) {
+          if (log.run_id !== currentRunId) {
+            currentRunId = log.run_id;
+            console.log(`\n=== Run at ${log.timestamp} ===`);
+          }
+          const movieInfo = log.movie ? ` [${log.movie}]` : '';
+          console.log(`${log.level}: ${log.message}${movieInfo}`);
+        }
+      } else {
+        // Show just the most recent run
+        const recentLogs = database.getRecentLogs(100);
+        if (recentLogs.length === 0) {
+          console.log('No logs found');
+          return;
+        }
+
+        const mostRecentRunId = recentLogs[0].run_id;
+        const runLogs = recentLogs
+          .filter((log) => log.run_id === mostRecentRunId)
+          .reverse();
+
+        console.log(`=== Most Recent Run (${runLogs[0].timestamp}) ===`);
+        for (const log of runLogs) {
+          const movieInfo = log.movie ? ` [${log.movie}]` : '';
+          console.log(`${log.level}: ${log.message}${movieInfo}`);
+        }
+      }
+
+      database.close();
+    } catch (error) {
+      console.error('❌ Error reading logs:', error.message);
+      process.exit(1);
+    }
+  });
+
 // Handle the case where no command is provided
 if (process.argv.length === 2) {
   program.outputHelp();
