@@ -49,8 +49,7 @@ export class ShowtimeMonitor {
 
     this.logger.info(
       `✅ Theatre found: ${this.theatre.name} (ID: ${this.theatre.id})`,
-      undefined,
-      this.theatre.name
+      { theatre: this.theatre.name }
     );
 
     // Test Telegram connection
@@ -79,22 +78,21 @@ export class ShowtimeMonitor {
 
     for (const movieName of moviesToCheck) {
       try {
-        this.logger.info(`\n📽️  Processing: ${movieName}`, movieName);
+        this.logger.info(`\n📽️  Processing: ${movieName}`, { movie: movieName });
 
         // Use fuzzy matching to find relevant movies from cached data
         const relevantMovies = this.filterRelevantMovies(allMovies, movieName);
 
         if (relevantMovies.length === 0) {
-          this.logger.warn(
-            `   ⚠️  No relevant movies found for: ${movieName}`,
-            movieName
-          );
+          this.logger.warn(`   ⚠️  No relevant movies found for: ${movieName}`, {
+            movie: movieName,
+          });
           continue;
         }
 
         this.logger.info(
           `   ✅ Found ${relevantMovies.length} relevant movies`,
-          movieName
+          { movie: movieName }
         );
 
         // Check showtimes for each relevant movie
@@ -105,7 +103,7 @@ export class ShowtimeMonitor {
       } catch (error) {
         this.logger.error(
           `❌ Error processing movie "${movieName}": ${error.message}`,
-          movieName
+          { movie: movieName }
         );
         // Continue with other movies instead of failing completely
       }

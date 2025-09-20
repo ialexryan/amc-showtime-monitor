@@ -17,13 +17,6 @@ export async function loadConfig(
     const configText = await configFile.text();
     const config: Config = JSON.parse(configText);
 
-    // Validate required fields
-    if (config.movies) {
-      throw new Error(
-        'Config must not include movies - use Telegram bot commands to manage watchlist'
-      );
-    }
-
     if (!config.theatre) {
       throw new Error('Config must include theatre name');
     }

@@ -20,24 +20,60 @@ export class Logger {
   }
 
   // Log methods that capture to buffer and also output to console
-  debug(message: string, movie?: string, theatre?: string, data?: any): void {
+  debug(
+    message: string,
+    options?: { movie?: string; theatre?: string; data?: any }
+  ): void {
     console.log(message);
-    this.logBuffer.push({ level: 'DEBUG', message, movie, theatre, data });
+    this.logBuffer.push({
+      level: 'DEBUG',
+      message,
+      movie: options?.movie,
+      theatre: options?.theatre,
+      data: options?.data,
+    });
   }
 
-  info(message: string, movie?: string, theatre?: string, data?: any): void {
+  info(
+    message: string,
+    options?: { movie?: string; theatre?: string; data?: any }
+  ): void {
     console.log(message);
-    this.logBuffer.push({ level: 'INFO', message, movie, theatre, data });
+    this.logBuffer.push({
+      level: 'INFO',
+      message,
+      movie: options?.movie,
+      theatre: options?.theatre,
+      data: options?.data,
+    });
   }
 
-  warn(message: string, movie?: string, theatre?: string, data?: any): void {
-    console.log(message);
-    this.logBuffer.push({ level: 'WARN', message, movie, theatre, data });
+  warn(
+    message: string,
+    options?: { movie?: string; theatre?: string; data?: any }
+  ): void {
+    console.warn(message);
+    this.logBuffer.push({
+      level: 'WARN',
+      message,
+      movie: options?.movie,
+      theatre: options?.theatre,
+      data: options?.data,
+    });
   }
 
-  error(message: string, movie?: string, theatre?: string, data?: any): void {
+  error(
+    message: string,
+    options?: { movie?: string; theatre?: string; data?: any }
+  ): void {
     console.error(message);
-    this.logBuffer.push({ level: 'ERROR', message, movie, theatre, data });
+    this.logBuffer.push({
+      level: 'ERROR',
+      message,
+      movie: options?.movie,
+      theatre: options?.theatre,
+      data: options?.data,
+    });
   }
 
   // Save all buffered logs to database

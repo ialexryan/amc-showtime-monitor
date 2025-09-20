@@ -4,9 +4,9 @@ import { existsSync, unlinkSync } from 'node:fs';
 import { Command } from 'commander';
 import packageJson from '../package.json' with { type: 'json' };
 import { loadConfig } from './config.js';
-import { ShowtimeMonitor } from './monitor.js';
-import { Logger } from './logger.js';
 import { ShowtimeDatabase } from './database.js';
+import { Logger } from './logger.js';
+import { ShowtimeMonitor } from './monitor.js';
 
 const program = new Command();
 
@@ -41,11 +41,6 @@ program
       console.log(`📖 Loading config from: ${options.config}`);
       const config = await loadConfig(options.config);
 
-      if (options.verbose) {
-        console.log('📋 Config loaded:');
-        console.log(`   Theatre: ${config.theatre}`);
-      }
-
       // Create database and logger
       const database = new ShowtimeDatabase(options.database);
       const logger = new Logger(database);
@@ -61,13 +56,14 @@ program
       // Run the showtime check
       await monitor.checkForNewShowtimes();
 
+      logger.info('🎉 Monitor run completed successfully');
+
       // Save logs to database
       logger.flush();
 
       // Clean up
       monitor.close();
       database.close();
-      logger.info('🎉 Monitor run completed successfully');
     } catch (error) {
       console.error('❌ Error during check:', error.message);
       if (options.verbose) {
@@ -245,52 +241,40 @@ program
 
 program
   .command('logs')
-  .description('Show logs from the most recent run')
-  .option('-a, --all', 'Show all runs instead of just the most recent')
-  .option(
-    '-n, --lines <number>',
-    'Number of recent runs to show (with --all)',
-    '5'
-  )
+  .description('Show logs from recent runs')
+  .option('-n, --runs <number>', 'Number of recent runs to show', '1')
   .action(async (options) => {
+    // Helper function to convert ISO UTC timestamp to Pacific time
+    const formatTimestamp = (isoTimestamp: string): string => {
+      return new Date(isoTimestamp).toLocaleString('en-US', {
+        timeZone: 'America/Los_Angeles',
+        hour12: false,
+      });
+    };
+
     try {
       const database = new ShowtimeDatabase();
+      const numRuns = Number(options.runs);
+      const recentRunIds = database.getRecentRunIds(numRuns);
 
-      if (options.all) {
-        // Show recent runs
-        const logs = database.getRecentLogs(Number(options.lines) * 20); // Estimate logs per run
+      if (recentRunIds.length === 0) {
+        console.log('No logs found');
+        return;
+      }
 
-        if (logs.length === 0) {
-          console.log('No logs found');
-          return;
-        }
+      for (const runId of recentRunIds) {
+        const runLogs = database.getLogsByRunId(runId);
+        if (runLogs.length > 0) {
+          const header =
+            numRuns === 1
+              ? `=== Most Recent Run (${formatTimestamp(runLogs[0].timestamp)} PT) ===`
+              : `\n=== Run at ${formatTimestamp(runLogs[0].timestamp)} PT ===`;
 
-        let currentRunId = '';
-        for (const log of logs.reverse()) {
-          if (log.run_id !== currentRunId) {
-            currentRunId = log.run_id;
-            console.log(`\n=== Run at ${log.timestamp} ===`);
+          console.log(header);
+
+          for (const log of runLogs) {
+            console.log(log.message);
           }
-          const movieInfo = log.movie ? ` [${log.movie}]` : '';
-          console.log(`${log.level}: ${log.message}${movieInfo}`);
-        }
-      } else {
-        // Show just the most recent run
-        const recentLogs = database.getRecentLogs(100);
-        if (recentLogs.length === 0) {
-          console.log('No logs found');
-          return;
-        }
-
-        const mostRecentRunId = recentLogs[0].run_id;
-        const runLogs = recentLogs
-          .filter((log) => log.run_id === mostRecentRunId)
-          .reverse();
-
-        console.log(`=== Most Recent Run (${runLogs[0].timestamp}) ===`);
-        for (const log of runLogs) {
-          const movieInfo = log.movie ? ` [${log.movie}]` : '';
-          console.log(`${log.level}: ${log.message}${movieInfo}`);
         }
       }
 

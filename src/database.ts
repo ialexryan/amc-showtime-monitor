@@ -98,7 +98,7 @@ export class ShowtimeDatabase {
       CREATE TABLE IF NOT EXISTS logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         run_id TEXT NOT NULL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        timestamp DATETIME DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
         level TEXT NOT NULL DEFAULT 'INFO',
         message TEXT NOT NULL,
         movie TEXT,
@@ -391,6 +391,54 @@ export class ShowtimeDatabase {
       }>;
     } catch (error) {
       console.error('Error getting recent logs:', error);
+      return [];
+    }
+  }
+
+  getLogsByRunId(runId: string): Array<{
+    id: number;
+    run_id: string;
+    timestamp: string;
+    level: string;
+    message: string;
+    movie?: string;
+    theatre?: string;
+    data?: string;
+  }> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM logs 
+        WHERE run_id = ? 
+        ORDER BY timestamp ASC
+      `);
+      return stmt.all(runId) as Array<{
+        id: number;
+        run_id: string;
+        timestamp: string;
+        level: string;
+        message: string;
+        movie?: string;
+        theatre?: string;
+        data?: string;
+      }>;
+    } catch (error) {
+      console.error('Error getting logs by run ID:', error);
+      return [];
+    }
+  }
+
+  getRecentRunIds(limit: number = 5): string[] {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT run_id FROM logs 
+        GROUP BY run_id 
+        ORDER BY MAX(timestamp) DESC 
+        LIMIT ?
+      `);
+      const results = stmt.all(limit) as Array<{ run_id: string }>;
+      return results.map((r) => r.run_id);
+    } catch (error) {
+      console.error('Error getting recent run IDs:', error);
       return [];
     }
   }
