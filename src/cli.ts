@@ -5,7 +5,6 @@ import { Command } from 'commander';
 import packageJson from '../package.json' with { type: 'json' };
 import { loadConfig } from './config.js';
 import { ShowtimeDatabase } from './database.js';
-import { Logger } from './logger.js';
 import { ShowtimeMonitor } from './monitor.js';
 
 const program = new Command();
@@ -41,11 +40,7 @@ program
       console.log(`📖 Loading config from: ${options.config}`);
       const config = await loadConfig(options.config);
 
-      // Create database and logger
-      const database = new ShowtimeDatabase(options.database);
-      const logger = new Logger(database);
-
-      const monitor = new ShowtimeMonitor(config, logger, options.database);
+      const monitor = new ShowtimeMonitor(config, options.database);
 
       // Initialize the monitor
       await monitor.initialize();
@@ -56,14 +51,8 @@ program
       // Run the showtime check
       await monitor.checkForNewShowtimes();
 
-      logger.info('🎉 Monitor run completed successfully');
-
-      // Save logs to database
-      logger.flush();
-
-      // Clean up
+      // Clean up (flushes logs and closes database)
       monitor.close();
-      database.close();
     } catch (error) {
       console.error('❌ Error during check:', error.message);
       if (options.verbose) {
@@ -86,6 +75,7 @@ program
 
       console.log('🧪 Testing Telegram bot connection...');
       const config = await loadConfig(options.config);
+
       const monitor = new ShowtimeMonitor(config);
 
       await monitor.initialize();
@@ -112,6 +102,7 @@ program
       }
 
       const config = await loadConfig(options.config);
+
       const monitor = new ShowtimeMonitor(config, options.database);
 
       await monitor.initialize();

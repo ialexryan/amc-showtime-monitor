@@ -13,11 +13,11 @@ export class ShowtimeMonitor {
   private logger: Logger;
   private theatre: Theatre | null = null;
 
-  constructor(config: AppConfig, logger: Logger, dbPath?: string) {
+  constructor(config: AppConfig, dbPath?: string) {
     this.config = config;
-    this.logger = logger;
     this.amcClient = new AMCApiClient(config.amcApiKey);
     this.database = new ShowtimeDatabase(dbPath);
+    this.logger = new Logger(this.database);
     this.telegram = new TelegramBot(
       config.telegram.botToken,
       config.telegram.chatId,
@@ -270,6 +270,8 @@ export class ShowtimeMonitor {
   }
 
   close(): void {
+    this.logger.info('🎉 Monitor run completed successfully');
+    this.logger.flush();
     this.database.close();
   }
 
