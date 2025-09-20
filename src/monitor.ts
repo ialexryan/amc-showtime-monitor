@@ -28,24 +28,31 @@ export class ShowtimeMonitor {
   async initialize(): Promise<void> {
     this.logger.info('🚀 Initializing AMC Showtime Monitor...');
 
-    // Find and cache the theatre
-    const amcTheatre = await this.amcClient.findTheatreByName(
-      this.config.theatre
-    );
-    if (!amcTheatre) {
-      throw new Error(`Theatre not found: ${this.config.theatre}`);
+    // Check if theatre is already cached in database
+    let theatre = this.database.getTheatreByName(this.config.theatre);
+
+    if (!theatre) {
+      // Theatre not in cache, fetch from AMC API
+      const amcTheatre = await this.amcClient.findTheatreByName(
+        this.config.theatre
+      );
+      if (!amcTheatre) {
+        throw new Error(`Theatre not found: ${this.config.theatre}`);
+      }
+
+      // Store theatre in database for future use
+      const theatreData = {
+        id: amcTheatre.id,
+        name: amcTheatre.name,
+        slug: amcTheatre.slug,
+        location: `${amcTheatre.location.city}, ${amcTheatre.location.state}`,
+      };
+
+      this.database.upsertTheatre(theatreData);
+      theatre = theatreData;
     }
 
-    // Store theatre in database using AMC's theatre ID
-    const theatreData = {
-      id: amcTheatre.id,
-      name: amcTheatre.name,
-      slug: amcTheatre.slug,
-      location: `${amcTheatre.location.city}, ${amcTheatre.location.state}`,
-    };
-
-    this.database.upsertTheatre(theatreData);
-    this.theatre = theatreData;
+    this.theatre = theatre;
 
     this.logger.info(
       `✅ Theatre found: ${this.theatre.name} (ID: ${this.theatre.id})`,
