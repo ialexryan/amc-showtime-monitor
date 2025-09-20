@@ -272,6 +272,8 @@ export class ShowtimeMonitor {
     trackedMovies: string[];
     totalShowtimes: number;
     unnotifiedShowtimes: number;
+    runsLastHour: number;
+    runsLast24Hours: number;
   }> {
     const unnotifiedShowtimes = this.database.getUnnotifiedShowtimes();
     const watchlist = this.database.getWatchlist();
@@ -281,6 +283,8 @@ export class ShowtimeMonitor {
       trackedMovies: watchlist,
       totalShowtimes: 0, // Could add a method to get this count
       unnotifiedShowtimes: unnotifiedShowtimes.length,
+      runsLastHour: this.database.getRunCountSince(1),
+      runsLast24Hours: this.database.getRunCountSince(24),
     };
   }
 
@@ -392,8 +396,8 @@ export class ShowtimeMonitor {
 
     let message = `📊 <b>AMC Showtime Monitor Status</b>\n\n`;
     message += `🏛️ <b>Theatre:</b> ${status.theatre?.name || 'Not configured'}\n`;
-    message += `📍 <b>Location:</b> ${status.theatre?.location || 'N/A'}\n`;
     message += `🎬 <b>Watchlist:</b> ${watchlist.length} movies\n`;
+    message += `🔄 <b>Checks:</b> ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h\n`;
 
     if (watchlist.length > 0) {
       message += `\n<b>Tracked Movies:</b>\n`;

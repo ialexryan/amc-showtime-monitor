@@ -111,8 +111,10 @@ program
       console.log('📊 AMC Showtime Monitor Status');
       console.log('================================');
       console.log(`Theatre: ${status.theatre?.name || 'Not configured'}`);
-      console.log(`Location: ${status.theatre?.location || 'N/A'}`);
       console.log(`Watchlist: ${status.trackedMovies.length} movies`);
+      console.log(
+        `Checks: ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h`
+      );
       for (const movie of status.trackedMovies) {
         console.log(`  • ${movie}`);
       }

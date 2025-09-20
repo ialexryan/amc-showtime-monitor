@@ -443,6 +443,20 @@ export class ShowtimeDatabase {
     }
   }
 
+  getRunCountSince(hours: number): number {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT COUNT(DISTINCT run_id) as count FROM logs 
+        WHERE timestamp >= datetime('now', '-${hours} hours')
+      `);
+      const result = stmt.get() as { count: number };
+      return result.count;
+    } catch (error) {
+      console.error('Error getting run count:', error);
+      return 0;
+    }
+  }
+
   close() {
     this.db.close();
   }
