@@ -2,8 +2,8 @@ import Fuse from 'fuse.js';
 import { AMCApiClient, type AMCMovie } from './amc-api.js';
 import type { AppConfig } from './config.js';
 import { ShowtimeDatabase, type Theatre } from './database.js';
-import { TelegramBot, type TelegramMessage } from './telegram.js';
 import { Logger } from './logger.js';
+import { TelegramBot, type TelegramMessage } from './telegram.js';
 
 export class ShowtimeMonitor {
   private amcClient: AMCApiClient;
@@ -27,7 +27,10 @@ export class ShowtimeMonitor {
   }
 
   async initialize(): Promise<void> {
-    this.logger.info('🚀 Initializing AMC Showtime Monitor...');
+    const memUsage = process.memoryUsage();
+    this.logger.info(
+      `🚀 Initializing AMC Showtime Monitor... (Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
+    );
 
     // Check if theatre is already cached in database
     let theatre = this.database.getTheatreByName(this.config.theatre);
@@ -74,7 +77,10 @@ export class ShowtimeMonitor {
       throw new Error('Monitor not initialized. Call initialize() first.');
     }
 
-    this.logger.info('🔍 Checking for new showtimes...');
+    const memUsage = process.memoryUsage();
+    this.logger.info(
+      `🔍 Checking for new showtimes... (Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
+    );
     const newNotifications: TelegramMessage[] = [];
 
     // Get watchlist from database
@@ -83,6 +89,10 @@ export class ShowtimeMonitor {
 
     // Fetch all movies once at the start
     const allMovies = await this.amcClient.getAllMovies();
+    const memAfterFetch = process.memoryUsage();
+    this.logger.info(
+      `📊 After fetching ${allMovies.length} movies (Memory: ${Math.round(memAfterFetch.rss / 1024 / 1024)}MB RSS, ${Math.round(memAfterFetch.heapUsed / 1024 / 1024)}MB heap)`
+    );
 
     for (const movieName of moviesToCheck) {
       try {
@@ -289,13 +299,19 @@ export class ShowtimeMonitor {
   }
 
   close(): void {
-    this.logger.info('🎉 Monitor run completed successfully');
+    const memUsage = process.memoryUsage();
+    this.logger.info(
+      `🎉 Monitor run completed successfully (Final Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
+    );
     this.logger.flush();
     this.database.close();
   }
 
   async processTelegramCommands(): Promise<void> {
-    this.logger.info('🔍 Checking for Telegram commands...');
+    const memUsage = process.memoryUsage();
+    this.logger.info(
+      `🔍 Checking for Telegram commands... (Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
+    );
     try {
       const commands = await this.telegram.checkForCommands();
 

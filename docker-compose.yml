@@ -1,0 +1,17 @@
+services:
+  amc-monitor:
+    build: .
+    container_name: amc-showtime-monitor
+    volumes:
+      # Mount your local data directory (contains config.json and database)
+      - ./data:/app/data
+    restart: unless-stopped
+    # Optional: Add environment variables if needed
+    environment:
+      - TZ=America/Los_Angeles
+    # Optional: Add logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

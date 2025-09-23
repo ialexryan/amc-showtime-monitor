@@ -1,0 +1,2 @@
+# Run AMC showtime monitor every minute
+* * * * * cd /app && bun monitor --config /app/data/config.json --database /app/data/amc-monitor.db

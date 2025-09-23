@@ -19,8 +19,12 @@ program
   .description(
     'Run the main monitoring loop (check showtimes and process Telegram commands)'
   )
-  .option('-c, --config <path>', 'Path to config file', './config.json')
-  .option('-d, --database <path>', 'Path to database file', './amc-monitor.db')
+  .option('-c, --config <path>', 'Path to config file', './data/config.json')
+  .option(
+    '-d, --database <path>',
+    'Path to database file',
+    './data/amc-monitor.db'
+  )
   .option('-v, --verbose', 'Verbose logging', false)
   .action(async (options) => {
     try {
@@ -65,7 +69,7 @@ program
 program
   .command('test-telegram')
   .description('Test Telegram bot connection and send test message')
-  .option('-c, --config <path>', 'Path to config file', './config.json')
+  .option('-c, --config <path>', 'Path to config file', './data/config.json')
   .action(async (options) => {
     try {
       if (!existsSync(options.config)) {
@@ -92,8 +96,12 @@ program
 program
   .command('show-status')
   .description('Show current monitoring status and watchlist')
-  .option('-c, --config <path>', 'Path to config file', './config.json')
-  .option('-d, --database <path>', 'Path to database file', './amc-monitor.db')
+  .option('-c, --config <path>', 'Path to config file', './data/config.json')
+  .option(
+    '-d, --database <path>',
+    'Path to database file',
+    './data/amc-monitor.db'
+  )
   .action(async (options) => {
     try {
       if (!existsSync(options.config)) {
@@ -160,16 +168,22 @@ program
   .command('create-config')
   .description('Create a new config.json file from template')
   .action(async () => {
-    const configPath = './config.json';
-    const exampleConfigPath = './config.example.json';
+    const configPath = './data/config.json';
+    const exampleConfigPath = './data/config.example.json';
+
+    // Ensure data directory exists
+    if (!existsSync('./data')) {
+      await Bun.write('./data/.gitkeep', '');
+      console.log('📁 Created data directory');
+    }
 
     if (existsSync(configPath)) {
-      console.error('❌ config.json already exists');
+      console.error('❌ data/config.json already exists');
       process.exit(1);
     }
 
     if (!existsSync(exampleConfigPath)) {
-      console.error('❌ config.example.json not found');
+      console.error('❌ data/config.example.json not found');
       process.exit(1);
     }
 
@@ -177,8 +191,8 @@ program
     const exampleConfigContent = await exampleConfigFile.text();
     await Bun.write(configPath, exampleConfigContent);
 
-    console.log('✅ Created config.json from config.example.json');
-    console.log('🔧 Edit the config.json file with your settings');
+    console.log('✅ Created data/config.json from data/config.example.json');
+    console.log('🔧 Edit the data/config.json file with your settings');
     console.log(
       '🤖 Run "bun src/cli.ts telegram-setup" for Telegram bot setup instructions'
     );
@@ -189,7 +203,11 @@ program
   .description(
     'Reset the database (removes all tracked showtimes and watchlist)'
   )
-  .option('-d, --database <path>', 'Path to database file', './amc-monitor.db')
+  .option(
+    '-d, --database <path>',
+    'Path to database file',
+    './data/amc-monitor.db'
+  )
   .option('--yes', 'Skip confirmation prompt')
   .action(async (options) => {
     try {
