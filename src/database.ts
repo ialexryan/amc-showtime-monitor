@@ -446,8 +446,8 @@ export class ShowtimeDatabase {
   getRunCountSince(hours: number): number {
     try {
       const stmt = this.db.prepare(`
-        SELECT COUNT(DISTINCT run_id) as count FROM logs 
-        WHERE timestamp >= datetime('now', '-${hours} hours')
+        SELECT COUNT(DISTINCT run_id) as count FROM logs
+        WHERE datetime(timestamp) >= datetime('now', '-${hours} hours')
       `);
       const result = stmt.get() as { count: number };
       return result.count;
