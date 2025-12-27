@@ -1,7 +1,8 @@
 import Fuse from 'fuse.js';
 import { AMCApiClient, type AMCMovie } from './amc-api.js';
 import type { AppConfig } from './config.js';
-import { ShowtimeDatabase, type Theatre } from './database.js';
+import { type Movie, ShowtimeDatabase, type Theatre } from './database.js';
+import { getErrorMessage } from './errors.js';
 import { Logger } from './logger.js';
 import { TelegramBot, type TelegramMessage } from './telegram.js';
 
@@ -119,8 +120,9 @@ export class ShowtimeMonitor {
           newNotifications.push(...notifications);
         }
       } catch (error) {
+        const message = getErrorMessage(error);
         this.logger.error(
-          `❌ Error processing movie "${movieName}": ${error.message}`,
+          `❌ Error processing movie "${movieName}": ${message}`,
           { movie: movieName }
         );
         // Continue with other movies instead of failing completely
@@ -143,7 +145,8 @@ export class ShowtimeMonitor {
 
         this.logger.info('✅ All notifications sent successfully');
       } catch (error) {
-        this.logger.error(`❌ Failed to send notifications: ${error.message}`);
+        const message = getErrorMessage(error);
+        this.logger.error(`❌ Failed to send notifications: ${message}`);
       }
     } else {
       this.logger.info('\n📭 No new showtimes found');
@@ -197,14 +200,24 @@ export class ShowtimeMonitor {
     });
 
     // Store/update movie in database
-    const movieId = this.database.upsertMovie({
+    const moviePayload: Omit<Movie, 'id' | 'lastChecked'> = {
       name: amcMovie.name,
       slug: amcMovie.slug,
-      releaseDate: amcMovie.releaseDateUtc,
-      mpaaRating: amcMovie.mpaaRating,
-      runTime: amcMovie.runTime,
-      genre: amcMovie.genre,
-    });
+    };
+    if (amcMovie.releaseDateUtc !== undefined) {
+      moviePayload.releaseDate = amcMovie.releaseDateUtc;
+    }
+    if (amcMovie.mpaaRating !== undefined) {
+      moviePayload.mpaaRating = amcMovie.mpaaRating;
+    }
+    if (amcMovie.runTime !== undefined) {
+      moviePayload.runTime = amcMovie.runTime;
+    }
+    if (amcMovie.genre !== undefined) {
+      moviePayload.genre = amcMovie.genre;
+    }
+
+    const movieId = this.database.upsertMovie(moviePayload);
 
     // Get current showtimes for this movie at our theatre
     const amcShowtimes = await this.amcClient.getShowtimesForMovieAtTheatre(
@@ -341,9 +354,8 @@ export class ShowtimeMonitor {
         }
       }
     } catch (error) {
-      this.logger.error(
-        `❌ Error processing Telegram commands: ${error.message}`
-      );
+      const message = getErrorMessage(error);
+      this.logger.error(`❌ Error processing Telegram commands: ${message}`);
     }
     this.logger.info('🏁 Checking for Telegram commands complete');
   }

@@ -1,4 +1,5 @@
 import { Database } from 'bun:sqlite';
+import { existsSync, mkdirSync } from 'node:fs';
 
 export interface Theatre {
   id: number;
@@ -38,6 +39,48 @@ export class ShowtimeDatabase {
 
   constructor(dbPath: string = './amc-monitor.db') {
     this.db = new Database(dbPath);
+
+    // Enable WAL mode for better concurrent access handling
+    this.db.exec('PRAGMA journal_mode = WAL');
+
+    // Set busy timeout to 5 seconds to handle concurrent access
+    this.db.exec('PRAGMA busy_timeout = 5000');
+
+    // Enable foreign key constraints
+    this.db.exec('PRAGMA foreign_keys = ON');
+
+    // Run periodic checkpoints to prevent WAL file from growing too large
+    this.db.exec('PRAGMA wal_autocheckpoint = 1000');
+
+    // --- Additional Best Practices (Optimized for Safety) ---
+
+    // Synchronous mode: EXTRA for maximum durability
+    // EXTRA = safest possible (syncs after every transaction + extra syncs)
+    // Since we don't care about speed, use maximum safety
+    this.db.exec('PRAGMA synchronous = EXTRA');
+
+    // Store temporary tables on disk for crash recovery
+    // FILE = safer than MEMORY, survives crashes
+    this.db.exec('PRAGMA temp_store = FILE');
+
+    // Increase cache size to 10MB (helps with consistency)
+    // Negative value = size in KB
+    this.db.exec('PRAGMA cache_size = -10000');
+
+    // Disable memory-mapped I/O for maximum safety
+    // mmap can cause corruption if process crashes during write
+    this.db.exec('PRAGMA mmap_size = 0');
+
+    // Enable query optimizer statistics
+    this.db.exec('PRAGMA automatic_index = ON');
+
+    // Set reasonable page size (4096 is good default for most systems)
+    // Note: Can only be set on new databases, ignored on existing ones
+    this.db.exec('PRAGMA page_size = 4096');
+
+    // Enable incremental vacuum for automatic space reclamation
+    this.db.exec('PRAGMA auto_vacuum = INCREMENTAL');
+
     this.initTables();
   }
 
@@ -161,10 +204,10 @@ export class ShowtimeDatabase {
     const result = stmt.get(
       movie.name,
       movie.slug,
-      movie.releaseDate,
-      movie.mpaaRating,
-      movie.runTime,
-      movie.genre
+      movie.releaseDate ?? null,
+      movie.mpaaRating ?? null,
+      movie.runTime ?? null,
+      movie.genre ?? null
     ) as { id: number };
     return result.id;
   }
@@ -208,7 +251,7 @@ export class ShowtimeDatabase {
         showtime.isSoldOut,
         showtime.isAlmostSoldOut,
         showtime.attributes,
-        showtime.ticketUrl,
+        showtime.ticketUrl ?? null,
         existing.id
       );
       return { id: existing.id, isNew: false };
@@ -229,7 +272,7 @@ export class ShowtimeDatabase {
         showtime.isSoldOut,
         showtime.isAlmostSoldOut,
         showtime.attributes,
-        showtime.ticketUrl
+        showtime.ticketUrl ?? null
       );
       return { id: Number(result.lastInsertRowid), isNew: true };
     }
@@ -343,7 +386,7 @@ export class ShowtimeDatabase {
     message: string,
     movie?: string,
     theatre?: string,
-    data?: any
+    data?: unknown
   ): void {
     try {
       const stmt = this.db.prepare(`
@@ -457,7 +500,162 @@ export class ShowtimeDatabase {
     }
   }
 
+  // Database maintenance methods
+  optimize() {
+    try {
+      console.log('Running database optimization...');
+
+      // Update query planner statistics
+      this.db.exec('ANALYZE');
+
+      // Optimize the database (SQLite 3.18.0+)
+      // This rebuilds stats and considers index improvements
+      this.db.exec('PRAGMA optimize');
+
+      // Run incremental vacuum to reclaim space
+      this.db.exec('PRAGMA incremental_vacuum');
+
+      console.log('Database optimization complete');
+    } catch (error) {
+      console.error('Error during optimization:', error);
+    }
+  }
+
+  getDbStats() {
+    try {
+      const stats = {
+        pageCount: this.db.query('PRAGMA page_count').get() as {
+          page_count: number;
+        },
+        pageSize: this.db.query('PRAGMA page_size').get() as {
+          page_size: number;
+        },
+        cacheSize: this.db.query('PRAGMA cache_size').get() as {
+          cache_size: number;
+        },
+        walMode: this.db.query('PRAGMA journal_mode').get() as {
+          journal_mode: string;
+        },
+        integrityCheck: this.db.query('PRAGMA quick_check').get() as {
+          quick_check: string;
+        },
+        freelist: this.db.query('PRAGMA freelist_count').get() as {
+          freelist_count: number;
+        },
+      };
+
+      const sizeInBytes = stats.pageCount.page_count * stats.pageSize.page_size;
+      const sizeInMB = (sizeInBytes / 1024 / 1024).toFixed(2);
+
+      return {
+        ...stats,
+        sizeInBytes,
+        sizeInMB,
+        cacheInMB: Math.abs(stats.cacheSize.cache_size) / 1000,
+      };
+    } catch (error) {
+      console.error('Error getting database stats:', error);
+      return null;
+    }
+  }
+
+  // Check database integrity (returns true if OK, false if corrupted)
+  checkIntegrity(): boolean {
+    try {
+      const result = this.db.query('PRAGMA integrity_check').all() as Array<{
+        integrity_check: string;
+      }>;
+      const [firstResult] = result;
+      const isOk = result.length === 1 && firstResult?.integrity_check === 'ok';
+
+      if (!isOk) {
+        console.error('Database integrity check failed:', result);
+      }
+
+      return isOk;
+    } catch (error) {
+      console.error('Error checking database integrity:', error);
+      return false;
+    }
+  }
+
+  // Create a backup of the database
+  backup(backupPath?: string) {
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const path = backupPath || `./data/backups/amc-monitor-${timestamp}.db`;
+
+      // Ensure backup directory exists
+      const backupDir = './data/backups';
+      if (!existsSync(backupDir)) {
+        mkdirSync(backupDir, { recursive: true });
+      }
+
+      // Force a checkpoint to ensure all data is in main file
+      this.db.exec('PRAGMA wal_checkpoint(FULL)');
+
+      // Use SQLite's backup API
+      this.db.exec(`VACUUM INTO '${path}'`);
+
+      console.log(`Database backed up to: ${path}`);
+      return path;
+    } catch (error) {
+      console.error('Error creating backup:', error);
+      return null;
+    }
+  }
+
+  // Run maintenance tasks (call this periodically, e.g., once a day)
+  runMaintenance() {
+    try {
+      // Check integrity first - critical for safety
+      if (!this.checkIntegrity()) {
+        console.error(
+          'Database integrity check failed! Creating backup and stopping maintenance.'
+        );
+        this.backup(`./data/backups/corrupted-${Date.now()}.db`);
+        return;
+      }
+
+      const stats = this.getDbStats();
+      console.log('Database stats before maintenance:', stats);
+
+      // Create a backup before maintenance (safety first!)
+      this.backup();
+
+      // Clean up old logs (keep last 7 days)
+      const cleanupStmt = this.db.prepare(`
+        DELETE FROM logs
+        WHERE datetime(timestamp) < datetime('now', '-7 days')
+      `);
+      const result = cleanupStmt.run();
+      console.log(`Cleaned up ${result.changes} old log entries`);
+
+      // Optimize the database
+      this.optimize();
+
+      // Checkpoint WAL file to keep it from growing too large
+      // Use FULL mode for maximum safety during maintenance
+      this.db.exec('PRAGMA wal_checkpoint(FULL)');
+
+      const newStats = this.getDbStats();
+      console.log('Database stats after maintenance:', newStats);
+    } catch (error) {
+      console.error('Error during maintenance:', error);
+    }
+  }
+
   close() {
-    this.db.close();
+    try {
+      // Run optimization before closing (lightweight)
+      this.db.exec('PRAGMA optimize');
+
+      // Checkpoint the WAL file before closing to ensure all changes are written
+      this.db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+    } catch (error) {
+      console.error('Error during WAL checkpoint:', error);
+    } finally {
+      this.db.close();
+    }
   }
 }

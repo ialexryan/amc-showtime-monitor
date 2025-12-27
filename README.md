@@ -176,17 +176,22 @@ Example:
 
 ## Development
 
-### Linting and Formatting
+### Linting, Formatting, and Typechecking
 ```bash
 bun run lint        # Check code quality
 bun run lint:fix    # Fix linting issues
 bun run format      # Format code
+bun run typecheck   # Typecheck with tsc (no emit)
 ```
 
+Lefthook installs pre-commit hooks after `bun install` to run lint + typecheck.
+
 ### Database
-- SQLite database (`amc-monitor.db`) stores theatres, movies, watchlist, and showtime history
+- SQLite database (default `data/amc-monitor.db`) stores theatres, movies, watchlist, and showtime history
 - Database is created automatically on first run
 - Use `bun src/cli.ts reset-db` to reset all tracking (includes watchlist)
+- Use `bun src/cli.ts db-maintenance --stats` for stats, `--check-only` for integrity checks, `--backup-only` to create a backup
+- Use `--database <path>` with `db-maintenance` to target a different database
 
 ## Troubleshooting
 

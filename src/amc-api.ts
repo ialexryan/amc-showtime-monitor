@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import { getErrorMessage } from './errors.js';
 
 export interface AMCTheatre {
   id: number;
@@ -113,7 +114,7 @@ export class AMCApiClient {
           // Cache the result
           this.theatreCache.set(theatreNameOrSlug.toLowerCase(), theatre);
           return theatre;
-        } catch (_error) {
+        } catch {
           console.log(`Direct slug lookup failed, falling back to search...`);
         }
       }
@@ -139,7 +140,11 @@ export class AMCApiClient {
             t.longName.toLowerCase() === theatreNameOrSlug.toLowerCase()
         );
 
-        const selectedTheatre = exactMatch || theatres[0];
+        const selectedTheatre = exactMatch ?? theatres[0];
+        if (!selectedTheatre) {
+          console.log(`❌ Theatre not found: ${theatreNameOrSlug}`);
+          return null;
+        }
         this.theatreCache.set(theatreNameOrSlug.toLowerCase(), selectedTheatre);
         return selectedTheatre;
       }
@@ -169,9 +174,10 @@ export class AMCApiClient {
       console.log(`Found ${movies.length} ${endpointName} movies`);
       return movies;
     } catch (error) {
+      const message = getErrorMessage(error);
       console.log(
         `Error fetching ${endpointName} movies (continuing with other searches):`,
-        error.message
+        message
       );
       return [];
     }
@@ -241,7 +247,7 @@ export class AMCApiClient {
       console.log(`${futureShowtimes.length} future showtimes after filtering`);
       return futureShowtimes;
     } catch (error) {
-      if (error.response?.status === 404) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
         console.log(
           `No showtimes available for movie ${movieId} at theatre ${theatreId}`
         );

@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 import type { ShowtimeDatabase } from './database.js';
+import { getErrorMessage } from './errors.js';
 import type { Logger } from './logger.js';
 
 export interface TelegramMessage {
@@ -51,6 +52,9 @@ export class TelegramBot {
 
     for (const [movieName, movieMessages] of movieGroups) {
       const batchMessage = this.formatBatchMessage(movieName, movieMessages);
+      if (!batchMessage) {
+        continue;
+      }
 
       try {
         await this.client.post('/sendMessage', {
@@ -70,8 +74,9 @@ export class TelegramBot {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
       } catch (error) {
+        const message = getErrorMessage(error);
         this.logger?.error(
-          `❌ Failed to send batch notification for ${movieName}: ${error.message}`,
+          `❌ Failed to send batch notification for ${movieName}: ${message}`,
           { movie: movieName }
         );
         throw error;
@@ -83,6 +88,11 @@ export class TelegramBot {
     movieName: string,
     messages: TelegramMessage[]
   ): string {
+    const [firstMessage] = messages;
+    if (!firstMessage) {
+      return '';
+    }
+
     const sortedMessages = messages.sort(
       (a, b) =>
         new Date(a.showDateTimeLocal).getTime() -
@@ -123,7 +133,7 @@ export class TelegramBot {
 
     return `🎬 <b>${showtimeCount} for ${movieName}!</b>
 
-🏛️ ${messages[0].theatreName}
+🏛️ ${firstMessage.theatreName}
 
 ${showtimeList}`;
   }
@@ -163,8 +173,9 @@ ${showtimeList}`;
         attr.name.includes('Premium')
     );
 
-    if (otherFormats.length > 0) {
-      return otherFormats[0].name.replace(/ at AMC$/, '');
+    const [firstFormat] = otherFormats;
+    if (firstFormat) {
+      return firstFormat.name.replace(/ at AMC$/, '');
     }
 
     return '';
@@ -179,9 +190,8 @@ ${showtimeList}`;
       );
       return true;
     } catch (error) {
-      this.logger?.error(
-        `❌ Failed to connect to Telegram bot: ${error.message}`
-      );
+      const message = getErrorMessage(error);
+      this.logger?.error(`❌ Failed to connect to Telegram bot: ${message}`);
       return false;
     }
   }
@@ -203,7 +213,8 @@ Time: ${new Date().toLocaleString()}`;
 
       this.logger?.info('✅ Test message sent successfully');
     } catch (error) {
-      this.logger?.error(`❌ Failed to send test message: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger?.error(`❌ Failed to send test message: ${message}`);
       throw error;
     }
   }
@@ -254,7 +265,8 @@ Time: ${new Date().toLocaleString()}`;
 
       return commands;
     } catch (error) {
-      this.logger?.error(`❌ Error checking for commands: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger?.error(`❌ Error checking for commands: ${message}`);
       return [];
     }
   }
@@ -269,7 +281,8 @@ Time: ${new Date().toLocaleString()}`;
         disable_web_page_preview: true,
       });
     } catch (error) {
-      this.logger?.error(`❌ Failed to send response: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger?.error(`❌ Failed to send response: ${message}`);
     }
   }
 }

@@ -5,6 +5,7 @@ import { Command } from 'commander';
 import packageJson from '../package.json' with { type: 'json' };
 import { loadConfig } from './config.js';
 import { ShowtimeDatabase } from './database.js';
+import { getErrorMessage, getErrorStack } from './errors.js';
 import { ShowtimeMonitor } from './monitor.js';
 
 const program = new Command();
@@ -58,9 +59,13 @@ program
       // Clean up (flushes logs and closes database)
       monitor.close();
     } catch (error) {
-      console.error('❌ Error during check:', error.message);
+      const message = getErrorMessage(error);
+      console.error('❌ Error during check:', message);
       if (options.verbose) {
-        console.error('Stack trace:', error.stack);
+        const stack = getErrorStack(error);
+        if (stack) {
+          console.error('Stack trace:', stack);
+        }
       }
       process.exit(1);
     }
@@ -88,7 +93,8 @@ program
       monitor.close();
       console.log('✅ Test completed successfully');
     } catch (error) {
-      console.error('❌ Test failed:', error.message);
+      const message = getErrorMessage(error);
+      console.error('❌ Test failed:', message);
       process.exit(1);
     }
   });
@@ -130,7 +136,8 @@ program
 
       monitor.close();
     } catch (error) {
-      console.error('❌ Error getting status:', error.message);
+      const message = getErrorMessage(error);
+      console.error('❌ Error getting status:', message);
       process.exit(1);
     }
   });
@@ -245,7 +252,8 @@ program
         '💡 The database will be recreated automatically on the next run'
       );
     } catch (error) {
-      console.error('❌ Error resetting database:', error.message);
+      const message = getErrorMessage(error);
+      console.error('❌ Error resetting database:', message);
       process.exit(1);
     }
   });
@@ -276,10 +284,14 @@ program
       for (const runId of recentRunIds) {
         const runLogs = database.getLogsByRunId(runId);
         if (runLogs.length > 0) {
+          const [firstLog] = runLogs;
+          if (!firstLog) {
+            continue;
+          }
           const header =
             numRuns === 1
-              ? `=== Most Recent Run (${formatTimestamp(runLogs[0].timestamp)} PT) ===`
-              : `\n=== Run at ${formatTimestamp(runLogs[0].timestamp)} PT ===`;
+              ? `=== Most Recent Run (${formatTimestamp(firstLog.timestamp)} PT) ===`
+              : `\n=== Run at ${formatTimestamp(firstLog.timestamp)} PT ===`;
 
           console.log(header);
 
@@ -291,7 +303,76 @@ program
 
       database.close();
     } catch (error) {
-      console.error('❌ Error reading logs:', error.message);
+      const message = getErrorMessage(error);
+      console.error('❌ Error reading logs:', message);
+      process.exit(1);
+    }
+  });
+
+// Database maintenance command
+program
+  .command('db-maintenance')
+  .description(
+    'Run database maintenance tasks (integrity check, backup, optimization)'
+  )
+  .option(
+    '-d, --database <path>',
+    'Path to database file',
+    './data/amc-monitor.db'
+  )
+  .option(
+    '-b, --backup-only',
+    'Only create a backup without running full maintenance'
+  )
+  .option(
+    '-c, --check-only',
+    'Only check integrity without running maintenance'
+  )
+  .option('-s, --stats', 'Show database statistics')
+  .action(async (options) => {
+    try {
+      const database = new ShowtimeDatabase(options.database);
+
+      if (options.checkOnly) {
+        console.log('🔍 Checking database integrity...');
+        const isHealthy = database.checkIntegrity();
+        if (isHealthy) {
+          console.log('✅ Database integrity check passed');
+        } else {
+          console.log('❌ Database integrity check FAILED');
+          console.log('Creating emergency backup...');
+          database.backup(`./data/backups/integrity-failed-${Date.now()}.db`);
+        }
+      } else if (options.backupOnly) {
+        console.log('💾 Creating database backup...');
+        const backupPath = database.backup();
+        if (backupPath) {
+          console.log(`✅ Backup created: ${backupPath}`);
+        } else {
+          console.log('❌ Backup failed');
+        }
+      } else if (options.stats) {
+        console.log('📊 Database Statistics:');
+        const stats = database.getDbStats();
+        if (stats) {
+          console.log(`  Size: ${stats.sizeInMB} MB`);
+          console.log(`  Pages: ${stats.pageCount.page_count}`);
+          console.log(`  Page Size: ${stats.pageSize.page_size} bytes`);
+          console.log(`  Cache: ${stats.cacheInMB} MB`);
+          console.log(`  Journal Mode: ${stats.walMode.journal_mode}`);
+          console.log(`  Free Pages: ${stats.freelist.freelist_count}`);
+          console.log(`  Integrity: ${stats.integrityCheck.quick_check}`);
+        }
+      } else {
+        console.log('🔧 Running full database maintenance...');
+        database.runMaintenance();
+        console.log('✅ Maintenance complete');
+      }
+
+      database.close();
+    } catch (error) {
+      const message = getErrorMessage(error);
+      console.error('❌ Error during database maintenance:', message);
       process.exit(1);
     }
   });

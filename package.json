@@ -29,10 +29,15 @@
     "dev": "bun --watch src/cli.ts",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
-    "format": "biome format --write src/"
+    "format": "biome format --write src/",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "lefthook install"
   },
   "type": "module",
   "devDependencies": {
-    "@biomejs/biome": "^2.2.3"
+    "@biomejs/biome": "^2.2.3",
+    "bun-types": "^1.3.5",
+    "lefthook": "^2.0.13",
+    "typescript": "^5.9.3"
   }
 }

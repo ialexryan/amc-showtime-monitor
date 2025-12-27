@@ -41,8 +41,8 @@ export async function loadConfig(
     return ConfigSchema.parse(envConfig);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorMessages = error.errors
-        .map((err) => `${err.path.join('.')}: ${err.message}`)
+      const errorMessages = error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
         .join('\n');
 
       const configSource = existsSync(configPath)

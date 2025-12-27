@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import type { ShowtimeDatabase } from './database.js';
 
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
@@ -11,7 +11,7 @@ export class Logger {
     message: string;
     movie?: string;
     theatre?: string;
-    data?: any;
+    data?: unknown;
   }> = [];
 
   constructor(database: ShowtimeDatabase) {
@@ -19,61 +19,63 @@ export class Logger {
     this.runId = randomUUID();
   }
 
+  private pushLog(
+    level: LogLevel,
+    message: string,
+    options?: { movie?: string; theatre?: string; data?: unknown }
+  ): void {
+    const entry: {
+      level: LogLevel;
+      message: string;
+      movie?: string;
+      theatre?: string;
+      data?: unknown;
+    } = { level, message };
+
+    if (options?.movie !== undefined) {
+      entry.movie = options.movie;
+    }
+    if (options?.theatre !== undefined) {
+      entry.theatre = options.theatre;
+    }
+    if (options?.data !== undefined) {
+      entry.data = options.data;
+    }
+
+    this.logBuffer.push(entry);
+  }
+
   // Log methods that capture to buffer and also output to console
   debug(
     message: string,
-    options?: { movie?: string; theatre?: string; data?: any }
+    options?: { movie?: string; theatre?: string; data?: unknown }
   ): void {
     console.log(message);
-    this.logBuffer.push({
-      level: 'DEBUG',
-      message,
-      movie: options?.movie,
-      theatre: options?.theatre,
-      data: options?.data,
-    });
+    this.pushLog('DEBUG', message, options);
   }
 
   info(
     message: string,
-    options?: { movie?: string; theatre?: string; data?: any }
+    options?: { movie?: string; theatre?: string; data?: unknown }
   ): void {
     console.log(message);
-    this.logBuffer.push({
-      level: 'INFO',
-      message,
-      movie: options?.movie,
-      theatre: options?.theatre,
-      data: options?.data,
-    });
+    this.pushLog('INFO', message, options);
   }
 
   warn(
     message: string,
-    options?: { movie?: string; theatre?: string; data?: any }
+    options?: { movie?: string; theatre?: string; data?: unknown }
   ): void {
     console.warn(message);
-    this.logBuffer.push({
-      level: 'WARN',
-      message,
-      movie: options?.movie,
-      theatre: options?.theatre,
-      data: options?.data,
-    });
+    this.pushLog('WARN', message, options);
   }
 
   error(
     message: string,
-    options?: { movie?: string; theatre?: string; data?: any }
+    options?: { movie?: string; theatre?: string; data?: unknown }
   ): void {
     console.error(message);
-    this.logBuffer.push({
-      level: 'ERROR',
-      message,
-      movie: options?.movie,
-      theatre: options?.theatre,
-      data: options?.data,
-    });
+    this.pushLog('ERROR', message, options);
   }
 
   // Save all buffered logs to database
