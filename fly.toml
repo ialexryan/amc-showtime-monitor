@@ -1,31 +1,27 @@
-app = "ialexryan-amc-showtime-monitor"
-primary_region = "sjc"
-kill_signal = "SIGTERM"
-kill_timeout = 20
+# fly.toml app configuration file generated for app-crimson-river-7343 on 2026-03-08T02:12:26Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-[env]
-  PORT = "8080"
-  CONFIG_PATH = "/data/config.json"
-  DATABASE_PATH = "/data/amc-monitor.db"
+app = 'app-crimson-river-7343'
+primary_region = 'iad'
 
-[mounts]
-  source = "amc_monitor_data"
-  destination = "/data"
-  initial_size = "1gb"
+[build]
+
+[[mounts]]
+  source = 'data'
+  destination = '/data'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "256mb"
-
-[[restart]]
-  policy = "always"
-
-[checks]
-  [checks.worker_health]
-    type = "http"
-    port = 8080
-    method = "get"
-    path = "/healthz"
-    interval = "30s"
-    timeout = "5s"
-    grace_period = "30s"
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
