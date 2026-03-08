@@ -1,226 +1,309 @@
 # AMC Showtime Monitor
 
-Send Telegram notifications when AMC posts showtimes for movies you are monitoring.
+Telegram-first monitoring for new AMC showtimes, with the ability to start tracking movies long before tickets are on sale.
 
-## Features
+The app polls AMC, stores state in SQLite, and sends Telegram alerts when new showtimes appear for movies you care about. It runs as one long-lived worker.
 
-- **Telegram notifications**: Get instant alerts when new showtimes are posted
-- **Telegram bot commands**: Manage your movie watchlist via Telegram chat
-- **Fuzzy movie matching**: Find movies even with slight title variations
-- **Premium format detection**: Highlights IMAX, Dolby Cinema, and other premium formats
-- **Direct ticket links**: Each showtime links directly to AMC's seat selection page
+## What It Does
+
+- Sends Telegram alerts when new AMC showtimes appear.
+- Lets you manage the watchlist from Telegram with `/add`, `/remove`, `/list`, `/status`, and `/help`.
+- Supports a hybrid watchlist model:
+  - pending entries for movies AMC does not know about yet
+  - resolved entries that are pinned to a canonical AMC movie id
+  - ambiguous entries that require you to choose among multiple possible AMC matches
+- Uses Telegram inline buttons to resolve ambiguous titles.
+- Groups alerts by movie and includes direct AMC ticket links.
+- Runs well on Fly.io as a single `shared-cpu-1x` worker with a SQLite volume.
+
+## How Watchlist Resolution Works
+
+The watchlist is intentionally not AMC-id-only.
+
+When you add a movie:
+
+- If AMC has one clear match, the entry is resolved immediately.
+- If AMC has no good match yet, the entry stays pending and the worker keeps checking every poll cycle.
+- If AMC has multiple strong matches, the bot sends an inline keyboard prompt so you can pick the right one.
+
+Once an entry is resolved, the worker stops fuzzy-matching it and monitors that exact AMC movie id instead.
+
+That gives you both:
+
+- early tracking for movies that are not in AMC yet
+- exact matching once AMC publishes the title
 
 ## Requirements
 
-- [Bun](https://bun.sh/) runtime
-- AMC API key (apply for one [here](https://developers.amctheatres.com/GettingStarted/NewVendorRequest))
+- [Bun](https://bun.sh/)
+- AMC API key: [AMC developer portal](https://developers.amctheatres.com/GettingStarted/NewVendorRequest)
+- Telegram bot token and chat id
 
-## Setup
+## Local Setup
 
-1. **Clone and install dependencies**:
-   ```bash
-   git clone <repository-url>
-   cd amc-showtime-monitor
-   bun install
-   ```
+1. Clone and install dependencies:
 
-2. **Create configuration file**:
-   ```bash
-   bun src/cli.ts create-config
-   ```
+```bash
+git clone <repository-url>
+cd amc-showtime-monitor
+bun install
+```
 
-3. **Set up Telegram bot**:
-   ```bash
-   bun src/cli.ts telegram-setup
-   ```
-   Follow the interactive guide to create your Telegram bot.
+2. Create a local config file:
 
-4. **Edit config.json** with your settings:
-   ```json
-   {
-     "theatre": "AMC Metreon 16",
-     "telegram": {
-        "botToken": "your-bot-token",
-        "chatId": "your-chat-id"
-      },
-      "amcApiKey": "your-amc-api-key-here",
-      "runtime": {
-        "pollIntervalSeconds": 60,
-        "telegramLongPollSeconds": 30
-      }
-    }
-   ```
+```bash
+bun src/cli.ts create-config
+```
 
-5. **Add movies to your watchlist** via Telegram:
-   - Send `/add Tron: Ares` to your bot
-   - Send `/add The Odyssey` to your bot  
-   - Use `/list` to view your watchlist
-   - Use `/help` for all available commands
+3. Set up the Telegram bot:
 
-## Usage
+```bash
+bun src/cli.ts telegram-setup
+```
 
-### Run the long-running worker
+4. Edit `data/config.json`:
+
+```json
+{
+  "theatre": "AMC Metreon 16",
+  "telegram": {
+    "botToken": "your-telegram-bot-token-here",
+    "chatId": "your-telegram-chat-id-here"
+  },
+  "amcApiKey": "your-amc-api-key-here",
+  "runtime": {
+    "pollIntervalSeconds": 60,
+    "telegramLongPollSeconds": 30
+  }
+}
+```
+
+5. Start the worker:
+
 ```bash
 bun monitor
 ```
 
-### Run a single monitoring pass
+6. Add movies from Telegram:
+
+```text
+/add Tron: Ares
+/add The Odyssey
+/list
+```
+
+## Production Configuration
+
+Production does not need `config.json`.
+
+The app supports environment-only startup, which is the recommended Fly.io setup. Use env vars or Fly secrets for:
+
+- `THEATRE`
+- `AMC_API_KEY`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+- optionally `POLL_INTERVAL_SECONDS`
+- optionally `TELEGRAM_LONG_POLL_SECONDS`
+
+The Fly deployment in this repo also sets:
+
+- `PORT=8080`
+- `DATABASE_PATH=/data/amc-monitor.db`
+- `CONFIG_PATH=/data/config.json`
+
+If `/data/config.json` is missing, the app will still start correctly as long as the required env vars are present.
+
+## Usage
+
+### Main commands
+
 ```bash
+bun monitor
 bun check-once
-```
-
-### Test Telegram connection
-```bash
 bun test-telegram
-```
-
-### View monitoring status
-```bash
 bun show-status
+bun src/cli.ts logs
 ```
 
-### Manage watchlist via Telegram
-- `/add <movie name>` - Add a movie to watchlist
-- `/remove <movie name>` - Remove a movie from watchlist  
-- `/list` - Show current watchlist
-- `/status` - Show monitoring status
-- `/help` - Show all commands
+### What they do
 
-### Run with verbose logging
+- `monitor`: run the long-lived production worker
+- `check-once`: run one poll cycle and exit
+- `test-telegram`: verify bot connectivity and send a test message
+- `show-status`: print watchlist and worker status
+- `logs`: print recent run logs from SQLite
+
+### Useful options
+
 ```bash
 bun src/cli.ts monitor -v
+bun src/cli.ts check-once -v
 ```
 
-## Automation
+## Telegram UX
 
-### macOS (LaunchAgent) - Recommended
+### Commands
 
-The cleanest way to run the monitor automatically on macOS:
+- `/add <movie>`: add a watchlist entry
+- `/remove <movie-or-number>`: remove by exact title or by the number shown in `/list`
+- `/list`: show watchlist entries and their state
+- `/status`: show worker stats and watchlist state counts
+- `/help`: show help
+
+### Entry states
+
+- `resolved`: exact AMC movie chosen and monitored by AMC movie id
+- `pending`: no AMC match yet
+- `ambiguous`: multiple possible AMC matches; choose one from the inline keyboard prompt
+
+### Ambiguity prompts
+
+When AMC has multiple plausible matches for a pending entry, the bot sends an inline keyboard with up to 3 candidates plus `Keep pending`.
+
+The worker only sends that prompt again if the candidate set changes.
+
+## Deployment
+
+### Fly.io
+
+This repo is set up for Fly.io.
+
+Included files:
+
+- [`fly.toml`](/Users/alexryan_1/amc-showtime-monitor/fly.toml)
+- [`.github/workflows/fly.yml`](/Users/alexryan_1/amc-showtime-monitor/.github/workflows/fly.yml)
+- [`Dockerfile`](/Users/alexryan_1/amc-showtime-monitor/Dockerfile)
+
+Current Fly assumptions:
+
+- app name: `amc-showtime-monitor`
+- region: `iad`
+- one `shared-cpu-1x` machine
+- `256 MB` RAM
+- one mounted volume at `/data`
+- health checks against `/healthz`
+
+Typical setup:
+
+```bash
+fly auth login
+fly apps create amc-showtime-monitor
+fly volumes create amc_monitor_data --region iad --size 1 -a amc-showtime-monitor
+fly secrets set -a amc-showtime-monitor \
+  AMC_API_KEY=... \
+  TELEGRAM_BOT_TOKEN=... \
+  TELEGRAM_CHAT_ID=... \
+  THEATRE="AMC Metreon 16"
+fly deploy -a amc-showtime-monitor
+```
+
+### GitHub Actions auto deploy
+
+Pushing to `master` runs the `Fly Deploy` GitHub Actions workflow. The workflow expects a GitHub secret named:
+
+- `FLY_API_TOKEN`
+
+## macOS LaunchAgent
+
+If you want to run it locally as a background worker on macOS:
 
 ```bash
 ./setup-launchd.sh
 ```
 
-This will:
-- Create a LaunchAgent that keeps one long-running worker alive
-- Set up proper logging to `logs/` directory
-- Handle path resolution automatically
-- Start the service immediately
+Management commands:
 
-**Management commands:**
 ```bash
-# Check status
 launchctl list | grep amc-showtime-monitor
-
-# View logs
 tail -f logs/stdout.log
 tail -f logs/stderr.log
-
-# Stop the service
 launchctl unload ~/Library/LaunchAgents/com.user.amc-showtime-monitor.plist
-
-# Start the service
 launchctl load ~/Library/LaunchAgents/com.user.amc-showtime-monitor.plist
 ```
 
-### Fly.io
+## Notification Behavior
 
-The repo includes a `fly.toml` tuned for:
-- one `shared-cpu-1x` machine
-- `256 MB` RAM
-- a persistent `/data` volume for `config.json` and SQLite
-- health checks against `/healthz`
+Alerts are delivered at-least-once.
 
-## Configuration
+That means:
 
-### Watchlist Management
-Movies are managed via Telegram bot commands:
-- Use `/add <movie name>` to add movies to your watchlist
-- Use exact movie titles or close variations
-- Fuzzy matching handles minor differences
-- Include "The", "A", "An" articles for better matching
+- a showtime is only marked notified after Telegram accepts the message
+- if Telegram fails, the alert is retried next loop
+- in rare crash windows, duplicates are possible
 
-### Theatre
-- Use either the full theatre name ("AMC Metreon 16") 
-- Or the theatre slug ("amc-metreon-16")
-- Theatre lookup supports fuzzy matching
+Duplicates are considered acceptable; silently missing an alert is not.
 
-### Scheduling
-- `monitor` runs as a single long-lived worker
-- AMC polling defaults to every 60 seconds
-- Telegram command polling uses 30-second long polling
-- Be respectful of AMC's API rate limits
-- If you encounter rate limiting, increase `runtime.pollIntervalSeconds` or `POLL_INTERVAL_SECONDS`
+## Time Handling
 
-## API Limitations
+User-facing showtime formatting is based on:
 
-### Vendor-Exclusive Movies
-Some movies may show "vendor exclusive" errors and not appear in search results. This typically happens when:
+- `showDateTimeUtc` as the actual instant
+- AMC `utcOffset` for theater-local display
 
-- Movies are far from release date
-- Distribution agreements restrict API access
-- AMC limits certain content to premium API partners
-
-**What this means**: Movies like "The Odyssey" might not be accessible until closer to their release date, even though they appear on AMC's website.
-
-**Workaround**: Keep these movies in your watchlist via `/add` - they'll automatically start working once AMC makes them publicly available through the API.
-
-## Notification Format
-
-Notifications show:
-- Movie title
-- Theatre name  
-- Premium formats (IMAX, Dolby Cinema, etc.) instead of auditorium numbers
-- Direct links to seat selection for each showtime
-- Sold out/almost sold out status
-
-Example:
-```
-🎬 New Showtime for Tron: Ares!
-
-🏛️ AMC Metreon 16
-
-🎬 Thu, Oct 9 7:00 PM - IMAX with Laser at AMC
-🎬 Thu, Oct 9 10:15 PM - Dolby Cinema at AMC
-```
+This avoids server-timezone bugs on Fly and across DST boundaries, as long as AMC provides correct UTC and offset data for the showtime.
 
 ## Development
 
-### Linting, Formatting, and Typechecking
 ```bash
-bun run lint        # Check code quality
-bun run lint:fix    # Fix linting issues
-bun run format      # Format code
-bun run test        # Run tests
-bun run typecheck   # Typecheck with tsc (no emit)
-bun run build       # Build the CLI bundle into dist/
+bun run lint
+bun run lint:fix
+bun run format
+bun run test
+bun run typecheck
+bun run build
 ```
 
-Lefthook installs pre-commit hooks after `bun install` to run lint + typecheck.
+`bun run build` bundles the CLI into `dist/cli.js`.
 
-### Database
-- SQLite database (default `data/amc-monitor.db`) stores theatres, movies, watchlist, and showtime history
-- Database is created automatically on first run
-- Use `bun src/cli.ts reset-db` to reset all tracking (includes watchlist)
-- Use `bun src/cli.ts db-maintenance --stats` for stats, `--check-only` for integrity checks, `--backup-only` to create a backup
-- Use `--database <path>` with `db-maintenance` to target a different database
+Lefthook installs pre-commit hooks that run lint and typecheck.
+
+## Database Notes
+
+- SQLite lives at `data/amc-monitor.db` locally and `/data/amc-monitor.db` on Fly.
+- Watchlist state, bot offset, logs, and notification history are stored in SQLite.
+- `reset-db` clears tracking state, including the watchlist.
+- The current watchlist schema is not designed for compatibility with the old string-only watchlist table. If the old schema is present, the app rebuilds the watchlist table in the new format.
+
+Useful maintenance commands:
+
+```bash
+bun src/cli.ts reset-db
+bun src/cli.ts db-maintenance --stats
+bun src/cli.ts db-maintenance --check-only
+bun src/cli.ts db-maintenance --backup-only
+```
 
 ## Troubleshooting
 
-### Common Issues
+### Telegram `409 Conflict`
 
-1. **Theatre not found**: Try using the exact name from AMC's website or the theatre slug
-2. **Movie not found**: Check spelling with `/add`, try with/without articles ("The", "A")
-3. **Empty watchlist**: Use `/add <movie name>` to add movies to your watchlist
-4. **API rate limiting**: Increase LaunchAgent interval in plist file if you encounter 429 errors
-5. **Vendor exclusive movies**: Wait for movie to become publicly available
+This means more than one process is polling `getUpdates` for the same bot token.
 
-### Debug Mode
-Run with verbose logging to see detailed search results:
+Make sure only one copy of the worker is running.
+
+### Movie stays pending for a long time
+
+AMC probably does not have that title in the API yet. Leave it in the watchlist and the worker will keep trying to resolve it.
+
+### Movie becomes ambiguous
+
+Pick the correct title from the inline prompt, or leave it pending if none of the options are right.
+
+### No alerts but watchlist is resolved
+
+Run:
+
 ```bash
-bun src/cli.ts check-once -v
+bun show-status
+fly logs -a amc-showtime-monitor --no-tail
 ```
+
+Check that:
+
+- the worker is healthy
+- the watchlist entry is resolved
+- AMC actually has showtimes for that movie at your configured theater
 
 ## License
 
-This project is for personal use only. Respect AMC's terms of service and API usage guidelines.
+Personal-use project. Respect AMC’s terms of service and API rules.
