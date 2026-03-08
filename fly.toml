@@ -1,5 +1,5 @@
-app = "ialexryan-amc-showtime-monitor"
-primary_region = "sjc"
+app = "amc-showtime-monitor"
+primary_region = "iad"
 kill_signal = "SIGTERM"
 kill_timeout = 20
 
