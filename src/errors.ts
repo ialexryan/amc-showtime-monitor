@@ -1,6 +1,22 @@
 import axios from 'axios';
 
 export function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data;
+    const description =
+      typeof responseData?.description === 'string'
+        ? responseData.description
+        : undefined;
+
+    if (description) {
+      return description;
+    }
+
+    if (error.message) {
+      return error.message;
+    }
+  }
+
   if (error instanceof Error) {
     return error.message;
   }

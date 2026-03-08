@@ -22,6 +22,7 @@ export interface TelegramCommandPollOptions {
 export class TelegramBot {
   private client: AxiosInstance;
   private lastUpdateId: number = 0;
+  private readonly defaultTimeoutMs = 10_000;
 
   constructor(
     botToken: string,
@@ -31,7 +32,7 @@ export class TelegramBot {
   ) {
     this.client = axios.create({
       baseURL: `https://api.telegram.org/bot${botToken}`,
-      timeout: 10000,
+      timeout: this.defaultTimeoutMs,
     });
 
     // Load last update ID from database
@@ -227,13 +228,19 @@ Time: ${new Date().toLocaleString()}`;
   async checkForCommands(
     options: TelegramCommandPollOptions = {}
   ): Promise<Array<{ command: string; args: string }>> {
+    const longPollTimeoutSeconds = options.timeoutSeconds ?? 0;
+    const requestTimeoutMs = Math.max(
+      this.defaultTimeoutMs,
+      (longPollTimeoutSeconds + 10) * 1000
+    );
     const requestConfig = {
       params: {
         offset: this.lastUpdateId + 1,
         limit: 20,
-        timeout: options.timeoutSeconds ?? 0,
+        timeout: longPollTimeoutSeconds,
         allowed_updates: ['message'], // Only message updates, not other types
       },
+      timeout: requestTimeoutMs,
       ...(options.signal ? { signal: options.signal } : {}),
     };
 
