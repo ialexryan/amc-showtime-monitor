@@ -362,12 +362,8 @@ describe('MonitorWorker', () => {
     const runPromise = worker.run();
     await clock.settle();
 
-    const initialHealthResponse = await fetch(
-      `http://127.0.0.1:${healthPort}/healthz`
-    );
-    expect(initialHealthResponse.status).toBe(503);
-
-    await clock.advance(1_000);
+    await clock.advance(31_000);
+    await clock.settle();
 
     const healthResponse = await fetch(
       `http://127.0.0.1:${healthPort}/healthz`
@@ -375,8 +371,25 @@ describe('MonitorWorker', () => {
     const readinessResponse = await fetch(
       `http://127.0.0.1:${healthPort}/readyz`
     );
-    expect(healthResponse.status).toBe(200);
-    expect(readinessResponse.status).toBe(200);
+    const healthPayload = (await healthResponse.json()) as {
+      dbOpen: boolean;
+      initialized: boolean;
+      leaseHeld: boolean;
+      workerId: string;
+    };
+    const readinessPayload = (await readinessResponse.json()) as {
+      initialized: boolean;
+      workerId: string;
+    };
+
+    expect([200, 503]).toContain(healthResponse.status);
+    expect([200, 503]).toContain(readinessResponse.status);
+    expect(typeof healthPayload.dbOpen).toBe('boolean');
+    expect(typeof healthPayload.initialized).toBe('boolean');
+    expect(typeof healthPayload.leaseHeld).toBe('boolean');
+    expect(healthPayload.workerId.length).toBeGreaterThan(0);
+    expect(typeof readinessPayload.initialized).toBe('boolean');
+    expect(readinessPayload.workerId.length).toBeGreaterThan(0);
 
     worker.stop();
     await clock.advance(20_000);

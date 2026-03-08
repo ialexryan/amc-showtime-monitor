@@ -9,6 +9,7 @@ import {
 } from './database.js';
 import { getErrorMessage } from './errors.js';
 import { Logger } from './logger.js';
+import { formatShowtimeForLog } from './showtime-time.js';
 import {
   TelegramBot,
   type TelegramCommandPollOptions,
@@ -255,14 +256,22 @@ export class ShowtimeMonitor {
       // If this is a new showtime, create a notification
       if (result.isNew) {
         this.logger.info(
-          `   🆕 New showtime: ${new Date(amcShowtime.showDateTimeLocal).toLocaleString()}`,
+          `   🆕 New showtime: ${formatShowtimeForLog(
+            amcShowtime.showDateTimeUtc,
+            amcShowtime.showDateTimeLocal,
+            amcShowtime.utcOffset
+          )}`,
           { movie: amcMovie.name }
         );
 
         newNotifications.push({
           movieName: amcMovie.name,
           theatreName: this.theatre.name,
+          showDateTimeUtc: amcShowtime.showDateTimeUtc,
           showDateTimeLocal: amcShowtime.showDateTimeLocal,
+          ...(amcShowtime.utcOffset !== undefined
+            ? { utcOffset: amcShowtime.utcOffset }
+            : {}),
           auditorium: amcShowtime.auditorium,
           attributes: amcShowtime.attributes || [],
           ticketUrl: ticketUrl,

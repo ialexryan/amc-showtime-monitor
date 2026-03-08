@@ -39,6 +39,7 @@ export interface AMCShowtime {
   movieName: string;
   showDateTimeUtc: string;
   showDateTimeLocal: string;
+  utcOffset?: string;
   theatreId: number;
   auditorium: number;
   isSoldOut: boolean;

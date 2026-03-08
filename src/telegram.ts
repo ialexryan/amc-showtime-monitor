@@ -2,11 +2,18 @@ import axios, { type AxiosInstance } from 'axios';
 import type { ShowtimeDatabase } from './database.js';
 import { getErrorMessage } from './errors.js';
 import type { Logger } from './logger.js';
+import {
+  formatShowtimeDate,
+  formatShowtimeTime,
+  getShowtimeSortTimeMs,
+} from './showtime-time.js';
 
 export interface TelegramMessage {
   movieName: string;
   theatreName: string;
+  showDateTimeUtc: string;
   showDateTimeLocal: string;
+  utcOffset?: string;
   auditorium: number;
   attributes: Array<{ code: string; name: string; description?: string }>;
   ticketUrl?: string;
@@ -100,23 +107,30 @@ export class TelegramBot {
 
     const sortedMessages = messages.sort(
       (a, b) =>
-        new Date(a.showDateTimeLocal).getTime() -
-        new Date(b.showDateTimeLocal).getTime()
+        getShowtimeSortTimeMs(
+          a.showDateTimeUtc,
+          a.showDateTimeLocal,
+          a.utcOffset
+        ) -
+        getShowtimeSortTimeMs(
+          b.showDateTimeUtc,
+          b.showDateTimeLocal,
+          b.utcOffset
+        )
     );
 
     const showtimeList = sortedMessages
       .map((msg) => {
-        const date = new Date(msg.showDateTimeLocal);
-        const dateStr = date.toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-        });
-        const timeStr = date.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        });
+        const dateStr = formatShowtimeDate(
+          msg.showDateTimeUtc,
+          msg.showDateTimeLocal,
+          msg.utcOffset
+        );
+        const timeStr = formatShowtimeTime(
+          msg.showDateTimeUtc,
+          msg.showDateTimeLocal,
+          msg.utcOffset
+        );
 
         const formatStr = this.getFormatString(msg.attributes);
 
