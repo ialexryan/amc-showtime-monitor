@@ -1,6 +1,18 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import { getErrorMessage } from './errors.js';
 
+interface AMCApiLogOptions {
+  movie?: string;
+  theatre?: string;
+  data?: unknown;
+}
+
+interface AMCApiLogger {
+  info(message: string, options?: AMCApiLogOptions): void;
+  warn(message: string, options?: AMCApiLogOptions): void;
+  error(message: string, options?: AMCApiLogOptions): void;
+}
+
 export interface AMCTheatre {
   id: number;
   name: string;
@@ -66,7 +78,10 @@ export class AMCApiClient {
   private client: AxiosInstance;
   private theatreCache = new Map<string, AMCTheatre>();
 
-  constructor(apiKey: string) {
+  constructor(
+    apiKey: string,
+    private logger?: AMCApiLogger
+  ) {
     this.client = axios.create({
       baseURL: 'https://api.amctheatres.com/v2',
       headers: {
@@ -102,12 +117,16 @@ export class AMCApiClient {
       const cached = this.theatreCache.get(theatreNameOrSlug.toLowerCase());
       if (cached) return cached;
 
-      console.log(`Looking up theatre: ${theatreNameOrSlug}`);
+      this.info(`Looking up theatre: ${theatreNameOrSlug}`, {
+        theatre: theatreNameOrSlug,
+      });
 
       // If it looks like a slug (contains hyphens and no spaces), try direct lookup first
       if (theatreNameOrSlug.includes('-') && !theatreNameOrSlug.includes(' ')) {
         try {
-          console.log(`Attempting direct slug lookup: ${theatreNameOrSlug}`);
+          this.info(`Attempting direct slug lookup: ${theatreNameOrSlug}`, {
+            theatre: theatreNameOrSlug,
+          });
           const directResponse: AxiosResponse<AMCTheatre> =
             await this.client.get(`/theatres/${theatreNameOrSlug}`);
           const theatre = directResponse.data;
@@ -116,12 +135,16 @@ export class AMCApiClient {
           this.theatreCache.set(theatreNameOrSlug.toLowerCase(), theatre);
           return theatre;
         } catch {
-          console.log(`Direct slug lookup failed, falling back to search...`);
+          this.warn('Direct slug lookup failed, falling back to search...', {
+            theatre: theatreNameOrSlug,
+          });
         }
       }
 
       // Use AMC's name search parameter
-      console.log(`Searching by name: ${theatreNameOrSlug}`);
+      this.info(`Searching by name: ${theatreNameOrSlug}`, {
+        theatre: theatreNameOrSlug,
+      });
       const response: AxiosResponse<
         AMCApiResponse<{ theatres: AMCTheatre[] }>
       > = await this.client.get('/theatres', {
@@ -131,7 +154,10 @@ export class AMCApiClient {
       });
 
       const theatres = response.data._embedded.theatres || [];
-      console.log(`Found ${theatres.length} theatres matching name search`);
+      this.info(`Found ${theatres.length} theatres matching name search`, {
+        theatre: theatreNameOrSlug,
+        data: { count: theatres.length },
+      });
 
       if (theatres.length > 0) {
         // Prefer exact matches, fall back to first result
@@ -143,17 +169,23 @@ export class AMCApiClient {
 
         const selectedTheatre = exactMatch ?? theatres[0];
         if (!selectedTheatre) {
-          console.log(`❌ Theatre not found: ${theatreNameOrSlug}`);
+          this.warn(`❌ Theatre not found: ${theatreNameOrSlug}`, {
+            theatre: theatreNameOrSlug,
+          });
           return null;
         }
         this.theatreCache.set(theatreNameOrSlug.toLowerCase(), selectedTheatre);
         return selectedTheatre;
       }
 
-      console.log(`❌ Theatre not found: ${theatreNameOrSlug}`);
+      this.warn(`❌ Theatre not found: ${theatreNameOrSlug}`, {
+        theatre: theatreNameOrSlug,
+      });
       return null;
     } catch (error) {
-      console.error('Error searching for theatre:', error);
+      this.error(`Error searching for theatre: ${getErrorMessage(error)}`, {
+        theatre: theatreNameOrSlug,
+      });
       throw error;
     }
   }
@@ -172,13 +204,24 @@ export class AMCApiClient {
         });
 
       const movies = response.data._embedded.movies || [];
-      console.log(`Found ${movies.length} ${endpointName} movies`);
+      this.info(`Found ${movies.length} ${endpointName} movies`, {
+        data: {
+          endpoint,
+          endpointName,
+          count: movies.length,
+        },
+      });
       return movies;
     } catch (error) {
       const message = getErrorMessage(error);
-      console.log(
-        `Error fetching ${endpointName} movies (continuing with other searches):`,
-        message
+      this.warn(
+        `Error fetching ${endpointName} movies (continuing with other searches): ${message}`,
+        {
+          data: {
+            endpoint,
+            endpointName,
+          },
+        }
       );
       return [];
     }
@@ -187,7 +230,7 @@ export class AMCApiClient {
   // Fetch all movies from all endpoints once per run
   async getAllMovies(): Promise<AMCMovie[]> {
     try {
-      console.log('Fetching all movies from AMC API...');
+      this.info('Fetching all movies from AMC API...');
 
       const movieMap = new Map<number, AMCMovie>();
 
@@ -209,10 +252,12 @@ export class AMCApiClient {
       }
 
       const allMovies = Array.from(movieMap.values());
-      console.log(`Total unique movies: ${allMovies.length}`);
+      this.info(`Total unique movies: ${allMovies.length}`, {
+        data: { count: allMovies.length },
+      });
       return allMovies;
     } catch (error) {
-      console.error('Error fetching all movies:', error);
+      this.error(`Error fetching all movies: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -222,8 +267,11 @@ export class AMCApiClient {
     theatreId: number
   ): Promise<AMCShowtime[]> {
     try {
-      console.log(
-        `Getting showtimes for movie ${movieId} at theatre ${theatreId}`
+      this.info(
+        `Getting showtimes for movie ${movieId} at theatre ${theatreId}`,
+        {
+          data: { movieId, theatreId },
+        }
       );
 
       const response: AxiosResponse<
@@ -236,7 +284,13 @@ export class AMCApiClient {
       });
 
       const showtimes = response.data._embedded.showtimes || [];
-      console.log(`Found ${showtimes.length} showtimes`);
+      this.info(`Found ${showtimes.length} showtimes`, {
+        data: {
+          movieId,
+          theatreId,
+          count: showtimes.length,
+        },
+      });
 
       // Filter out past showtimes (only future ones)
       const now = new Date();
@@ -245,16 +299,27 @@ export class AMCApiClient {
         return showDate > now;
       });
 
-      console.log(`${futureShowtimes.length} future showtimes after filtering`);
+      this.info(`${futureShowtimes.length} future showtimes after filtering`, {
+        data: {
+          movieId,
+          theatreId,
+          count: futureShowtimes.length,
+        },
+      });
       return futureShowtimes;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
-        console.log(
-          `No showtimes available for movie ${movieId} at theatre ${theatreId}`
+        this.info(
+          `No showtimes available for movie ${movieId} at theatre ${theatreId}`,
+          {
+            data: { movieId, theatreId },
+          }
         );
         return [];
       }
-      console.error('Error getting showtimes:', error);
+      this.error(`Error getting showtimes: ${getErrorMessage(error)}`, {
+        data: { movieId, theatreId },
+      });
       throw error;
     }
   }
@@ -263,5 +328,29 @@ export class AMCApiClient {
   generateTicketUrl(showtime: AMCShowtime): string {
     // AMC's direct showtime ticket URL format
     return `https://www.amctheatres.com/showtimes/${showtime.id}/seats`;
+  }
+
+  private info(message: string, options?: AMCApiLogOptions): void {
+    if (this.logger) {
+      this.logger.info(message, options);
+      return;
+    }
+    console.log(message);
+  }
+
+  private warn(message: string, options?: AMCApiLogOptions): void {
+    if (this.logger) {
+      this.logger.warn(message, options);
+      return;
+    }
+    console.warn(message);
+  }
+
+  private error(message: string, options?: AMCApiLogOptions): void {
+    if (this.logger) {
+      this.logger.error(message, options);
+      return;
+    }
+    console.error(message);
   }
 }

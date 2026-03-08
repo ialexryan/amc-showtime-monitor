@@ -28,9 +28,9 @@ export class ShowtimeMonitor {
 
   constructor(config: AppConfig, dbPath?: string) {
     this.config = config;
-    this.amcClient = new AMCApiClient(config.amcApiKey);
     this.database = new ShowtimeDatabase(dbPath);
     this.logger = new Logger(this.database);
+    this.amcClient = new AMCApiClient(config.amcApiKey, this.logger);
     this.telegram = new TelegramBot(
       config.telegram.botToken,
       config.telegram.chatId,
