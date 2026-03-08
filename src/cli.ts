@@ -131,6 +131,9 @@ program
       console.log('================================');
       console.log(`Theatre: ${status.theatre?.name || config.theatre}`);
       console.log(`Watchlist: ${status.trackedMovies.length} movies`);
+      console.log(`  Resolved: ${status.resolvedWatchlistEntries}`);
+      console.log(`  Ambiguous: ${status.ambiguousWatchlistEntries}`);
+      console.log(`  Pending: ${status.pendingWatchlistEntries}`);
       console.log(
         `Checks: ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h`
       );

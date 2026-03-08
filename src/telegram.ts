@@ -26,6 +26,24 @@ export interface TelegramCommandPollOptions {
   signal?: AbortSignal;
 }
 
+export type TelegramUpdate =
+  | {
+      type: 'command';
+      command: string;
+      args: string;
+    }
+  | {
+      type: 'callback';
+      callbackQueryId: string;
+      callbackData: string;
+      messageId?: number;
+    };
+
+export interface TelegramInlineButton {
+  text: string;
+  callbackData: string;
+}
+
 export class TelegramBot {
   private client: AxiosInstance;
   private lastUpdateId: number = 0;
@@ -251,10 +269,9 @@ Time: ${new Date().toLocaleString()}`;
     }
   }
 
-  // Check for new messages and return commands
-  async checkForCommands(
+  async getUpdates(
     options: TelegramCommandPollOptions = {}
-  ): Promise<Array<{ command: string; args: string }>> {
+  ): Promise<TelegramUpdate[]> {
     const longPollTimeoutSeconds = options.timeoutSeconds ?? 0;
     const requestTimeoutMs = Math.max(
       this.defaultTimeoutMs,
@@ -265,7 +282,7 @@ Time: ${new Date().toLocaleString()}`;
         offset: this.lastUpdateId + 1,
         limit: 20,
         timeout: longPollTimeoutSeconds,
-        allowed_updates: ['message'], // Only message updates, not other types
+        allowed_updates: ['message', 'callback_query'],
       },
       timeout: requestTimeoutMs,
       ...(options.signal ? { signal: options.signal } : {}),
@@ -273,38 +290,126 @@ Time: ${new Date().toLocaleString()}`;
 
     const response = await this.client.get('/getUpdates', requestConfig);
     const updates = response.data.result;
-    const commands: Array<{ command: string; args: string }> = [];
+    const parsedUpdates: TelegramUpdate[] = [];
 
     for (const update of updates) {
       this.lastUpdateId = update.update_id;
 
-      // Only process messages from the configured chat
       if (
         update.message?.chat?.id?.toString() === this.chatId &&
         update.message.text
       ) {
         const text = update.message.text.trim();
-
-        // Check if it's a command (starts with /)
         if (text.startsWith('/')) {
           const parts = text.split(' ');
           const command = parts[0].toLowerCase();
           const args = parts.slice(1).join(' ');
 
-          commands.push({ command, args });
+          parsedUpdates.push({ type: 'command', command, args });
         }
+      }
+
+      if (
+        update.callback_query?.message?.chat?.id?.toString() === this.chatId &&
+        update.callback_query?.data &&
+        update.callback_query.id
+      ) {
+        parsedUpdates.push({
+          type: 'callback',
+          callbackQueryId: update.callback_query.id,
+          callbackData: update.callback_query.data,
+          ...(update.callback_query.message?.message_id !== undefined
+            ? { messageId: update.callback_query.message.message_id }
+            : {}),
+        });
       }
     }
 
-    // Save the last update ID to database
     if (this.database && this.lastUpdateId > 0) {
       this.database.setBotState('last_update_id', this.lastUpdateId.toString());
     }
 
-    return commands;
+    return parsedUpdates;
   }
 
-  // Send a response message
+  async checkForCommands(
+    options: TelegramCommandPollOptions = {}
+  ): Promise<Array<{ command: string; args: string }>> {
+    const updates = await this.getUpdates(options);
+    return updates.flatMap((update) =>
+      update.type === 'command'
+        ? [{ command: update.command, args: update.args }]
+        : []
+    );
+  }
+
+  async sendOrEditInlinePrompt(
+    message: string,
+    buttons: TelegramInlineButton[],
+    existingMessageId?: number
+  ): Promise<number> {
+    if (existingMessageId !== undefined) {
+      const edited = await this.editInlinePrompt(
+        existingMessageId,
+        message,
+        buttons
+      );
+      if (edited) {
+        return existingMessageId;
+      }
+    }
+
+    const response = await this.client.post('/sendMessage', {
+      chat_id: this.chatId,
+      text: message,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      reply_markup: buildInlineKeyboard(buttons),
+    });
+
+    return response.data.result.message_id as number;
+  }
+
+  async answerCallbackQuery(
+    callbackQueryId: string,
+    message: string
+  ): Promise<void> {
+    try {
+      await this.client.post('/answerCallbackQuery', {
+        callback_query_id: callbackQueryId,
+        text: message,
+        show_alert: false,
+      });
+    } catch (error) {
+      const responseMessage = getErrorMessage(error);
+      this.logger?.error(
+        `❌ Failed to answer callback query: ${responseMessage}`
+      );
+    }
+  }
+
+  private async editInlinePrompt(
+    messageId: number,
+    message: string,
+    buttons: TelegramInlineButton[]
+  ): Promise<boolean> {
+    try {
+      await this.client.post('/editMessageText', {
+        chat_id: this.chatId,
+        message_id: messageId,
+        text: message,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        reply_markup: buildInlineKeyboard(buttons),
+      });
+      return true;
+    } catch (error) {
+      const responseMessage = getErrorMessage(error);
+      this.logger?.warn(`⚠️ Failed to edit inline prompt: ${responseMessage}`);
+      return false;
+    }
+  }
+
   async sendResponse(message: string): Promise<void> {
     try {
       await this.client.post('/sendMessage', {
@@ -318,4 +423,15 @@ Time: ${new Date().toLocaleString()}`;
       this.logger?.error(`❌ Failed to send response: ${message}`);
     }
   }
+}
+
+function buildInlineKeyboard(buttons: TelegramInlineButton[]) {
+  return {
+    inline_keyboard: buttons.map((button) => [
+      {
+        text: button.text,
+        callback_data: button.callbackData,
+      },
+    ]),
+  };
 }

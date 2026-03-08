@@ -48,6 +48,36 @@ export interface ShowtimeUpsertInput {
   ticketUrl?: string;
 }
 
+export type WatchlistResolutionState =
+  | 'pending'
+  | 'resolved'
+  | 'ambiguous'
+  | 'unmatched';
+
+export interface WatchlistCandidate {
+  movieId: number;
+  movieName: string;
+  movieSlug: string;
+  score: number;
+}
+
+export interface WatchlistEntry {
+  id: number;
+  queryText: string;
+  normalizedQuery: string;
+  resolutionState: WatchlistResolutionState;
+  resolvedMovieId?: number;
+  resolvedMovieSlug?: string;
+  resolvedMovieName?: string;
+  resolvedAt?: string;
+  resolutionCandidatesJson?: string;
+  ambiguitySignature?: string;
+  ambiguityPromptMessageId?: number;
+  ambiguityPromptedAt?: string;
+  lastResolutionCheckedAt?: string;
+  addedAt: string;
+}
+
 export interface PendingNotification {
   showtimeId: number;
   movieName: string;
@@ -175,12 +205,6 @@ export class ShowtimeDatabase {
         UNIQUE(movie_id, theatre_id, show_date_time, auditorium)
       );
 
-      CREATE TABLE IF NOT EXISTS watchlist (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        movie_name TEXT UNIQUE NOT NULL,
-        added_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-
       CREATE TABLE IF NOT EXISTS bot_state (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
@@ -218,12 +242,65 @@ export class ShowtimeDatabase {
       CREATE INDEX IF NOT EXISTS idx_showtimes_notified ON showtimes (notified);
       CREATE INDEX IF NOT EXISTS idx_showtimes_first_seen ON showtimes (first_seen);
       CREATE INDEX IF NOT EXISTS idx_movies_last_checked ON movies (last_checked);
-      CREATE INDEX IF NOT EXISTS idx_watchlist_movie_name ON watchlist (movie_name);
       CREATE INDEX IF NOT EXISTS idx_logs_run_id ON logs (run_id);
       CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs (timestamp);
     `);
 
     this.ensureColumnExists('showtimes', 'utc_offset', 'TEXT');
+    this.resetWatchlistSchema();
+  }
+
+  private resetWatchlistSchema(): void {
+    const columns = this.getTableColumns('watchlist');
+    const hasHybridSchema =
+      columns.includes('query_text') && columns.includes('normalized_query');
+
+    if (columns.length > 0 && !hasHybridSchema) {
+      this.db.exec(`
+        DROP INDEX IF EXISTS idx_watchlist_movie_name;
+        DROP TABLE IF EXISTS watchlist;
+      `);
+    }
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS watchlist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        query_text TEXT NOT NULL,
+        normalized_query TEXT NOT NULL,
+        resolution_state TEXT NOT NULL DEFAULT 'pending',
+        resolved_movie_id INTEGER,
+        resolved_movie_slug TEXT,
+        resolved_movie_name TEXT,
+        resolved_at DATETIME,
+        resolution_candidates_json TEXT,
+        ambiguity_signature TEXT,
+        ambiguity_prompt_message_id INTEGER,
+        ambiguity_prompted_at DATETIME,
+        last_resolution_checked_at DATETIME,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_watchlist_normalized_query
+        ON watchlist (normalized_query);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_watchlist_resolved_movie_id
+        ON watchlist (resolved_movie_id)
+        WHERE resolved_movie_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_watchlist_resolution_state
+        ON watchlist (resolution_state);
+      CREATE INDEX IF NOT EXISTS idx_watchlist_added_at
+        ON watchlist (added_at);
+    `);
+  }
+
+  private getTableColumns(tableName: string): string[] {
+    try {
+      const columns = this.db.query(`PRAGMA table_info(${tableName})`).all() as
+        | Array<{ name: string }>
+        | undefined;
+      return columns?.map((column) => column.name) ?? [];
+    } catch {
+      return [];
+    }
   }
 
   private ensureColumnExists(
@@ -242,6 +319,66 @@ export class ShowtimeDatabase {
     this.db.exec(
       `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`
     );
+  }
+
+  private mapWatchlistEntry(
+    row:
+      | {
+          id: number;
+          query_text: string;
+          normalized_query: string;
+          resolution_state: WatchlistResolutionState;
+          resolved_movie_id?: number | null;
+          resolved_movie_slug?: string | null;
+          resolved_movie_name?: string | null;
+          resolved_at?: string | null;
+          resolution_candidates_json?: string | null;
+          ambiguity_signature?: string | null;
+          ambiguity_prompt_message_id?: number | null;
+          ambiguity_prompted_at?: string | null;
+          last_resolution_checked_at?: string | null;
+          added_at: string;
+        }
+      | null
+      | undefined
+  ): WatchlistEntry | null {
+    if (!row) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      queryText: row.query_text,
+      normalizedQuery: row.normalized_query,
+      resolutionState: row.resolution_state,
+      ...(row.resolved_movie_id !== null && row.resolved_movie_id !== undefined
+        ? { resolvedMovieId: row.resolved_movie_id }
+        : {}),
+      ...(row.resolved_movie_slug
+        ? { resolvedMovieSlug: row.resolved_movie_slug }
+        : {}),
+      ...(row.resolved_movie_name
+        ? { resolvedMovieName: row.resolved_movie_name }
+        : {}),
+      ...(row.resolved_at ? { resolvedAt: row.resolved_at } : {}),
+      ...(row.resolution_candidates_json
+        ? { resolutionCandidatesJson: row.resolution_candidates_json }
+        : {}),
+      ...(row.ambiguity_signature
+        ? { ambiguitySignature: row.ambiguity_signature }
+        : {}),
+      ...(row.ambiguity_prompt_message_id !== null &&
+      row.ambiguity_prompt_message_id !== undefined
+        ? { ambiguityPromptMessageId: row.ambiguity_prompt_message_id }
+        : {}),
+      ...(row.ambiguity_prompted_at
+        ? { ambiguityPromptedAt: row.ambiguity_prompted_at }
+        : {}),
+      ...(row.last_resolution_checked_at
+        ? { lastResolutionCheckedAt: row.last_resolution_checked_at }
+        : {}),
+      addedAt: row.added_at,
+    };
   }
 
   private mapWorkerState(
@@ -490,41 +627,340 @@ export class ShowtimeDatabase {
   }
 
   // Watchlist operations
-  addToWatchlist(movieName: string): boolean {
+  createOrGetWatchlistEntry(
+    queryText: string,
+    normalizedQuery: string
+  ): { created: boolean; entry: WatchlistEntry | null } {
     try {
       const stmt = this.db.prepare(`
-        INSERT OR IGNORE INTO watchlist (movie_name) VALUES (?)
+        INSERT OR IGNORE INTO watchlist (query_text, normalized_query)
+        VALUES (?, ?)
       `);
-      const result = stmt.run(movieName);
+      const result = stmt.run(queryText, normalizedQuery);
+      return {
+        created: result.changes > 0,
+        entry: this.getWatchlistEntryByNormalizedQuery(normalizedQuery),
+      };
+    } catch (error) {
+      console.error('Error creating watchlist entry:', error);
+      return { created: false, entry: null };
+    }
+  }
+
+  getWatchlistEntryById(id: number): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM watchlist WHERE id = ?
+      `);
+      return this.mapWatchlistEntry(
+        stmt.get(id) as
+          | {
+              id: number;
+              query_text: string;
+              normalized_query: string;
+              resolution_state: WatchlistResolutionState;
+              resolved_movie_id?: number | null;
+              resolved_movie_slug?: string | null;
+              resolved_movie_name?: string | null;
+              resolved_at?: string | null;
+              resolution_candidates_json?: string | null;
+              ambiguity_signature?: string | null;
+              ambiguity_prompt_message_id?: number | null;
+              ambiguity_prompted_at?: string | null;
+              last_resolution_checked_at?: string | null;
+              added_at: string;
+            }
+          | undefined
+      );
+    } catch (error) {
+      console.error('Error getting watchlist entry by id:', error);
+      return null;
+    }
+  }
+
+  private getWatchlistEntryByNormalizedQuery(
+    normalizedQuery: string
+  ): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM watchlist WHERE normalized_query = ?
+      `);
+      return this.mapWatchlistEntry(
+        stmt.get(normalizedQuery) as
+          | {
+              id: number;
+              query_text: string;
+              normalized_query: string;
+              resolution_state: WatchlistResolutionState;
+              resolved_movie_id?: number | null;
+              resolved_movie_slug?: string | null;
+              resolved_movie_name?: string | null;
+              resolved_at?: string | null;
+              resolution_candidates_json?: string | null;
+              ambiguity_signature?: string | null;
+              ambiguity_prompt_message_id?: number | null;
+              ambiguity_prompted_at?: string | null;
+              last_resolution_checked_at?: string | null;
+              added_at: string;
+            }
+          | undefined
+      );
+    } catch (error) {
+      console.error(
+        'Error getting watchlist entry by normalized query:',
+        error
+      );
+      return null;
+    }
+  }
+
+  getWatchlistEntryByResolvedMovieId(movieId: number): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM watchlist WHERE resolved_movie_id = ?
+      `);
+      return this.mapWatchlistEntry(
+        stmt.get(movieId) as
+          | {
+              id: number;
+              query_text: string;
+              normalized_query: string;
+              resolution_state: WatchlistResolutionState;
+              resolved_movie_id?: number | null;
+              resolved_movie_slug?: string | null;
+              resolved_movie_name?: string | null;
+              resolved_at?: string | null;
+              resolution_candidates_json?: string | null;
+              ambiguity_signature?: string | null;
+              ambiguity_prompt_message_id?: number | null;
+              ambiguity_prompted_at?: string | null;
+              last_resolution_checked_at?: string | null;
+              added_at: string;
+            }
+          | undefined
+      );
+    } catch (error) {
+      console.error(
+        'Error getting watchlist entry by resolved movie id:',
+        error
+      );
+      return null;
+    }
+  }
+
+  getWatchlistEntries(): WatchlistEntry[] {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM watchlist ORDER BY added_at ASC, id ASC
+      `);
+      const rows = stmt.all() as Array<{
+        id: number;
+        query_text: string;
+        normalized_query: string;
+        resolution_state: WatchlistResolutionState;
+        resolved_movie_id?: number | null;
+        resolved_movie_slug?: string | null;
+        resolved_movie_name?: string | null;
+        resolved_at?: string | null;
+        resolution_candidates_json?: string | null;
+        ambiguity_signature?: string | null;
+        ambiguity_prompt_message_id?: number | null;
+        ambiguity_prompted_at?: string | null;
+        last_resolution_checked_at?: string | null;
+        added_at: string;
+      }>;
+      return rows
+        .map((row) => this.mapWatchlistEntry(row))
+        .filter((entry): entry is WatchlistEntry => entry !== null);
+    } catch (error) {
+      console.error('Error getting watchlist entries:', error);
+      return [];
+    }
+  }
+
+  getResolvedWatchlistEntries(): WatchlistEntry[] {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM watchlist
+        WHERE resolution_state = 'resolved' AND resolved_movie_id IS NOT NULL
+        ORDER BY added_at ASC, id ASC
+      `);
+      const rows = stmt.all() as Array<{
+        id: number;
+        query_text: string;
+        normalized_query: string;
+        resolution_state: WatchlistResolutionState;
+        resolved_movie_id?: number | null;
+        resolved_movie_slug?: string | null;
+        resolved_movie_name?: string | null;
+        resolved_at?: string | null;
+        resolution_candidates_json?: string | null;
+        ambiguity_signature?: string | null;
+        ambiguity_prompt_message_id?: number | null;
+        ambiguity_prompted_at?: string | null;
+        last_resolution_checked_at?: string | null;
+        added_at: string;
+      }>;
+      return rows
+        .map((row) => this.mapWatchlistEntry(row))
+        .filter((entry): entry is WatchlistEntry => entry !== null);
+    } catch (error) {
+      console.error('Error getting resolved watchlist entries:', error);
+      return [];
+    }
+  }
+
+  saveWatchlistEntryResolved(
+    entryId: number,
+    movie: { id: number; slug: string; name: string },
+    checkedAt: string
+  ): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE watchlist
+        SET resolution_state = 'resolved',
+            resolved_movie_id = ?,
+            resolved_movie_slug = ?,
+            resolved_movie_name = ?,
+            resolved_at = ?,
+            resolution_candidates_json = NULL,
+            ambiguity_signature = NULL,
+            ambiguity_prompt_message_id = NULL,
+            ambiguity_prompted_at = NULL,
+            last_resolution_checked_at = ?
+        WHERE id = ?
+      `);
+      stmt.run(movie.id, movie.slug, movie.name, checkedAt, checkedAt, entryId);
+      return this.getWatchlistEntryById(entryId);
+    } catch (error) {
+      console.error('Error saving resolved watchlist entry:', error);
+      return null;
+    }
+  }
+
+  saveWatchlistEntryAmbiguous(
+    entryId: number,
+    resolutionCandidatesJson: string,
+    ambiguitySignature: string,
+    checkedAt: string
+  ): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE watchlist
+        SET resolution_state = 'ambiguous',
+            resolved_movie_id = NULL,
+            resolved_movie_slug = NULL,
+            resolved_movie_name = NULL,
+            resolved_at = NULL,
+            resolution_candidates_json = ?,
+            ambiguity_signature = ?,
+            last_resolution_checked_at = ?
+        WHERE id = ?
+      `);
+      stmt.run(
+        resolutionCandidatesJson,
+        ambiguitySignature,
+        checkedAt,
+        entryId
+      );
+      return this.getWatchlistEntryById(entryId);
+    } catch (error) {
+      console.error('Error saving ambiguous watchlist entry:', error);
+      return null;
+    }
+  }
+
+  saveWatchlistEntryUnmatched(
+    entryId: number,
+    checkedAt: string
+  ): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE watchlist
+        SET resolution_state = 'unmatched',
+            resolved_movie_id = NULL,
+            resolved_movie_slug = NULL,
+            resolved_movie_name = NULL,
+            resolved_at = NULL,
+            resolution_candidates_json = NULL,
+            ambiguity_signature = NULL,
+            ambiguity_prompt_message_id = NULL,
+            ambiguity_prompted_at = NULL,
+            last_resolution_checked_at = ?
+        WHERE id = ?
+      `);
+      stmt.run(checkedAt, entryId);
+      return this.getWatchlistEntryById(entryId);
+    } catch (error) {
+      console.error('Error saving unmatched watchlist entry:', error);
+      return null;
+    }
+  }
+
+  updateWatchlistEntryPrompt(
+    entryId: number,
+    ambiguitySignature: string,
+    messageId: number,
+    promptedAt: string
+  ): WatchlistEntry | null {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE watchlist
+        SET ambiguity_prompt_message_id = ?,
+            ambiguity_prompted_at = ?
+        WHERE id = ? AND ambiguity_signature = ?
+      `);
+      stmt.run(messageId, promptedAt, entryId, ambiguitySignature);
+      return this.getWatchlistEntryById(entryId);
+    } catch (error) {
+      console.error('Error updating watchlist prompt metadata:', error);
+      return null;
+    }
+  }
+
+  clearWatchlistEntryPrompt(entryId: number): void {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE watchlist
+        SET ambiguity_prompt_message_id = NULL,
+            ambiguity_prompted_at = NULL
+        WHERE id = ?
+      `);
+      stmt.run(entryId);
+    } catch (error) {
+      console.error('Error clearing watchlist prompt metadata:', error);
+    }
+  }
+
+  deleteWatchlistEntry(entryId: number): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        DELETE FROM watchlist WHERE id = ?
+      `);
+      const result = stmt.run(entryId);
       return result.changes > 0;
     } catch (error) {
-      console.error('Error adding to watchlist:', error);
+      console.error('Error deleting watchlist entry:', error);
       return false;
     }
   }
 
-  removeFromWatchlist(movieName: string): boolean {
+  getWatchlistDisplayLabels(): string[] {
     try {
-      const stmt = this.db.prepare(`
-        DELETE FROM watchlist WHERE movie_name = ? COLLATE NOCASE
-      `);
-      const result = stmt.run(movieName);
-      return result.changes > 0;
+      return this.getWatchlistEntries().map((entry) => {
+        switch (entry.resolutionState) {
+          case 'resolved':
+            return `${entry.queryText} -> ${entry.resolvedMovieName || 'Resolved'}`;
+          case 'ambiguous':
+            return `${entry.queryText} (choose match)`;
+          case 'unmatched':
+            return `${entry.queryText} (pending)`;
+          default:
+            return `${entry.queryText} (pending)`;
+        }
+      });
     } catch (error) {
-      console.error('Error removing from watchlist:', error);
-      return false;
-    }
-  }
-
-  getWatchlist(): string[] {
-    try {
-      const stmt = this.db.prepare(`
-        SELECT movie_name FROM watchlist ORDER BY added_at ASC
-      `);
-      const rows = stmt.all() as Array<{ movie_name: string }>;
-      return rows.map((row) => row.movie_name);
-    } catch (error) {
-      console.error('Error getting watchlist:', error);
+      console.error('Error getting watchlist display labels:', error);
       return [];
     }
   }

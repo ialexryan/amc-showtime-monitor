@@ -71,4 +71,44 @@ describe('ShowtimeDatabase notification delivery', () => {
 
     db.close();
   });
+
+  test('watchlist entries enforce unique resolved movie ids', () => {
+    const db = new ShowtimeDatabase(createTempDatabasePath());
+    const firstEntry = db.createOrGetWatchlistEntry('Tron 3', 'tron 3').entry;
+    const secondEntry = db.createOrGetWatchlistEntry(
+      'Tron: Ares',
+      'tron ares'
+    ).entry;
+
+    expect(firstEntry?.id).toBeDefined();
+    expect(secondEntry?.id).toBeDefined();
+
+    const resolvedAt = new Date().toISOString();
+    const firstResolved = db.saveWatchlistEntryResolved(
+      firstEntry?.id ?? -1,
+      {
+        id: 123,
+        slug: 'tron-ares',
+        name: 'Tron: Ares',
+      },
+      resolvedAt
+    );
+    const originalConsoleError = console.error;
+    console.error = () => undefined;
+    const secondResolved = db.saveWatchlistEntryResolved(
+      secondEntry?.id ?? -1,
+      {
+        id: 123,
+        slug: 'tron-ares',
+        name: 'Tron: Ares',
+      },
+      resolvedAt
+    );
+    console.error = originalConsoleError;
+
+    expect(firstResolved?.resolvedMovieId).toBe(123);
+    expect(secondResolved).toBeNull();
+
+    db.close();
+  });
 });

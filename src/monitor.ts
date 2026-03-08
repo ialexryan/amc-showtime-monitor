@@ -1,4 +1,3 @@
-import Fuse from 'fuse.js';
 import { AMCApiClient, type AMCMovie } from './amc-api.js';
 import type { AppConfig } from './config.js';
 import {
@@ -6,6 +5,8 @@ import {
   type PendingNotification,
   ShowtimeDatabase,
   type Theatre,
+  type WatchlistCandidate,
+  type WatchlistEntry,
   type WorkerState,
 } from './database.js';
 import { getErrorMessage } from './errors.js';
@@ -14,8 +15,18 @@ import { formatShowtimeForLog } from './showtime-time.js';
 import {
   TelegramBot,
   type TelegramCommandPollOptions,
+  type TelegramInlineButton,
   type TelegramMessage,
+  type TelegramUpdate,
 } from './telegram.js';
+import {
+  buildAmbiguitySignature,
+  createMovieResolutionContext,
+  encodeWatchlistCallbackAction,
+  normalizeWatchlistQuery,
+  parseWatchlistCallbackAction,
+  resolveWatchlistQuery,
+} from './watchlist-resolution.js';
 
 export class ShowtimeMonitor {
   private amcClient: AMCApiClient;
@@ -96,47 +107,53 @@ export class ShowtimeMonitor {
     );
     let newShowtimeCount = 0;
 
-    // Get watchlist from database
-    const watchlist = this.database.getWatchlist();
-    const moviesToCheck = watchlist;
-
     // Fetch all movies once at the start
     const allMovies = await this.amcClient.getAllMovies();
+    const resolutionContext = createMovieResolutionContext(allMovies);
     const memAfterFetch = process.memoryUsage();
     this.logger.info(
       `📊 After fetching ${allMovies.length} movies (Memory: ${Math.round(memAfterFetch.rss / 1024 / 1024)}MB RSS, ${Math.round(memAfterFetch.heapUsed / 1024 / 1024)}MB heap)`
     );
 
-    for (const movieName of moviesToCheck) {
+    const watchlistEntries = this.database.getWatchlistEntries();
+    const unresolvedEntries = watchlistEntries.filter(
+      (entry) => entry.resolutionState !== 'resolved'
+    );
+
+    for (const entry of unresolvedEntries) {
       try {
-        this.logger.info(`\n📽️  Processing: ${movieName}`, { movie: movieName });
-
-        // Use fuzzy matching to find relevant movies from cached data
-        const relevantMovies = this.filterRelevantMovies(allMovies, movieName);
-
-        if (relevantMovies.length === 0) {
-          this.logger.warn(`   ⚠️  No relevant movies found for: ${movieName}`, {
-            movie: movieName,
-          });
-          continue;
-        }
-
-        this.logger.info(
-          `   ✅ Found ${relevantMovies.length} relevant movies`,
-          { movie: movieName }
-        );
-
-        // Check showtimes for each relevant movie
-        for (const amcMovie of relevantMovies) {
-          newShowtimeCount += await this.processMovieShowtimes(amcMovie);
-        }
+        await this.reconcileWatchlistEntry(entry, resolutionContext, true);
       } catch (error) {
         const message = getErrorMessage(error);
         this.logger.error(
-          `❌ Error processing movie "${movieName}": ${message}`,
-          { movie: movieName }
+          `❌ Error resolving watchlist entry "${entry.queryText}": ${message}`,
+          { movie: entry.queryText }
         );
-        // Continue with other movies instead of failing completely
+      }
+    }
+
+    const resolvedEntries = this.database.getResolvedWatchlistEntries();
+    for (const entry of resolvedEntries) {
+      try {
+        const amcMovie = this.getResolvedWatchlistMovie(
+          entry,
+          resolutionContext
+        );
+        if (!amcMovie) {
+          this.logger.warn(
+            `⚠️ Skipping resolved entry without complete AMC metadata: ${entry.queryText}`,
+            { movie: entry.queryText }
+          );
+          continue;
+        }
+
+        newShowtimeCount += await this.processMovieShowtimes(amcMovie);
+      } catch (error) {
+        const message = getErrorMessage(error);
+        this.logger.error(
+          `❌ Error processing resolved entry "${entry.queryText}": ${message}`,
+          { movie: entry.queryText }
+        );
       }
     }
 
@@ -153,39 +170,6 @@ export class ShowtimeMonitor {
     }
 
     this.logger.info('🏁 Checking for new showtimes complete');
-  }
-
-  private filterRelevantMovies(
-    movies: AMCMovie[],
-    searchTerm: string
-  ): AMCMovie[] {
-    // Use fuzzy search to find movies that closely match our search term
-    const fuse = new Fuse(movies, {
-      keys: ['name'],
-      threshold: 0.4, // Balanced threshold for reasonable matching
-      includeScore: true,
-    });
-
-    const results = fuse.search(searchTerm);
-
-    this.logger.info(
-      `   🔍 Fuzzy search results for "${searchTerm}": ${results.map((r) => `${r.item.name} (score: ${r.score?.toFixed(3)})`).join(', ')}`
-    );
-
-    // Return movies with good similarity scores - be more strict
-    const filteredResults = results.filter(
-      (result) => (result.score ?? 1) < 0.4
-    );
-
-    if (filteredResults.length > 0) {
-      this.logger.info(
-        `   ✅ Found ${filteredResults.length} fuzzy matches with good scores`
-      );
-    } else {
-      this.logger.warn(`   ⚠️  No good fuzzy matches found (scores too low)`);
-    }
-
-    return filteredResults.map((result) => result.item);
   }
 
   private async processMovieShowtimes(amcMovie: AMCMovie): Promise<number> {
@@ -276,6 +260,294 @@ export class ShowtimeMonitor {
     return newShowtimeCount;
   }
 
+  private getResolvedWatchlistMovie(
+    entry: WatchlistEntry,
+    resolutionContext: ReturnType<typeof createMovieResolutionContext>
+  ): AMCMovie | null {
+    if (
+      entry.resolvedMovieId === undefined ||
+      entry.resolvedMovieSlug === undefined ||
+      entry.resolvedMovieName === undefined
+    ) {
+      return null;
+    }
+
+    const catalogMovie = resolutionContext.moviesById.get(
+      entry.resolvedMovieId
+    );
+    if (catalogMovie) {
+      return catalogMovie;
+    }
+
+    return {
+      id: entry.resolvedMovieId,
+      name: entry.resolvedMovieName,
+      slug: entry.resolvedMovieSlug,
+    };
+  }
+
+  private async reconcileWatchlistEntry(
+    entry: WatchlistEntry,
+    resolutionContext: ReturnType<typeof createMovieResolutionContext>,
+    promptOnAmbiguity: boolean
+  ): Promise<
+    | { kind: 'resolved'; entry: WatchlistEntry }
+    | { kind: 'merged'; entry: WatchlistEntry }
+    | {
+        kind: 'ambiguous';
+        entry: WatchlistEntry;
+        candidates: WatchlistCandidate[];
+      }
+    | { kind: 'unmatched'; entry: WatchlistEntry }
+  > {
+    const checkedAt = new Date().toISOString();
+    const resolution = resolveWatchlistQuery(
+      entry.queryText,
+      resolutionContext
+    );
+
+    if (resolution.state === 'resolved') {
+      const existingResolvedEntry =
+        this.database.getWatchlistEntryByResolvedMovieId(
+          resolution.resolvedMovie.id
+        );
+      if (existingResolvedEntry && existingResolvedEntry.id !== entry.id) {
+        this.database.deleteWatchlistEntry(entry.id);
+        return {
+          kind: 'merged',
+          entry: existingResolvedEntry,
+        };
+      }
+
+      const resolvedEntry = this.database.saveWatchlistEntryResolved(
+        entry.id,
+        {
+          id: resolution.resolvedMovie.id,
+          slug: resolution.resolvedMovie.slug,
+          name: resolution.resolvedMovie.name,
+        },
+        checkedAt
+      );
+
+      return {
+        kind: 'resolved',
+        entry: resolvedEntry ?? entry,
+      };
+    }
+
+    if (resolution.state === 'ambiguous') {
+      const ambiguitySignature = buildAmbiguitySignature(resolution.candidates);
+      const ambiguousEntry = this.database.saveWatchlistEntryAmbiguous(
+        entry.id,
+        JSON.stringify(resolution.candidates),
+        ambiguitySignature,
+        checkedAt
+      );
+      const nextEntry = ambiguousEntry ?? entry;
+
+      if (
+        promptOnAmbiguity &&
+        (entry.resolutionState !== 'ambiguous' ||
+          entry.ambiguitySignature !== ambiguitySignature ||
+          entry.ambiguityPromptMessageId === undefined)
+      ) {
+        await this.sendAmbiguityPrompt(nextEntry, resolution.candidates);
+      }
+
+      return {
+        kind: 'ambiguous',
+        entry: nextEntry,
+        candidates: resolution.candidates,
+      };
+    }
+
+    const unmatchedEntry = this.database.saveWatchlistEntryUnmatched(
+      entry.id,
+      checkedAt
+    );
+    return {
+      kind: 'unmatched',
+      entry: unmatchedEntry ?? entry,
+    };
+  }
+
+  private async sendAmbiguityPrompt(
+    entry: WatchlistEntry,
+    candidates: WatchlistCandidate[]
+  ): Promise<void> {
+    if (!entry.ambiguitySignature) {
+      return;
+    }
+
+    try {
+      const buttons = this.buildAmbiguityPromptButtons(
+        entry.id,
+        entry.ambiguitySignature,
+        candidates
+      );
+      const message = this.buildAmbiguityPromptMessage(entry, candidates);
+      const messageId = await this.telegram.sendOrEditInlinePrompt(
+        message,
+        buttons,
+        entry.ambiguityPromptMessageId
+      );
+
+      this.database.updateWatchlistEntryPrompt(
+        entry.id,
+        entry.ambiguitySignature,
+        messageId,
+        new Date().toISOString()
+      );
+    } catch (error) {
+      const message = getErrorMessage(error);
+      this.database.clearWatchlistEntryPrompt(entry.id);
+      this.logger.error(
+        `❌ Failed to send ambiguity prompt for "${entry.queryText}": ${message}`,
+        { movie: entry.queryText }
+      );
+    }
+  }
+
+  private buildAmbiguityPromptButtons(
+    watchlistEntryId: number,
+    ambiguitySignature: string,
+    candidates: WatchlistCandidate[]
+  ): TelegramInlineButton[] {
+    const candidateButtons = candidates.slice(0, 3).map((candidate) => ({
+      text: candidate.movieName,
+      callbackData: encodeWatchlistCallbackAction({
+        type: 'pick',
+        watchlistEntryId,
+        movieId: candidate.movieId,
+        ambiguitySignature,
+      }),
+    }));
+
+    return [
+      ...candidateButtons,
+      {
+        text: 'Keep pending',
+        callbackData: encodeWatchlistCallbackAction({
+          type: 'keep',
+          watchlistEntryId,
+          ambiguitySignature,
+        }),
+      },
+    ];
+  }
+
+  private buildAmbiguityPromptMessage(
+    entry: WatchlistEntry,
+    candidates: WatchlistCandidate[]
+  ): string {
+    const topCandidates = candidates.slice(0, 3);
+    const candidateList = topCandidates
+      .map((candidate, index) => {
+        return `${index + 1}. ${this.escapeHtml(candidate.movieName)}`;
+      })
+      .join('\n');
+
+    const summaryLine =
+      candidates.length > 3
+        ? `\n\nTop 3 of ${candidates.length} matches shown.`
+        : '';
+
+    return `🤔 <b>Multiple AMC matches for</b> "${this.escapeHtml(entry.queryText)}"
+
+Tap the correct movie to track:
+${candidateList}${summaryLine}
+
+If none are right, tap <b>Keep pending</b>. I will only prompt again if the candidate set changes.`;
+  }
+
+  private async handleCallbackUpdate(
+    update: Extract<TelegramUpdate, { type: 'callback' }>
+  ): Promise<void> {
+    const action = parseWatchlistCallbackAction(update.callbackData);
+    if (!action) {
+      await this.telegram.answerCallbackQuery(
+        update.callbackQueryId,
+        'That choice is no longer valid.'
+      );
+      return;
+    }
+
+    const entry = this.database.getWatchlistEntryById(action.watchlistEntryId);
+    if (
+      !entry ||
+      entry.resolutionState !== 'ambiguous' ||
+      !entry.ambiguitySignature ||
+      entry.ambiguitySignature !== action.ambiguitySignature ||
+      !entry.resolutionCandidatesJson
+    ) {
+      await this.telegram.answerCallbackQuery(
+        update.callbackQueryId,
+        'Those choices are stale. Wait for a new prompt.'
+      );
+      return;
+    }
+
+    if (action.type === 'keep') {
+      await this.telegram.answerCallbackQuery(
+        update.callbackQueryId,
+        'Keeping it pending.'
+      );
+      return;
+    }
+
+    const candidates = this.parseWatchlistCandidates(
+      entry.resolutionCandidatesJson
+    );
+    const selectedCandidate = candidates.find(
+      (candidate) => candidate.movieId === action.movieId
+    );
+
+    if (!selectedCandidate) {
+      await this.telegram.answerCallbackQuery(
+        update.callbackQueryId,
+        'Those choices are stale. Wait for a new prompt.'
+      );
+      return;
+    }
+
+    const existingResolvedEntry =
+      this.database.getWatchlistEntryByResolvedMovieId(
+        selectedCandidate.movieId
+      );
+    if (existingResolvedEntry && existingResolvedEntry.id !== entry.id) {
+      this.database.deleteWatchlistEntry(entry.id);
+      await this.telegram.answerCallbackQuery(
+        update.callbackQueryId,
+        'That movie is already tracked.'
+      );
+      await this.telegram.sendResponse(
+        `⚠️ "${this.escapeHtml(selectedCandidate.movieName)}" is already in your watchlist.`
+      );
+      return;
+    }
+
+    const resolvedEntry = this.database.saveWatchlistEntryResolved(
+      entry.id,
+      {
+        id: selectedCandidate.movieId,
+        slug: selectedCandidate.movieSlug,
+        name: selectedCandidate.movieName,
+      },
+      new Date().toISOString()
+    );
+
+    await this.telegram.answerCallbackQuery(
+      update.callbackQueryId,
+      `Tracking ${selectedCandidate.movieName}`
+    );
+
+    const resolvedName =
+      resolvedEntry?.resolvedMovieName ?? selectedCandidate.movieName;
+    await this.telegram.sendResponse(
+      `✅ Resolved "${this.escapeHtml(entry.queryText)}" to "${this.escapeHtml(resolvedName)}".`
+    );
+  }
+
   private async deliverPendingNotifications(
     pendingNotifications: PendingNotification[]
   ): Promise<void> {
@@ -350,6 +622,36 @@ export class ShowtimeMonitor {
     }
   }
 
+  private parseWatchlistCandidates(
+    rawCandidates: string
+  ): WatchlistCandidate[] {
+    try {
+      return JSON.parse(rawCandidates) as WatchlistCandidate[];
+    } catch {
+      return [];
+    }
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
+  private formatWatchlistEntryLabel(entry: WatchlistEntry): string {
+    switch (entry.resolutionState) {
+      case 'resolved':
+        return `${entry.queryText} -> ${entry.resolvedMovieName || 'Resolved'}`;
+      case 'ambiguous':
+        return `${entry.queryText} (choose match)`;
+      case 'unmatched':
+        return `${entry.queryText} (pending)`;
+      default:
+        return `${entry.queryText} (pending)`;
+    }
+  }
+
   async sendTestNotification(): Promise<void> {
     this.logger.info('📱 Sending test notification...');
     await this.telegram.sendTestMessage();
@@ -358,19 +660,35 @@ export class ShowtimeMonitor {
   async getStatus(): Promise<{
     theatre: Theatre | null;
     trackedMovies: string[];
+    resolvedWatchlistEntries: number;
+    ambiguousWatchlistEntries: number;
+    pendingWatchlistEntries: number;
     unnotifiedShowtimes: number;
     runsLastHour: number;
     runsLast24Hours: number;
     workerState: WorkerState | null;
   }> {
     const unnotifiedShowtimes = this.database.getUnnotifiedShowtimes();
-    const watchlist = this.database.getWatchlist();
+    const watchlistEntries = this.database.getWatchlistEntries();
     const theatre =
       this.theatre || this.database.getTheatreByName(this.config.theatre);
 
     return {
       theatre: theatre,
-      trackedMovies: watchlist,
+      trackedMovies: watchlistEntries.map((entry) =>
+        this.formatWatchlistEntryLabel(entry)
+      ),
+      resolvedWatchlistEntries: watchlistEntries.filter(
+        (entry) => entry.resolutionState === 'resolved'
+      ).length,
+      ambiguousWatchlistEntries: watchlistEntries.filter(
+        (entry) => entry.resolutionState === 'ambiguous'
+      ).length,
+      pendingWatchlistEntries: watchlistEntries.filter(
+        (entry) =>
+          entry.resolutionState === 'pending' ||
+          entry.resolutionState === 'unmatched'
+      ).length,
       unnotifiedShowtimes: unnotifiedShowtimes.length,
       runsLastHour: this.database.getRunCountSince(1),
       runsLast24Hours: this.database.getRunCountSince(24),
@@ -412,32 +730,39 @@ export class ShowtimeMonitor {
       `🔍 Checking for Telegram commands... (Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
     );
     try {
-      const commands = await this.telegram.checkForCommands(options);
+      const updates = await this.telegram.getUpdates(options);
 
-      for (const { command, args } of commands) {
-        this.logger.info(`📱 Processing command: ${command} ${args}`);
+      for (const update of updates) {
+        if (update.type === 'command') {
+          this.logger.info(
+            `📱 Processing command: ${update.command} ${update.args}`
+          );
 
-        switch (command) {
-          case '/add':
-            await this.handleAddCommand(args);
-            break;
-          case '/remove':
-            await this.handleRemoveCommand(args);
-            break;
-          case '/list':
-            await this.handleListCommand();
-            break;
-          case '/status':
-            await this.handleStatusCommand();
-            break;
-          case '/help':
-            await this.handleHelpCommand();
-            break;
-          default:
-            await this.telegram.sendResponse(
-              `❌ Unknown command: ${command}\n\nSend /help for available commands.`
-            );
+          switch (update.command) {
+            case '/add':
+              await this.handleAddCommand(update.args);
+              break;
+            case '/remove':
+              await this.handleRemoveCommand(update.args);
+              break;
+            case '/list':
+              await this.handleListCommand();
+              break;
+            case '/status':
+              await this.handleStatusCommand();
+              break;
+            case '/help':
+              await this.handleHelpCommand();
+              break;
+            default:
+              await this.telegram.sendResponse(
+                `❌ Unknown command: ${update.command}\n\nSend /help for available commands.`
+              );
+          }
+          continue;
         }
+
+        await this.handleCallbackUpdate(update);
       }
     } catch (error) {
       if (options.throwOnError) {
@@ -457,14 +782,66 @@ export class ShowtimeMonitor {
       return;
     }
 
-    const added = this.database.addToWatchlist(movieName.trim());
-    if (added) {
+    const queryText = movieName.trim();
+    const normalizedQuery = normalizeWatchlistQuery(queryText);
+    const { created, entry } = this.database.createOrGetWatchlistEntry(
+      queryText,
+      normalizedQuery
+    );
+
+    if (!entry) {
       await this.telegram.sendResponse(
-        `✅ Added "${movieName}" to your watchlist.`
+        '❌ Failed to add that movie to your watchlist.'
       );
-    } else {
+      return;
+    }
+
+    if (!created) {
       await this.telegram.sendResponse(
-        `⚠️ "${movieName}" is already in your watchlist.`
+        `⚠️ "${this.escapeHtml(this.formatWatchlistEntryLabel(entry))}" is already in your watchlist.`
+      );
+      return;
+    }
+
+    try {
+      const allMovies = await this.amcClient.getAllMovies();
+      const resolutionContext = createMovieResolutionContext(allMovies);
+      const outcome = await this.reconcileWatchlistEntry(
+        entry,
+        resolutionContext,
+        true
+      );
+
+      switch (outcome.kind) {
+        case 'resolved':
+          await this.telegram.sendResponse(
+            `✅ Added "${this.escapeHtml(entry.queryText)}" to your watchlist as "${this.escapeHtml(outcome.entry.resolvedMovieName || entry.queryText)}".`
+          );
+          return;
+        case 'merged':
+          await this.telegram.sendResponse(
+            `⚠️ "${this.escapeHtml(outcome.entry.resolvedMovieName || outcome.entry.queryText)}" is already in your watchlist.`
+          );
+          return;
+        case 'ambiguous':
+          await this.telegram.sendResponse(
+            `🤔 Added "${this.escapeHtml(entry.queryText)}" to your watchlist.\n\nMultiple AMC matches exist, so pick one from the buttons in the prompt.`
+          );
+          return;
+        case 'unmatched':
+          await this.telegram.sendResponse(
+            `✅ Added "${this.escapeHtml(entry.queryText)}" to your watchlist.\n\nAMC does not know that movie yet, so I will keep checking.`
+          );
+          return;
+      }
+    } catch (error) {
+      const message = getErrorMessage(error);
+      this.logger.error(
+        `❌ Error resolving new watchlist entry "${entry.queryText}": ${message}`,
+        { movie: entry.queryText }
+      );
+      await this.telegram.sendResponse(
+        `✅ Added "${this.escapeHtml(entry.queryText)}" to your watchlist.\n\nAMC lookup failed right now, so I will keep trying in the background.`
       );
     }
   }
@@ -477,30 +854,63 @@ export class ShowtimeMonitor {
       return;
     }
 
-    const removed = this.database.removeFromWatchlist(movieName.trim());
-    if (removed) {
+    const queryText = movieName.trim();
+    const watchlistEntries = this.database.getWatchlistEntries();
+    const index = Number.parseInt(queryText, 10);
+
+    let entryToRemove: WatchlistEntry | undefined;
+    if (
+      Number.isInteger(index) &&
+      `${index}` === queryText &&
+      index >= 1 &&
+      index <= watchlistEntries.length
+    ) {
+      entryToRemove = watchlistEntries[index - 1];
+    } else {
+      const lowerQuery = queryText.toLowerCase();
+      const matches = watchlistEntries.filter(
+        (entry) =>
+          entry.queryText.toLowerCase() === lowerQuery ||
+          entry.resolvedMovieName?.toLowerCase() === lowerQuery
+      );
+
+      if (matches.length > 1) {
+        await this.telegram.sendResponse(
+          '⚠️ Multiple watchlist entries match that text. Use the number from /list.'
+        );
+        return;
+      }
+
+      const [singleMatch] = matches;
+      entryToRemove = singleMatch;
+    }
+
+    if (entryToRemove && this.database.deleteWatchlistEntry(entryToRemove.id)) {
       await this.telegram.sendResponse(
-        `✅ Removed "${movieName}" from your watchlist.`
+        `✅ Removed "${this.escapeHtml(this.formatWatchlistEntryLabel(entryToRemove))}" from your watchlist.`
       );
     } else {
       await this.telegram.sendResponse(
-        `⚠️ "${movieName}" was not found in your watchlist.`
+        `⚠️ "${this.escapeHtml(queryText)}" was not found in your watchlist.`
       );
     }
   }
 
   private async handleListCommand(): Promise<void> {
-    const watchlist = this.database.getWatchlist();
+    const watchlistEntries = this.database.getWatchlistEntries();
 
-    if (watchlist.length === 0) {
+    if (watchlistEntries.length === 0) {
       await this.telegram.sendResponse(
         '📋 Your watchlist is empty.\n\nAdd movies with /add <movie name>'
       );
       return;
     }
 
-    const movieList = watchlist
-      .map((movie, index) => `${index + 1}. ${movie}`)
+    const movieList = watchlistEntries
+      .map(
+        (entry, index) =>
+          `${index + 1}. ${this.escapeHtml(this.formatWatchlistEntryLabel(entry))}`
+      )
       .join('\n');
     await this.telegram.sendResponse(
       `📋 <b>Your Watchlist</b>\n\n${movieList}\n\nUse /add or /remove to modify your list.`
@@ -509,11 +919,13 @@ export class ShowtimeMonitor {
 
   private async handleStatusCommand(): Promise<void> {
     const status = await this.getStatus();
-    const watchlist = this.database.getWatchlist();
 
     let message = `📊 <b>AMC Showtime Monitor Status</b>\n\n`;
     message += `🏛️ <b>Theatre:</b> ${status.theatre?.name || 'Not configured'}\n`;
-    message += `🎬 <b>Watchlist:</b> ${watchlist.length} movies\n`;
+    message += `🎬 <b>Watchlist:</b> ${status.trackedMovies.length} movies\n`;
+    message += `✅ <b>Resolved:</b> ${status.resolvedWatchlistEntries}\n`;
+    message += `🤔 <b>Ambiguous:</b> ${status.ambiguousWatchlistEntries}\n`;
+    message += `🕒 <b>Pending:</b> ${status.pendingWatchlistEntries}\n`;
     message += `🔄 <b>Checks:</b> ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h\n`;
     if (status.workerState) {
       message += `⚙️ <b>Worker:</b> ${status.workerState.status}`;
@@ -523,10 +935,10 @@ export class ShowtimeMonitor {
       message += '\n';
     }
 
-    if (watchlist.length > 0) {
+    if (status.trackedMovies.length > 0) {
       message += `\n<b>Tracked Movies:</b>\n`;
-      watchlist.forEach((movie) => {
-        message += `• ${movie}\n`;
+      status.trackedMovies.forEach((movie) => {
+        message += `• ${this.escapeHtml(movie)}\n`;
       });
     }
 
@@ -543,19 +955,19 @@ Add a movie to your watchlist
 Example: /add Deadpool & Wolverine
 
 <b>/remove &lt;movie name&gt;</b>
-Remove a movie from your watchlist
+Remove a movie from your watchlist by title or /list number
 Example: /remove Tron: Ares
 
 <b>/list</b>
-Show your current watchlist
+Show your current watchlist and entry states
 
 <b>/status</b>
-Show monitoring status and statistics
+Show monitoring status and watchlist resolution counts
 
 <b>/help</b>
 Show this help message
 
-<i>The bot checks for new showtimes continuously and will notify you when tickets become available!</i>`;
+<i>If AMC finds multiple possible matches for a pending entry, the bot will send inline buttons so you can pick the right one.</i>`;
 
     await this.telegram.sendResponse(helpMessage);
   }
