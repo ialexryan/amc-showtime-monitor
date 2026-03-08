@@ -6,13 +6,17 @@ import type { Logger } from './logger.js';
 export interface TelegramMessage {
   movieName: string;
   theatreName: string;
-  showDateTime: string;
   showDateTimeLocal: string;
   auditorium: number;
   attributes: Array<{ code: string; name: string; description?: string }>;
   ticketUrl?: string;
   isSoldOut: boolean;
   isAlmostSoldOut: boolean;
+}
+
+export interface TelegramCommandPollOptions {
+  timeoutSeconds?: number;
+  signal?: AbortSignal;
 }
 
 export class TelegramBot {
@@ -220,55 +224,50 @@ Time: ${new Date().toLocaleString()}`;
   }
 
   // Check for new messages and return commands
-  async checkForCommands(): Promise<Array<{ command: string; args: string }>> {
-    try {
-      const response = await this.client.get('/getUpdates', {
-        params: {
-          offset: this.lastUpdateId + 1,
-          limit: 20,
-          timeout: 0, // No long polling - return immediately
-          allowed_updates: ['message'], // Only message updates, not other types
-        },
-      });
+  async checkForCommands(
+    options: TelegramCommandPollOptions = {}
+  ): Promise<Array<{ command: string; args: string }>> {
+    const requestConfig = {
+      params: {
+        offset: this.lastUpdateId + 1,
+        limit: 20,
+        timeout: options.timeoutSeconds ?? 0,
+        allowed_updates: ['message'], // Only message updates, not other types
+      },
+      ...(options.signal ? { signal: options.signal } : {}),
+    };
 
-      const updates = response.data.result;
-      const commands: Array<{ command: string; args: string }> = [];
+    const response = await this.client.get('/getUpdates', requestConfig);
+    const updates = response.data.result;
+    const commands: Array<{ command: string; args: string }> = [];
 
-      for (const update of updates) {
-        this.lastUpdateId = update.update_id;
+    for (const update of updates) {
+      this.lastUpdateId = update.update_id;
 
-        // Only process messages from the configured chat
-        if (
-          update.message?.chat?.id?.toString() === this.chatId &&
-          update.message.text
-        ) {
-          const text = update.message.text.trim();
+      // Only process messages from the configured chat
+      if (
+        update.message?.chat?.id?.toString() === this.chatId &&
+        update.message.text
+      ) {
+        const text = update.message.text.trim();
 
-          // Check if it's a command (starts with /)
-          if (text.startsWith('/')) {
-            const parts = text.split(' ');
-            const command = parts[0].toLowerCase();
-            const args = parts.slice(1).join(' ');
+        // Check if it's a command (starts with /)
+        if (text.startsWith('/')) {
+          const parts = text.split(' ');
+          const command = parts[0].toLowerCase();
+          const args = parts.slice(1).join(' ');
 
-            commands.push({ command, args });
-          }
+          commands.push({ command, args });
         }
       }
-
-      // Save the last update ID to database
-      if (this.database && this.lastUpdateId > 0) {
-        this.database.setBotState(
-          'last_update_id',
-          this.lastUpdateId.toString()
-        );
-      }
-
-      return commands;
-    } catch (error) {
-      const message = getErrorMessage(error);
-      this.logger?.error(`❌ Error checking for commands: ${message}`);
-      return [];
     }
+
+    // Save the last update ID to database
+    if (this.database && this.lastUpdateId > 0) {
+      this.database.setBotState('last_update_id', this.lastUpdateId.toString());
+    }
+
+    return commands;
   }
 
   // Send a response message

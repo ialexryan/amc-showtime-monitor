@@ -7,8 +7,22 @@ import { loadConfig } from './config.js';
 import { ShowtimeDatabase } from './database.js';
 import { getErrorMessage, getErrorStack } from './errors.js';
 import { ShowtimeMonitor } from './monitor.js';
+import { MonitorWorker } from './worker.js';
 
 const program = new Command();
+const defaultConfigPath = process.env.CONFIG_PATH || './data/config.json';
+const defaultDatabasePath =
+  process.env.DATABASE_PATH || './data/amc-monitor.db';
+
+async function runCheckOnce(configPath: string, databasePath: string) {
+  const config = await loadConfig(configPath);
+  const monitor = new ShowtimeMonitor(config, databasePath);
+
+  await monitor.initialize();
+  await monitor.processTelegramCommands();
+  await monitor.checkForNewShowtimes();
+  monitor.close();
+}
 
 program
   .name(packageJson.name)
@@ -17,15 +31,9 @@ program
 
 program
   .command('monitor')
-  .description(
-    'Run the main monitoring loop (check showtimes and process Telegram commands)'
-  )
-  .option('-c, --config <path>', 'Path to config file', './data/config.json')
-  .option(
-    '-d, --database <path>',
-    'Path to database file',
-    './data/amc-monitor.db'
-  )
+  .description('Run the long-running monitoring worker')
+  .option('-c, --config <path>', 'Path to config file', defaultConfigPath)
+  .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
   .option('-v, --verbose', 'Verbose logging', false)
   .action(async (options) => {
     try {
@@ -33,31 +41,44 @@ program
         console.log('🔧 Verbose mode enabled');
       }
 
-      // Check if config file exists
-      if (!existsSync(options.config)) {
-        console.error(`❌ Config file not found: ${options.config}`);
-        console.log(
-          '💡 Create a config.json file based on config.example.json'
-        );
-        process.exit(1);
+      const config = await loadConfig(options.config);
+      const monitor = new ShowtimeMonitor(config, options.database);
+      const workerOptions = {
+        pollIntervalMs: config.runtime.pollIntervalSeconds * 1000,
+        telegramLongPollSeconds: config.runtime.telegramLongPollSeconds,
+        ...(config.runtime.port !== undefined
+          ? { healthPort: config.runtime.port }
+          : {}),
+      };
+      const worker = new MonitorWorker(monitor, workerOptions);
+
+      await worker.run();
+    } catch (error) {
+      const message = getErrorMessage(error);
+      console.error('❌ Error during check:', message);
+      if (options.verbose) {
+        const stack = getErrorStack(error);
+        if (stack) {
+          console.error('Stack trace:', stack);
+        }
+      }
+      process.exit(1);
+    }
+  });
+
+program
+  .command('check-once')
+  .description('Run one monitoring pass and exit')
+  .option('-c, --config <path>', 'Path to config file', defaultConfigPath)
+  .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
+  .option('-v, --verbose', 'Verbose logging', false)
+  .action(async (options) => {
+    try {
+      if (options.verbose) {
+        console.log('🔧 Verbose mode enabled');
       }
 
-      console.log(`📖 Loading config from: ${options.config}`);
-      const config = await loadConfig(options.config);
-
-      const monitor = new ShowtimeMonitor(config, options.database);
-
-      // Initialize the monitor
-      await monitor.initialize();
-
-      // Process any pending Telegram commands
-      await monitor.processTelegramCommands();
-
-      // Run the showtime check
-      await monitor.checkForNewShowtimes();
-
-      // Clean up (flushes logs and closes database)
-      monitor.close();
+      await runCheckOnce(options.config, options.database);
     } catch (error) {
       const message = getErrorMessage(error);
       console.error('❌ Error during check:', message);
@@ -74,14 +95,9 @@ program
 program
   .command('test-telegram')
   .description('Test Telegram bot connection and send test message')
-  .option('-c, --config <path>', 'Path to config file', './data/config.json')
+  .option('-c, --config <path>', 'Path to config file', defaultConfigPath)
   .action(async (options) => {
     try {
-      if (!existsSync(options.config)) {
-        console.error(`❌ Config file not found: ${options.config}`);
-        process.exit(1);
-      }
-
       console.log('🧪 Testing Telegram bot connection...');
       const config = await loadConfig(options.config);
 
@@ -102,33 +118,38 @@ program
 program
   .command('show-status')
   .description('Show current monitoring status and watchlist')
-  .option('-c, --config <path>', 'Path to config file', './data/config.json')
-  .option(
-    '-d, --database <path>',
-    'Path to database file',
-    './data/amc-monitor.db'
-  )
+  .option('-c, --config <path>', 'Path to config file', defaultConfigPath)
+  .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
   .action(async (options) => {
     try {
-      if (!existsSync(options.config)) {
-        console.error(`❌ Config file not found: ${options.config}`);
-        process.exit(1);
-      }
-
       const config = await loadConfig(options.config);
 
       const monitor = new ShowtimeMonitor(config, options.database);
-
-      await monitor.initialize();
       const status = await monitor.getStatus();
 
       console.log('📊 AMC Showtime Monitor Status');
       console.log('================================');
-      console.log(`Theatre: ${status.theatre?.name || 'Not configured'}`);
+      console.log(`Theatre: ${status.theatre?.name || config.theatre}`);
       console.log(`Watchlist: ${status.trackedMovies.length} movies`);
       console.log(
         `Checks: ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h`
       );
+      if (status.workerState) {
+        console.log(`Worker Status: ${status.workerState.status}`);
+        console.log(`Worker ID: ${status.workerState.workerId || 'None'}`);
+        console.log(
+          `Lease Expires: ${status.workerState.leaseExpiresAt || 'Not held'}`
+        );
+        console.log(
+          `Last Poll: ${status.workerState.lastPollFinishedAt || status.workerState.lastPollStartedAt || 'Never'}`
+        );
+        console.log(
+          `Last Poll Status: ${status.workerState.lastPollStatus || 'Unknown'}`
+        );
+        console.log(
+          `Last Telegram Poll: ${status.workerState.lastTelegramPollAt || 'Never'}`
+        );
+      }
       for (const movie of status.trackedMovies) {
         console.log(`  • ${movie}`);
       }
@@ -210,11 +231,7 @@ program
   .description(
     'Reset the database (removes all tracked showtimes and watchlist)'
   )
-  .option(
-    '-d, --database <path>',
-    'Path to database file',
-    './data/amc-monitor.db'
-  )
+  .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
   .option('--yes', 'Skip confirmation prompt')
   .action(async (options) => {
     try {
@@ -262,6 +279,7 @@ program
   .command('logs')
   .description('Show logs from recent runs')
   .option('-n, --runs <number>', 'Number of recent runs to show', '1')
+  .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
   .action(async (options) => {
     // Helper function to convert ISO UTC timestamp to Pacific time
     const formatTimestamp = (isoTimestamp: string): string => {
@@ -272,7 +290,7 @@ program
     };
 
     try {
-      const database = new ShowtimeDatabase();
+      const database = new ShowtimeDatabase(options.database);
       const numRuns = Number(options.runs);
       const recentRunIds = database.getRecentRunIds(numRuns);
 
@@ -315,11 +333,7 @@ program
   .description(
     'Run database maintenance tasks (integrity check, backup, optimization)'
   )
-  .option(
-    '-d, --database <path>',
-    'Path to database file',
-    './data/amc-monitor.db'
-  )
+  .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
   .option(
     '-b, --backup-only',
     'Only create a backup without running full maintenance'

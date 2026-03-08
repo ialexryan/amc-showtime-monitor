@@ -40,11 +40,15 @@ Send Telegram notifications when AMC posts showtimes for movies you are monitori
    {
      "theatre": "AMC Metreon 16",
      "telegram": {
-       "botToken": "your-bot-token",
-       "chatId": "your-chat-id"
-     },
-     "amcApiKey": "your-amc-api-key-here"
-   }
+        "botToken": "your-bot-token",
+        "chatId": "your-chat-id"
+      },
+      "amcApiKey": "your-amc-api-key-here",
+      "runtime": {
+        "pollIntervalSeconds": 60,
+        "telegramLongPollSeconds": 30
+      }
+    }
    ```
 
 5. **Add movies to your watchlist** via Telegram:
@@ -55,9 +59,14 @@ Send Telegram notifications when AMC posts showtimes for movies you are monitori
 
 ## Usage
 
-### Run the monitoring loop
+### Run the long-running worker
 ```bash
 bun monitor
+```
+
+### Run a single monitoring pass
+```bash
+bun check-once
 ```
 
 ### Test Telegram connection
@@ -93,7 +102,7 @@ The cleanest way to run the monitor automatically on macOS:
 ```
 
 This will:
-- Create a LaunchAgent that runs every minute
+- Create a LaunchAgent that keeps one long-running worker alive
 - Set up proper logging to `logs/` directory
 - Handle path resolution automatically
 - Start the service immediately
@@ -114,13 +123,13 @@ launchctl unload ~/Library/LaunchAgents/com.user.amc-showtime-monitor.plist
 launchctl load ~/Library/LaunchAgents/com.user.amc-showtime-monitor.plist
 ```
 
-### Alternative: Manual cron setup
+### Fly.io
 
-For other systems or if you prefer cron:
-```bash
-# Run every minute  
-* * * * * cd /path/to/amc-showtime-monitor && bun monitor
-```
+The repo includes a `fly.toml` tuned for:
+- one `shared-cpu-1x` machine
+- `256 MB` RAM
+- a persistent `/data` volume for `config.json` and SQLite
+- health checks against `/healthz`
 
 ## Configuration
 
@@ -137,10 +146,11 @@ Movies are managed via Telegram bot commands:
 - Theatre lookup supports fuzzy matching
 
 ### Scheduling
-- Monitoring frequency is controlled by your system scheduler (launchd/cron)
-- Default LaunchAgent setup runs every minute for responsive notifications
+- `monitor` runs as a single long-lived worker
+- AMC polling defaults to every 60 seconds
+- Telegram command polling uses 30-second long polling
 - Be respectful of AMC's API rate limits
-- If you encounter rate limiting, increase the LaunchAgent interval
+- If you encounter rate limiting, increase `runtime.pollIntervalSeconds` or `POLL_INTERVAL_SECONDS`
 
 ## API Limitations
 
@@ -181,7 +191,9 @@ Example:
 bun run lint        # Check code quality
 bun run lint:fix    # Fix linting issues
 bun run format      # Format code
+bun run test        # Run tests
 bun run typecheck   # Typecheck with tsc (no emit)
+bun run build       # Build the CLI bundle into dist/
 ```
 
 Lefthook installs pre-commit hooks after `bun install` to run lint + typecheck.
@@ -206,7 +218,7 @@ Lefthook installs pre-commit hooks after `bun install` to run lint + typecheck.
 ### Debug Mode
 Run with verbose logging to see detailed search results:
 ```bash
-bun src/cli.ts check -v
+bun src/cli.ts check-once -v
 ```
 
 ## License

@@ -7,18 +7,27 @@
     <key>ProgramArguments</key>
     <array>
         <string>/opt/homebrew/bin/bun</string>
+        <string>src/cli.ts</string>
         <string>monitor</string>
     </array>
     <key>WorkingDirectory</key>
     <string>PROJECT_DIR_PLACEHOLDER</string>
-    <key>StartInterval</key>
-    <integer>60</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>PROJECT_DIR_PLACEHOLDER/logs/stdout.log</string>
     <key>StandardErrorPath</key>
     <string>PROJECT_DIR_PLACEHOLDER/logs/stderr.log</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
         <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>CONFIG_PATH</key>
+        <string>PROJECT_DIR_PLACEHOLDER/data/config.json</string>
+        <key>DATABASE_PATH</key>
+        <string>PROJECT_DIR_PLACEHOLDER/data/amc-monitor.db</string>
     </dict>
 </dict>
 </plist>

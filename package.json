@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "monitor": "bun src/cli.ts monitor",
+    "check-once": "bun src/cli.ts check-once",
     "test-telegram": "bun src/cli.ts test-telegram",
     "show-status": "bun src/cli.ts show-status",
     "telegram-setup": "bun src/cli.ts telegram-setup",
@@ -30,7 +31,9 @@
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
     "format": "biome format --write src/",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
+    "build": "bun run typecheck && bun build src/cli.ts --outfile dist/cli.js --target bun",
     "postinstall": "lefthook install"
   },
   "type": "module",

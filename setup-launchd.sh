@@ -42,13 +42,9 @@ echo "✅ Copied $PLIST_FILE to $LAUNCHAGENTS_DIR"
 launchctl unload "$LAUNCHAGENTS_DIR/$PLIST_FILE" 2>/dev/null || true
 launchctl load "$LAUNCHAGENTS_DIR/$PLIST_FILE"
 
-echo "✅ LaunchAgent loaded and will run every minute"
+echo "✅ LaunchAgent loaded and will keep the monitor worker running"
 echo "📊 Check status with: launchctl list | grep amc-showtime-monitor"
 echo "📋 View logs in: $PROJECT_DIR/logs/"
 echo "🛑 To stop: launchctl unload $LAUNCHAGENTS_DIR/$PLIST_FILE"
-
-# Test the service immediately
-echo "🧪 Starting initial run..."
-launchctl start com.user.amc-showtime-monitor
 
 echo "🎉 Setup complete!"

@@ -1,0 +1,31 @@
+app = "ialexryan-amc-showtime-monitor"
+primary_region = "sjc"
+kill_signal = "SIGTERM"
+kill_timeout = 20
+
+[env]
+  PORT = "8080"
+  CONFIG_PATH = "/data/config.json"
+  DATABASE_PATH = "/data/amc-monitor.db"
+
+[mounts]
+  source = "amc_monitor_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[[restart]]
+  policy = "always"
+
+[checks]
+  [checks.worker_health]
+    type = "http"
+    port = 8080
+    method = "get"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"

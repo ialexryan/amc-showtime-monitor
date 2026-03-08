@@ -34,10 +34,31 @@ export interface Showtime {
   notified: boolean;
 }
 
+export interface WorkerState {
+  id: number;
+  workerId: string | null;
+  leaseExpiresAt: string | null;
+  lastHeartbeatAt: string | null;
+  status: string;
+  lastPollStartedAt: string | null;
+  lastPollFinishedAt: string | null;
+  lastPollStatus: string | null;
+  lastTelegramPollAt: string | null;
+  updatedAt: string;
+}
+
+export interface WorkerLeaseResult {
+  acquired: boolean;
+  state: WorkerState | null;
+}
+
 export class ShowtimeDatabase {
   private db: Database;
+  private closed = false;
 
-  constructor(dbPath: string = './amc-monitor.db') {
+  constructor(
+    dbPath: string = process.env.DATABASE_PATH || './data/amc-monitor.db'
+  ) {
     this.db = new Database(dbPath);
 
     // Enable WAL mode for better concurrent access handling
@@ -149,6 +170,21 @@ export class ShowtimeDatabase {
         data TEXT -- JSON for additional structured data
       );
 
+      CREATE TABLE IF NOT EXISTS worker_state (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        worker_id TEXT,
+        lease_expires_at DATETIME,
+        last_heartbeat_at DATETIME,
+        status TEXT NOT NULL DEFAULT 'idle',
+        last_poll_started_at DATETIME,
+        last_poll_finished_at DATETIME,
+        last_poll_status TEXT,
+        last_telegram_poll_at DATETIME,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      DROP INDEX IF EXISTS idx_worker_state_lease_expires_at;
+
       -- Indexes for performance
       CREATE INDEX IF NOT EXISTS idx_showtimes_movie_theatre ON showtimes (movie_id, theatre_id);
       CREATE INDEX IF NOT EXISTS idx_showtimes_notified ON showtimes (notified);
@@ -158,6 +194,41 @@ export class ShowtimeDatabase {
       CREATE INDEX IF NOT EXISTS idx_logs_run_id ON logs (run_id);
       CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs (timestamp);
     `);
+  }
+
+  private mapWorkerState(
+    row:
+      | {
+          id: number;
+          worker_id: string | null;
+          lease_expires_at: string | null;
+          last_heartbeat_at: string | null;
+          status: string;
+          last_poll_started_at: string | null;
+          last_poll_finished_at: string | null;
+          last_poll_status: string | null;
+          last_telegram_poll_at: string | null;
+          updated_at: string;
+        }
+      | null
+      | undefined
+  ): WorkerState | null {
+    if (!row) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      workerId: row.worker_id,
+      leaseExpiresAt: row.lease_expires_at,
+      lastHeartbeatAt: row.last_heartbeat_at,
+      status: row.status,
+      lastPollStartedAt: row.last_poll_started_at,
+      lastPollFinishedAt: row.last_poll_finished_at,
+      lastPollStatus: row.last_poll_status,
+      lastTelegramPollAt: row.last_telegram_poll_at,
+      updatedAt: row.updated_at,
+    };
   }
 
   // Theatre operations
@@ -341,18 +412,6 @@ export class ShowtimeDatabase {
     }
   }
 
-  isInWatchlist(movieName: string): boolean {
-    try {
-      const stmt = this.db.prepare(`
-        SELECT 1 FROM watchlist WHERE movie_name = ? COLLATE NOCASE
-      `);
-      return !!stmt.get(movieName);
-    } catch (error) {
-      console.error('Error checking watchlist:', error);
-      return false;
-    }
-  }
-
   // Bot state operations
   setBotState(key: string, value: string): void {
     try {
@@ -376,6 +435,243 @@ export class ShowtimeDatabase {
     } catch (error) {
       console.error('Error getting bot state:', error);
       return null;
+    }
+  }
+
+  // Worker state operations
+  getWorkerState(): WorkerState | null {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM worker_state WHERE id = 1
+      `);
+      return this.mapWorkerState(
+        stmt.get() as
+          | {
+              id: number;
+              worker_id: string | null;
+              lease_expires_at: string | null;
+              last_heartbeat_at: string | null;
+              status: string;
+              last_poll_started_at: string | null;
+              last_poll_finished_at: string | null;
+              last_poll_status: string | null;
+              last_telegram_poll_at: string | null;
+              updated_at: string;
+            }
+          | undefined
+      );
+    } catch (error) {
+      console.error('Error getting worker state:', error);
+      return null;
+    }
+  }
+
+  acquireWorkerLease(
+    workerId: string,
+    now: Date,
+    ttlMs: number
+  ): WorkerLeaseResult {
+    try {
+      const nowIso = now.toISOString();
+      const leaseExpiresAt = new Date(now.getTime() + ttlMs).toISOString();
+      const acquireLease = this.db.transaction(
+        (
+          ownerId: string,
+          currentTimeIso: string,
+          leaseExpiresAtIso: string
+        ): WorkerLeaseResult => {
+          const selectStmt = this.db.prepare(`
+            SELECT * FROM worker_state WHERE id = 1
+          `);
+
+          const currentState = this.mapWorkerState(
+            selectStmt.get() as
+              | {
+                  id: number;
+                  worker_id: string | null;
+                  lease_expires_at: string | null;
+                  last_heartbeat_at: string | null;
+                  status: string;
+                  last_poll_started_at: string | null;
+                  last_poll_finished_at: string | null;
+                  last_poll_status: string | null;
+                  last_telegram_poll_at: string | null;
+                  updated_at: string;
+                }
+              | undefined
+          );
+
+          const activeOwnerExists =
+            currentState?.workerId !== null &&
+            currentState?.workerId !== undefined &&
+            currentState.workerId !== ownerId &&
+            currentState.leaseExpiresAt !== null &&
+            currentState.leaseExpiresAt !== undefined &&
+            new Date(currentState.leaseExpiresAt).getTime() > now.getTime();
+
+          if (activeOwnerExists) {
+            return { acquired: false, state: currentState };
+          }
+
+          if (currentState) {
+            const updateStmt = this.db.prepare(`
+              UPDATE worker_state
+              SET worker_id = ?,
+                  lease_expires_at = ?,
+                  last_heartbeat_at = ?,
+                  status = 'active',
+                  updated_at = CURRENT_TIMESTAMP
+              WHERE id = 1
+            `);
+            updateStmt.run(ownerId, leaseExpiresAtIso, currentTimeIso);
+          } else {
+            const insertStmt = this.db.prepare(`
+              INSERT INTO worker_state (
+                id,
+                worker_id,
+                lease_expires_at,
+                last_heartbeat_at,
+                status
+              ) VALUES (1, ?, ?, ?, 'active')
+            `);
+            insertStmt.run(ownerId, leaseExpiresAtIso, currentTimeIso);
+          }
+
+          return {
+            acquired: true,
+            state: this.mapWorkerState(
+              selectStmt.get() as
+                | {
+                    id: number;
+                    worker_id: string | null;
+                    lease_expires_at: string | null;
+                    last_heartbeat_at: string | null;
+                    status: string;
+                    last_poll_started_at: string | null;
+                    last_poll_finished_at: string | null;
+                    last_poll_status: string | null;
+                    last_telegram_poll_at: string | null;
+                    updated_at: string;
+                  }
+                | undefined
+            ),
+          };
+        }
+      );
+
+      return acquireLease(workerId, nowIso, leaseExpiresAt);
+    } catch (error) {
+      console.error('Error acquiring worker lease:', error);
+      return { acquired: false, state: this.getWorkerState() };
+    }
+  }
+
+  renewWorkerLease(
+    workerId: string,
+    now: Date,
+    ttlMs: number,
+    status: string = 'active'
+  ): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE worker_state
+        SET lease_expires_at = ?,
+            last_heartbeat_at = ?,
+            status = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = 1 AND worker_id = ?
+      `);
+      const leaseExpiresAt = new Date(now.getTime() + ttlMs).toISOString();
+      const result = stmt.run(
+        leaseExpiresAt,
+        now.toISOString(),
+        status,
+        workerId
+      );
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error renewing worker lease:', error);
+      return false;
+    }
+  }
+
+  releaseWorkerLease(
+    workerId: string,
+    status: string,
+    releasedAt: Date
+  ): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE worker_state
+        SET worker_id = NULL,
+            lease_expires_at = NULL,
+            last_heartbeat_at = ?,
+            status = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = 1 AND worker_id = ?
+      `);
+      const result = stmt.run(releasedAt.toISOString(), status, workerId);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error releasing worker lease:', error);
+      return false;
+    }
+  }
+
+  markWorkerPollStarted(workerId: string, startedAt: Date): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE worker_state
+        SET last_poll_started_at = ?,
+            last_poll_status = 'running',
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = 1 AND worker_id = ?
+      `);
+      const result = stmt.run(startedAt.toISOString(), workerId);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error marking worker poll start:', error);
+      return false;
+    }
+  }
+
+  markWorkerPollFinished(
+    workerId: string,
+    finishedAt: Date,
+    pollStatus: string
+  ): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE worker_state
+        SET last_poll_finished_at = ?,
+            last_poll_status = ?,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = 1 AND worker_id = ?
+      `);
+      const result = stmt.run(finishedAt.toISOString(), pollStatus, workerId);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error marking worker poll finish:', error);
+      return false;
+    }
+  }
+
+  touchWorkerTelegramPoll(workerId: string, polledAt: Date): boolean {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE worker_state
+        SET last_telegram_poll_at = ?,
+            status = 'active',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = 1 AND worker_id = ?
+      `);
+      const result = stmt.run(polledAt.toISOString(), workerId);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error updating Telegram poll timestamp:', error);
+      return false;
     }
   }
 
@@ -403,38 +699,6 @@ export class ShowtimeDatabase {
       );
     } catch (error) {
       console.error('Error adding log:', error);
-    }
-  }
-
-  getRecentLogs(limit: number = 100): Array<{
-    id: number;
-    run_id: string;
-    timestamp: string;
-    level: string;
-    message: string;
-    movie?: string;
-    theatre?: string;
-    data?: string;
-  }> {
-    try {
-      const stmt = this.db.prepare(`
-        SELECT * FROM logs 
-        ORDER BY timestamp DESC 
-        LIMIT ?
-      `);
-      return stmt.all(limit) as Array<{
-        id: number;
-        run_id: string;
-        timestamp: string;
-        level: string;
-        message: string;
-        movie?: string;
-        theatre?: string;
-        data?: string;
-      }>;
-    } catch (error) {
-      console.error('Error getting recent logs:', error);
-      return [];
     }
   }
 
@@ -645,7 +909,15 @@ export class ShowtimeDatabase {
     }
   }
 
+  isClosed(): boolean {
+    return this.closed;
+  }
+
   close() {
+    if (this.closed) {
+      return;
+    }
+
     try {
       // Run optimization before closing (lightweight)
       this.db.exec('PRAGMA optimize');
@@ -656,6 +928,7 @@ export class ShowtimeDatabase {
       console.error('Error during WAL checkpoint:', error);
     } finally {
       this.db.close();
+      this.closed = true;
     }
   }
 }

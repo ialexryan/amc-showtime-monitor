@@ -1,6 +1,12 @@
 import { existsSync } from 'node:fs';
 import { ZodError, z } from 'zod';
 
+export const RuntimeConfigSchema = z.object({
+  pollIntervalSeconds: z.coerce.number().int().positive().default(60),
+  telegramLongPollSeconds: z.coerce.number().int().min(0).max(50).default(30),
+  port: z.coerce.number().int().min(1).max(65535).optional(),
+});
+
 export const ConfigSchema = z.object({
   theatre: z.string().min(1, 'Theatre name cannot be empty'),
   telegram: z.object({
@@ -8,12 +14,17 @@ export const ConfigSchema = z.object({
     chatId: z.string().min(1, 'Telegram chat ID cannot be empty'),
   }),
   amcApiKey: z.string().min(1, 'AMC API key cannot be empty'),
+  runtime: RuntimeConfigSchema.default({
+    pollIntervalSeconds: 60,
+    telegramLongPollSeconds: 30,
+  }),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema>;
+export type RuntimeConfig = z.infer<typeof RuntimeConfigSchema>;
 
 export async function loadConfig(
-  configPath: string = './data/config.json'
+  configPath: string = process.env.CONFIG_PATH || './data/config.json'
 ): Promise<AppConfig> {
   // Try to load from config file first
   let rawConfig: Partial<AppConfig> = {};
@@ -35,6 +46,15 @@ export async function loadConfig(
       chatId: process.env.TELEGRAM_CHAT_ID || rawConfig.telegram?.chatId,
     },
     amcApiKey: process.env.AMC_API_KEY || rawConfig.amcApiKey,
+    runtime: {
+      pollIntervalSeconds:
+        process.env.POLL_INTERVAL_SECONDS ??
+        rawConfig.runtime?.pollIntervalSeconds,
+      telegramLongPollSeconds:
+        process.env.TELEGRAM_LONG_POLL_SECONDS ??
+        rawConfig.runtime?.telegramLongPollSeconds,
+      port: process.env.PORT ?? rawConfig.runtime?.port,
+    },
   };
 
   try {

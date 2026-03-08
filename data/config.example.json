@@ -4,5 +4,9 @@
     "botToken": "your-telegram-bot-token-here",
     "chatId": "your-telegram-chat-id-here"
   },
-  "amcApiKey": "your-amc-api-key-here"
+  "amcApiKey": "your-amc-api-key-here",
+  "runtime": {
+    "pollIntervalSeconds": 60,
+    "telegramLongPollSeconds": 30
+  }
 }

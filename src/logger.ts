@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { ShowtimeDatabase } from './database.js';
 
-export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+export type LogLevel = 'INFO' | 'WARN' | 'ERROR';
 
 export class Logger {
   private database: ShowtimeDatabase;
@@ -45,15 +45,6 @@ export class Logger {
     this.logBuffer.push(entry);
   }
 
-  // Log methods that capture to buffer and also output to console
-  debug(
-    message: string,
-    options?: { movie?: string; theatre?: string; data?: unknown }
-  ): void {
-    console.log(message);
-    this.pushLog('DEBUG', message, options);
-  }
-
   info(
     message: string,
     options?: { movie?: string; theatre?: string; data?: unknown }
@@ -91,10 +82,5 @@ export class Logger {
       );
     }
     this.logBuffer = [];
-  }
-
-  // Get the current run ID
-  getRunId(): string {
-    return this.runId;
   }
 }

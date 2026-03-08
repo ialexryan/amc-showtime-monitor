@@ -1,10 +1,19 @@
 import Fuse from 'fuse.js';
 import { AMCApiClient, type AMCMovie } from './amc-api.js';
 import type { AppConfig } from './config.js';
-import { type Movie, ShowtimeDatabase, type Theatre } from './database.js';
+import {
+  type Movie,
+  ShowtimeDatabase,
+  type Theatre,
+  type WorkerState,
+} from './database.js';
 import { getErrorMessage } from './errors.js';
 import { Logger } from './logger.js';
-import { TelegramBot, type TelegramMessage } from './telegram.js';
+import {
+  TelegramBot,
+  type TelegramCommandPollOptions,
+  type TelegramMessage,
+} from './telegram.js';
 
 export class ShowtimeMonitor {
   private amcClient: AMCApiClient;
@@ -13,6 +22,7 @@ export class ShowtimeMonitor {
   private config: AppConfig;
   private logger: Logger;
   private theatre: Theatre | null = null;
+  private closed = false;
 
   constructor(config: AppConfig, dbPath?: string) {
     this.config = config;
@@ -137,12 +147,6 @@ export class ShowtimeMonitor {
       try {
         await this.telegram.sendBatchNotification(newNotifications);
 
-        // Mark all notified showtimes as sent
-        for (const _notification of newNotifications) {
-          // We'd need to track the showtime ID in the notification to mark it
-          // This is handled in processMovieShowtimes when we create notifications
-        }
-
         this.logger.info('✅ All notifications sent successfully');
       } catch (error) {
         const message = getErrorMessage(error);
@@ -258,7 +262,6 @@ export class ShowtimeMonitor {
         newNotifications.push({
           movieName: amcMovie.name,
           theatreName: this.theatre.name,
-          showDateTime: amcShowtime.showDateTimeUtc,
           showDateTimeLocal: amcShowtime.showDateTimeLocal,
           auditorium: amcShowtime.auditorium,
           attributes: amcShowtime.attributes || [],
@@ -293,40 +296,61 @@ export class ShowtimeMonitor {
   async getStatus(): Promise<{
     theatre: Theatre | null;
     trackedMovies: string[];
-    totalShowtimes: number;
     unnotifiedShowtimes: number;
     runsLastHour: number;
     runsLast24Hours: number;
+    workerState: WorkerState | null;
   }> {
     const unnotifiedShowtimes = this.database.getUnnotifiedShowtimes();
     const watchlist = this.database.getWatchlist();
+    const theatre =
+      this.theatre || this.database.getTheatreByName(this.config.theatre);
 
     return {
-      theatre: this.theatre,
+      theatre: theatre,
       trackedMovies: watchlist,
-      totalShowtimes: 0, // Could add a method to get this count
       unnotifiedShowtimes: unnotifiedShowtimes.length,
       runsLastHour: this.database.getRunCountSince(1),
       runsLast24Hours: this.database.getRunCountSince(24),
+      workerState: this.database.getWorkerState(),
     };
   }
 
+  flushLogs(): void {
+    this.logger.flush();
+  }
+
+  getDatabase(): ShowtimeDatabase {
+    return this.database;
+  }
+
+  getLogger(): Logger {
+    return this.logger;
+  }
+
   close(): void {
+    if (this.closed) {
+      return;
+    }
+
     const memUsage = process.memoryUsage();
     this.logger.info(
       `🎉 Monitor run completed successfully (Final Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
     );
     this.logger.flush();
     this.database.close();
+    this.closed = true;
   }
 
-  async processTelegramCommands(): Promise<void> {
+  async processTelegramCommands(
+    options: TelegramCommandPollOptions & { throwOnError?: boolean } = {}
+  ): Promise<void> {
     const memUsage = process.memoryUsage();
     this.logger.info(
       `🔍 Checking for Telegram commands... (Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
     );
     try {
-      const commands = await this.telegram.checkForCommands();
+      const commands = await this.telegram.checkForCommands(options);
 
       for (const { command, args } of commands) {
         this.logger.info(`📱 Processing command: ${command} ${args}`);
@@ -354,6 +378,9 @@ export class ShowtimeMonitor {
         }
       }
     } catch (error) {
+      if (options.throwOnError) {
+        throw error;
+      }
       const message = getErrorMessage(error);
       this.logger.error(`❌ Error processing Telegram commands: ${message}`);
     }
@@ -426,6 +453,13 @@ export class ShowtimeMonitor {
     message += `🏛️ <b>Theatre:</b> ${status.theatre?.name || 'Not configured'}\n`;
     message += `🎬 <b>Watchlist:</b> ${watchlist.length} movies\n`;
     message += `🔄 <b>Checks:</b> ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h\n`;
+    if (status.workerState) {
+      message += `⚙️ <b>Worker:</b> ${status.workerState.status}`;
+      if (status.workerState.workerId) {
+        message += ` (${status.workerState.workerId})`;
+      }
+      message += '\n';
+    }
 
     if (watchlist.length > 0) {
       message += `\n<b>Tracked Movies:</b>\n`;
