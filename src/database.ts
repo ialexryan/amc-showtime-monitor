@@ -25,6 +25,7 @@ export interface Showtime {
   theatreId: number;
   showDateTime: string;
   showDateTimeLocal: string;
+  utcOffset?: string;
   auditorium: number;
   isSoldOut: boolean;
   isAlmostSoldOut: boolean;
@@ -32,6 +33,33 @@ export interface Showtime {
   ticketUrl?: string;
   firstSeen: string;
   notified: boolean;
+}
+
+export interface ShowtimeUpsertInput {
+  movieId: number;
+  theatreId: number;
+  showDateTime: string;
+  showDateTimeLocal: string;
+  utcOffset?: string;
+  auditorium: number;
+  isSoldOut: boolean;
+  isAlmostSoldOut: boolean;
+  attributes: string;
+  ticketUrl?: string;
+}
+
+export interface PendingNotification {
+  showtimeId: number;
+  movieName: string;
+  theatreName: string;
+  showDateTimeUtc: string;
+  showDateTimeLocal: string;
+  utcOffset?: string;
+  auditorium: number;
+  attributes: string;
+  ticketUrl?: string;
+  isSoldOut: boolean;
+  isAlmostSoldOut: boolean;
 }
 
 export interface WorkerState {
@@ -194,6 +222,26 @@ export class ShowtimeDatabase {
       CREATE INDEX IF NOT EXISTS idx_logs_run_id ON logs (run_id);
       CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs (timestamp);
     `);
+
+    this.ensureColumnExists('showtimes', 'utc_offset', 'TEXT');
+  }
+
+  private ensureColumnExists(
+    tableName: string,
+    columnName: string,
+    definition: string
+  ): void {
+    const columns = this.db.query(`PRAGMA table_info(${tableName})`).all() as
+      | Array<{ name: string }>
+      | undefined;
+
+    if (columns?.some((column) => column.name === columnName)) {
+      return;
+    }
+
+    this.db.exec(
+      `ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`
+    );
   }
 
   private mapWorkerState(
@@ -291,7 +339,7 @@ export class ShowtimeDatabase {
   }
 
   // Showtime operations
-  upsertShowtime(showtime: Omit<Showtime, 'id' | 'firstSeen' | 'notified'>): {
+  upsertShowtime(showtime: ShowtimeUpsertInput): {
     id: number;
     isNew: boolean;
   } {
@@ -311,6 +359,7 @@ export class ShowtimeDatabase {
       const updateStmt = this.db.prepare(`
         UPDATE showtimes SET
           show_date_time_local = ?,
+          utc_offset = ?,
           is_sold_out = ?,
           is_almost_sold_out = ?,
           attributes = ?,
@@ -319,6 +368,7 @@ export class ShowtimeDatabase {
       `);
       updateStmt.run(
         showtime.showDateTimeLocal,
+        showtime.utcOffset ?? null,
         showtime.isSoldOut,
         showtime.isAlmostSoldOut,
         showtime.attributes,
@@ -330,15 +380,16 @@ export class ShowtimeDatabase {
       // Insert new showtime
       const insertStmt = this.db.prepare(`
         INSERT INTO showtimes 
-        (movie_id, theatre_id, show_date_time, show_date_time_local, auditorium, 
+        (movie_id, theatre_id, show_date_time, show_date_time_local, utc_offset, auditorium, 
          is_sold_out, is_almost_sold_out, attributes, ticket_url) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       const result = insertStmt.run(
         showtime.movieId,
         showtime.theatreId,
         showtime.showDateTime,
         showtime.showDateTimeLocal,
+        showtime.utcOffset ?? null,
         showtime.auditorium,
         showtime.isSoldOut,
         showtime.isAlmostSoldOut,
@@ -365,11 +416,77 @@ export class ShowtimeDatabase {
     >;
   }
 
-  markShowtimeNotified(showtimeId: number) {
-    const stmt = this.db.prepare(
-      'UPDATE showtimes SET notified = TRUE WHERE id = ?'
-    );
-    stmt.run(showtimeId);
+  getPendingNotifications(): PendingNotification[] {
+    try {
+      const pendingRows = this.db
+        .prepare(`
+        SELECT
+          s.id as showtime_id,
+          m.name as movie_name,
+          t.name as theatre_name,
+          s.show_date_time as show_date_time_utc,
+          s.show_date_time_local,
+          s.utc_offset,
+          s.auditorium,
+          s.attributes,
+          s.ticket_url,
+          s.is_sold_out,
+          s.is_almost_sold_out
+        FROM showtimes s
+        JOIN movies m ON s.movie_id = m.id
+        JOIN theatres t ON s.theatre_id = t.id
+        WHERE s.notified = FALSE
+        ORDER BY s.first_seen ASC
+      `)
+        .all() as Array<{
+        showtime_id: number;
+        movie_name: string;
+        theatre_name: string;
+        show_date_time_utc: string;
+        show_date_time_local: string;
+        utc_offset?: string | null;
+        auditorium: number;
+        attributes: string;
+        ticket_url?: string | null;
+        is_sold_out: boolean;
+        is_almost_sold_out: boolean;
+      }>;
+
+      return pendingRows.map((row) => ({
+        showtimeId: row.showtime_id,
+        movieName: row.movie_name,
+        theatreName: row.theatre_name,
+        showDateTimeUtc: row.show_date_time_utc,
+        showDateTimeLocal: row.show_date_time_local,
+        ...(row.utc_offset ? { utcOffset: row.utc_offset } : {}),
+        auditorium: row.auditorium,
+        attributes: row.attributes,
+        ...(row.ticket_url ? { ticketUrl: row.ticket_url } : {}),
+        isSoldOut: row.is_sold_out,
+        isAlmostSoldOut: row.is_almost_sold_out,
+      }));
+    } catch (error) {
+      console.error('Error getting pending notifications:', error);
+      return [];
+    }
+  }
+
+  markNotificationsDelivered(showtimeIds: number[]): void {
+    if (showtimeIds.length === 0) {
+      return;
+    }
+
+    try {
+      const placeholders = showtimeIds.map(() => '?').join(', ');
+      const stmt = this.db.prepare(`
+        UPDATE showtimes
+        SET notified = TRUE
+        WHERE id IN (${placeholders})
+      `);
+      stmt.run(...showtimeIds);
+    } catch (error) {
+      console.error('Error marking notifications delivered:', error);
+    }
   }
 
   // Watchlist operations

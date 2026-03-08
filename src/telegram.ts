@@ -52,7 +52,52 @@ export class TelegramBot {
   async sendBatchNotification(messages: TelegramMessage[]): Promise<void> {
     if (messages.length === 0) return;
 
-    // Group messages by movie for cleaner batch notifications
+    const movieGroups = this.groupMessagesByMovie(messages);
+
+    for (const [movieName, movieMessages] of movieGroups) {
+      await this.sendMovieNotification(movieName, movieMessages);
+
+      // Small delay between messages to avoid rate limiting
+      if (movieGroups.size > 1) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+  }
+
+  async sendMovieNotification(
+    movieName: string,
+    messages: TelegramMessage[]
+  ): Promise<void> {
+    const batchMessage = this.formatBatchMessage(movieName, messages);
+    if (!batchMessage) {
+      return;
+    }
+
+    try {
+      await this.client.post('/sendMessage', {
+        chat_id: this.chatId,
+        text: batchMessage,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      });
+
+      this.logger?.info(
+        `✅ Batch notification sent for ${movieName} (${messages.length} showtimes)`,
+        { movie: movieName }
+      );
+    } catch (error) {
+      const message = getErrorMessage(error);
+      this.logger?.error(
+        `❌ Failed to send batch notification for ${movieName}: ${message}`,
+        { movie: movieName }
+      );
+      throw error;
+    }
+  }
+
+  private groupMessagesByMovie(
+    messages: TelegramMessage[]
+  ): Map<string, TelegramMessage[]> {
     const movieGroups = new Map<string, TelegramMessage[]>();
     messages.forEach((msg) => {
       const key = msg.movieName;
@@ -61,39 +106,7 @@ export class TelegramBot {
       }
       movieGroups.get(key)?.push(msg);
     });
-
-    for (const [movieName, movieMessages] of movieGroups) {
-      const batchMessage = this.formatBatchMessage(movieName, movieMessages);
-      if (!batchMessage) {
-        continue;
-      }
-
-      try {
-        await this.client.post('/sendMessage', {
-          chat_id: this.chatId,
-          text: batchMessage,
-          parse_mode: 'HTML',
-          disable_web_page_preview: true,
-        });
-
-        this.logger?.info(
-          `✅ Batch notification sent for ${movieName} (${movieMessages.length} showtimes)`,
-          { movie: movieName }
-        );
-
-        // Small delay between messages to avoid rate limiting
-        if (movieGroups.size > 1) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-      } catch (error) {
-        const message = getErrorMessage(error);
-        this.logger?.error(
-          `❌ Failed to send batch notification for ${movieName}: ${message}`,
-          { movie: movieName }
-        );
-        throw error;
-      }
-    }
+    return movieGroups;
   }
 
   private formatBatchMessage(

@@ -3,6 +3,7 @@ import { AMCApiClient, type AMCMovie } from './amc-api.js';
 import type { AppConfig } from './config.js';
 import {
   type Movie,
+  type PendingNotification,
   ShowtimeDatabase,
   type Theatre,
   type WorkerState,
@@ -93,7 +94,7 @@ export class ShowtimeMonitor {
     this.logger.info(
       `🔍 Checking for new showtimes... (Memory: ${Math.round(memUsage.rss / 1024 / 1024)}MB RSS, ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB heap)`
     );
-    const newNotifications: TelegramMessage[] = [];
+    let newShowtimeCount = 0;
 
     // Get watchlist from database
     const watchlist = this.database.getWatchlist();
@@ -127,8 +128,7 @@ export class ShowtimeMonitor {
 
         // Check showtimes for each relevant movie
         for (const amcMovie of relevantMovies) {
-          const notifications = await this.processMovieShowtimes(amcMovie);
-          newNotifications.push(...notifications);
+          newShowtimeCount += await this.processMovieShowtimes(amcMovie);
         }
       } catch (error) {
         const message = getErrorMessage(error);
@@ -140,21 +140,16 @@ export class ShowtimeMonitor {
       }
     }
 
-    // Send notifications for new showtimes
-    if (newNotifications.length > 0) {
-      this.logger.info(
-        `\n📱 Sending ${newNotifications.length} notifications...`
-      );
-      try {
-        await this.telegram.sendBatchNotification(newNotifications);
+    const pendingNotifications = this.database.getPendingNotifications();
 
-        this.logger.info('✅ All notifications sent successfully');
-      } catch (error) {
-        const message = getErrorMessage(error);
-        this.logger.error(`❌ Failed to send notifications: ${message}`);
-      }
+    if (pendingNotifications.length > 0) {
+      await this.deliverPendingNotifications(pendingNotifications);
     } else {
-      this.logger.info('\n📭 No new showtimes found');
+      const emptyMessage =
+        newShowtimeCount > 0
+          ? '\n📭 No pending notifications to send'
+          : '\n📭 No new showtimes found';
+      this.logger.info(emptyMessage);
     }
 
     this.logger.info('🏁 Checking for new showtimes complete');
@@ -193,9 +188,7 @@ export class ShowtimeMonitor {
     return filteredResults.map((result) => result.item);
   }
 
-  private async processMovieShowtimes(
-    amcMovie: AMCMovie
-  ): Promise<TelegramMessage[]> {
+  private async processMovieShowtimes(amcMovie: AMCMovie): Promise<number> {
     if (!this.theatre) {
       throw new Error('Theatre not set');
     }
@@ -234,7 +227,7 @@ export class ShowtimeMonitor {
       movie: amcMovie.name,
     });
 
-    const newNotifications: TelegramMessage[] = [];
+    let newShowtimeCount = 0;
 
     // Process each showtime
     for (const amcShowtime of amcShowtimes) {
@@ -246,6 +239,9 @@ export class ShowtimeMonitor {
         theatreId: this.theatre.id,
         showDateTime: amcShowtime.showDateTimeUtc,
         showDateTimeLocal: amcShowtime.showDateTimeLocal,
+        ...(amcShowtime.utcOffset !== undefined
+          ? { utcOffset: amcShowtime.utcOffset }
+          : {}),
         auditorium: amcShowtime.auditorium,
         isSoldOut: amcShowtime.isSoldOut,
         isAlmostSoldOut: amcShowtime.isAlmostSoldOut,
@@ -263,38 +259,95 @@ export class ShowtimeMonitor {
           )}`,
           { movie: amcMovie.name }
         );
-
-        newNotifications.push({
-          movieName: amcMovie.name,
-          theatreName: this.theatre.name,
-          showDateTimeUtc: amcShowtime.showDateTimeUtc,
-          showDateTimeLocal: amcShowtime.showDateTimeLocal,
-          ...(amcShowtime.utcOffset !== undefined
-            ? { utcOffset: amcShowtime.utcOffset }
-            : {}),
-          auditorium: amcShowtime.auditorium,
-          attributes: amcShowtime.attributes || [],
-          ticketUrl: ticketUrl,
-          isSoldOut: amcShowtime.isSoldOut,
-          isAlmostSoldOut: amcShowtime.isAlmostSoldOut,
-        });
-
-        // Mark this showtime as notified (we'll send the notification shortly)
-        this.database.markShowtimeNotified(result.id);
+        newShowtimeCount += 1;
       }
     }
 
     // Update movie's last checked time
     this.database.updateMovieLastChecked(movieId);
 
-    if (newNotifications.length > 0) {
+    if (newShowtimeCount > 0) {
       this.logger.info(
-        `   ✨ ${newNotifications.length} new showtimes for ${amcMovie.name}`,
+        `   ✨ ${newShowtimeCount} new showtimes for ${amcMovie.name}`,
         { movie: amcMovie.name }
       );
     }
 
-    return newNotifications;
+    return newShowtimeCount;
+  }
+
+  private async deliverPendingNotifications(
+    pendingNotifications: PendingNotification[]
+  ): Promise<void> {
+    this.logger.info(
+      `\n📱 Sending ${pendingNotifications.length} pending notifications...`
+    );
+
+    const notificationsByMovie = new Map<string, PendingNotification[]>();
+    for (const notification of pendingNotifications) {
+      const movieNotifications =
+        notificationsByMovie.get(notification.movieName) ?? [];
+      movieNotifications.push(notification);
+      notificationsByMovie.set(notification.movieName, movieNotifications);
+    }
+
+    let deliveredNotificationCount = 0;
+
+    for (const [movieName, notifications] of notificationsByMovie.entries()) {
+      const showtimeIds = notifications.map(
+        (notification) => notification.showtimeId
+      );
+      const telegramMessages: TelegramMessage[] = notifications.map(
+        (notification) => ({
+          movieName: notification.movieName,
+          theatreName: notification.theatreName,
+          showDateTimeUtc: notification.showDateTimeUtc,
+          showDateTimeLocal: notification.showDateTimeLocal,
+          ...(notification.utcOffset !== undefined
+            ? { utcOffset: notification.utcOffset }
+            : {}),
+          auditorium: notification.auditorium,
+          attributes: this.parseNotificationAttributes(notification.attributes),
+          ...(notification.ticketUrl !== undefined
+            ? { ticketUrl: notification.ticketUrl }
+            : {}),
+          isSoldOut: notification.isSoldOut,
+          isAlmostSoldOut: notification.isAlmostSoldOut,
+        })
+      );
+
+      try {
+        await this.telegram.sendMovieNotification(movieName, telegramMessages);
+        this.database.markNotificationsDelivered(showtimeIds);
+        deliveredNotificationCount += showtimeIds.length;
+      } catch (error) {
+        const message = getErrorMessage(error);
+        this.logger.error(
+          `❌ Failed to send notifications for "${movieName}": ${message}`,
+          { movie: movieName }
+        );
+      }
+    }
+
+    if (deliveredNotificationCount > 0) {
+      this.logger.info(
+        `✅ Delivered ${deliveredNotificationCount} notifications successfully`
+      );
+    }
+  }
+
+  private parseNotificationAttributes(
+    rawAttributes: string
+  ): Array<{ code: string; name: string; description?: string }> {
+    try {
+      return JSON.parse(rawAttributes) as Array<{
+        code: string;
+        name: string;
+        description?: string;
+      }>;
+    } catch {
+      return [];
+    }
   }
 
   async sendTestNotification(): Promise<void> {
