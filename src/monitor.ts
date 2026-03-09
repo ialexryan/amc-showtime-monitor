@@ -690,8 +690,8 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
           entry.resolutionState === 'unmatched'
       ).length,
       unnotifiedShowtimes: unnotifiedShowtimes.length,
-      runsLastHour: this.database.getRunCountSince(1),
-      runsLast24Hours: this.database.getRunCountSince(24),
+      runsLastHour: this.database.getShowtimeCheckCountSince(1),
+      runsLast24Hours: this.database.getShowtimeCheckCountSince(24),
       workerState: this.database.getWorkerState(),
     };
   }
@@ -926,7 +926,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
     message += `✅ <b>Resolved:</b> ${status.resolvedWatchlistEntries}\n`;
     message += `🤔 <b>Ambiguous:</b> ${status.ambiguousWatchlistEntries}\n`;
     message += `🕒 <b>Pending:</b> ${status.pendingWatchlistEntries}\n`;
-    message += `🔄 <b>Checks:</b> ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h\n`;
+    message += `🔄 <b>Showtime checks:</b> ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h\n`;
     if (status.workerState) {
       message += `⚙️ <b>Worker:</b> ${status.workerState.status}`;
       if (status.workerState.workerId) {

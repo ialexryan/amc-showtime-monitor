@@ -1303,16 +1303,17 @@ export class ShowtimeDatabase {
     }
   }
 
-  getRunCountSince(hours: number): number {
+  getShowtimeCheckCountSince(hours: number): number {
     try {
       const stmt = this.db.prepare(`
-        SELECT COUNT(DISTINCT run_id) as count FROM logs
+        SELECT COUNT(*) as count FROM logs
         WHERE datetime(timestamp) >= datetime('now', '-${hours} hours')
+          AND message = '🏁 Checking for new showtimes complete'
       `);
       const result = stmt.get() as { count: number };
       return result.count;
     } catch (error) {
-      console.error('Error getting run count:', error);
+      console.error('Error getting showtime check count:', error);
       return 0;
     }
   }

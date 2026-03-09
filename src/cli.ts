@@ -135,7 +135,7 @@ program
       console.log(`  Ambiguous: ${status.ambiguousWatchlistEntries}`);
       console.log(`  Pending: ${status.pendingWatchlistEntries}`);
       console.log(
-        `Checks: ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h`
+        `Showtime checks: ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h`
       );
       if (status.workerState) {
         console.log(`Worker Status: ${status.workerState.status}`);
