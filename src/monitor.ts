@@ -13,6 +13,10 @@ import { getErrorMessage } from './errors.js';
 import { Logger } from './logger.js';
 import { formatShowtimeForLog } from './showtime-time.js';
 import {
+  STARTUP_NOTIFICATION_STATE_KEY,
+  shouldSendStartupNotification,
+} from './startup-notification.js';
+import {
   TelegramBot,
   type TelegramCommandPollOptions,
   type TelegramInlineButton,
@@ -663,15 +667,32 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
 
   async sendStartupNotification(workerId: string): Promise<void> {
     const theatreName = this.theatre?.name ?? this.config.theatre;
-    const startedAt = new Date().toISOString();
+    const startedAt = new Date();
+    const lastStartupNotificationAt = this.database.getBotState(
+      STARTUP_NOTIFICATION_STATE_KEY
+    );
 
-    await this.telegram.sendResponse(
+    if (!shouldSendStartupNotification(lastStartupNotificationAt, startedAt)) {
+      this.logger.info(
+        `🔕 Suppressed startup notification; last sent at ${lastStartupNotificationAt}`
+      );
+      return;
+    }
+
+    const sent = await this.telegram.sendResponse(
       `🚀 <b>AMC Showtime Monitor started</b>
 
 🏛️ ${this.escapeHtml(theatreName)}
 🆔 <code>${this.escapeHtml(workerId)}</code>
-🕒 ${this.escapeHtml(startedAt)}`
+🕒 ${this.escapeHtml(startedAt.toISOString())}`
     );
+
+    if (sent) {
+      this.database.setBotState(
+        STARTUP_NOTIFICATION_STATE_KEY,
+        startedAt.toISOString()
+      );
+    }
   }
 
   async getStatus(): Promise<{

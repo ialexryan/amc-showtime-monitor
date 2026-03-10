@@ -450,7 +450,7 @@ Time: ${new Date().toLocaleString()}`;
     }
   }
 
-  async sendResponse(message: string): Promise<void> {
+  async sendResponse(message: string): Promise<boolean> {
     try {
       await this.client.post('/sendMessage', {
         chat_id: this.chatId,
@@ -458,9 +458,11 @@ Time: ${new Date().toLocaleString()}`;
         parse_mode: 'HTML',
         disable_web_page_preview: true,
       });
+      return true;
     } catch (error) {
       const message = getErrorMessage(error);
       this.logger?.error(`❌ Failed to send response: ${message}`);
+      return false;
     }
   }
 }
