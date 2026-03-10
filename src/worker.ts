@@ -48,6 +48,7 @@ export interface WorkerLogger {
 export interface WorkerMonitorRuntime {
   initialize(): Promise<void>;
   checkForNewShowtimes(signal?: AbortSignal): Promise<void>;
+  sendStartupNotification(workerId: string): Promise<void>;
   processTelegramCommands(
     options?: TelegramCommandPollOptions & { throwOnError?: boolean }
   ): Promise<void>;
@@ -153,6 +154,7 @@ export class MonitorWorker {
   private sessionAbortController: AbortController | null = null;
   private isShuttingDown = false;
   private cleanupComplete = false;
+  private startupNotificationSent = false;
   private signalHandlers = new Map<NodeJS.Signals, () => void>();
 
   constructor(
@@ -261,6 +263,7 @@ export class MonitorWorker {
         this.sessionAbortController.signal
       );
       await this.ensureInitialized();
+      await this.sendStartupNotificationOnce();
       amcPromise = this.runAmcLoop(this.sessionAbortController.signal);
       telegramPromise = this.runTelegramLoop(
         this.sessionAbortController.signal
@@ -297,6 +300,15 @@ export class MonitorWorker {
     await this.monitor.initialize();
     this.monitor.flushLogs();
     this.initialized = true;
+  }
+
+  private async sendStartupNotificationOnce(): Promise<void> {
+    if (this.startupNotificationSent) {
+      return;
+    }
+
+    this.startupNotificationSent = true;
+    await this.monitor.sendStartupNotification(this.workerId);
   }
 
   private async runHeartbeatLoop(signal: AbortSignal): Promise<void> {

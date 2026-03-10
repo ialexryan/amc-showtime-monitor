@@ -138,6 +138,7 @@ class FakeMonitor implements WorkerMonitorRuntime {
     timeoutSeconds?: number;
     throwOnError?: boolean;
   }> = [];
+  readonly startupNotificationWorkerIds: string[] = [];
 
   initializeCalls = 0;
   checkCalls = 0;
@@ -186,6 +187,10 @@ class FakeMonitor implements WorkerMonitorRuntime {
     } finally {
       this.concurrentChecks -= 1;
     }
+  }
+
+  async sendStartupNotification(workerId: string): Promise<void> {
+    this.startupNotificationWorkerIds.push(workerId);
   }
 
   async processTelegramCommands(
@@ -382,9 +387,37 @@ describe('MonitorWorker', () => {
     await clock.advance(1);
     await clock.settle();
 
+    expect(monitor.startupNotificationWorkerIds).toHaveLength(1);
     expect(healthcheckClient.pingedUrls).toEqual([
       'https://hc-ping.com/935dd026-f916-4030-8fb1-8b89b6a9fc5e',
     ]);
+
+    worker.stop();
+    await clock.advance(20_000);
+    await runPromise;
+  });
+
+  test('sends a startup notification once per worker process', async () => {
+    const clock = new FakeClock();
+    const monitor = new FakeMonitor(clock, [{ delayMs: 0 }, { delayMs: 0 }]);
+    const worker = new MonitorWorker(monitor, {
+      clock,
+      pollIntervalMs: 60_000,
+      amcCycleTimeoutMs: 120_000,
+      telegramLongPollSeconds: 1,
+      heartbeatIntervalMs: 15_000,
+      leaseTtlMs: 45_000,
+    });
+
+    const runPromise = worker.run();
+    await clock.settle();
+
+    expect(monitor.startupNotificationWorkerIds).toHaveLength(1);
+    expect(monitor.startupNotificationWorkerIds[0]?.length).toBeGreaterThan(0);
+
+    await clock.advance(61_000);
+    await clock.settle();
+    expect(monitor.startupNotificationWorkerIds).toHaveLength(1);
 
     worker.stop();
     await clock.advance(20_000);

@@ -661,6 +661,19 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
     await this.telegram.sendTestMessage();
   }
 
+  async sendStartupNotification(workerId: string): Promise<void> {
+    const theatreName = this.theatre?.name ?? this.config.theatre;
+    const startedAt = new Date().toISOString();
+
+    await this.telegram.sendResponse(
+      `🚀 <b>AMC Showtime Monitor started</b>
+
+🏛️ ${this.escapeHtml(theatreName)}
+🆔 <code>${this.escapeHtml(workerId)}</code>
+🕒 ${this.escapeHtml(startedAt)}`
+    );
+  }
+
   async getStatus(): Promise<{
     theatre: Theatre | null;
     trackedMovies: string[];
