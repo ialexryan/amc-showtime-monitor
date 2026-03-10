@@ -950,7 +950,7 @@ export class ShowtimeDatabase {
       return this.getWatchlistEntries().map((entry) => {
         switch (entry.resolutionState) {
           case 'resolved':
-            return `${entry.queryText} → ${entry.resolvedMovieName || 'Resolved'}`;
+            return entry.resolvedMovieName || entry.queryText;
           case 'ambiguous':
             return `${entry.queryText} (choose match)`;
           case 'unmatched':

@@ -650,7 +650,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
   private formatWatchlistEntryLabel(entry: WatchlistEntry): string {
     switch (entry.resolutionState) {
       case 'resolved':
-        return `${entry.queryText} → ${entry.resolvedMovieName || 'Resolved'}`;
+        return entry.resolvedMovieName || entry.queryText;
       case 'ambiguous':
         return `${entry.queryText} (choose match)`;
       case 'unmatched':
