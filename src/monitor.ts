@@ -96,7 +96,7 @@ export class ShowtimeMonitor {
     this.logger.info('✅ Initialization complete');
   }
 
-  async checkForNewShowtimes(): Promise<void> {
+  async checkForNewShowtimes(signal?: AbortSignal): Promise<void> {
     if (!this.theatre) {
       throw new Error('Monitor not initialized. Call initialize() first.');
     }
@@ -108,7 +108,7 @@ export class ShowtimeMonitor {
     let newShowtimeCount = 0;
 
     // Fetch all movies once at the start
-    const allMovies = await this.amcClient.getAllMovies();
+    const allMovies = await this.amcClient.getAllMovies(signal);
     const resolutionContext = createMovieResolutionContext(allMovies);
     const memAfterFetch = process.memoryUsage();
     this.logger.info(
@@ -147,7 +147,7 @@ export class ShowtimeMonitor {
           continue;
         }
 
-        newShowtimeCount += await this.processMovieShowtimes(amcMovie);
+        newShowtimeCount += await this.processMovieShowtimes(amcMovie, signal);
       } catch (error) {
         const message = getErrorMessage(error);
         this.logger.error(
@@ -172,7 +172,10 @@ export class ShowtimeMonitor {
     this.logger.info('🏁 Checking for new showtimes complete');
   }
 
-  private async processMovieShowtimes(amcMovie: AMCMovie): Promise<number> {
+  private async processMovieShowtimes(
+    amcMovie: AMCMovie,
+    signal?: AbortSignal
+  ): Promise<number> {
     if (!this.theatre) {
       throw new Error('Theatre not set');
     }
@@ -204,7 +207,8 @@ export class ShowtimeMonitor {
     // Get current showtimes for this movie at our theatre
     const amcShowtimes = await this.amcClient.getShowtimesForMovieAtTheatre(
       amcMovie.id,
-      this.theatre.id
+      this.theatre.id,
+      signal
     );
 
     this.logger.info(`   📅 Found ${amcShowtimes.length} showtimes`, {

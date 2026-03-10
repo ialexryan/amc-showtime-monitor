@@ -154,7 +154,7 @@ class FakeMonitor implements WorkerMonitorRuntime {
     this.initializeCalls += 1;
   }
 
-  async checkForNewShowtimes(): Promise<void> {
+  async checkForNewShowtimes(signal?: AbortSignal): Promise<void> {
     this.checkCalls += 1;
     this.concurrentChecks += 1;
     this.maxConcurrentChecks = Math.max(
@@ -165,7 +165,7 @@ class FakeMonitor implements WorkerMonitorRuntime {
     const plan = this.checkPlans.shift() ?? {};
     try {
       if (plan.delayMs) {
-        await this.clock.sleep(plan.delayMs);
+        await this.clock.sleep(plan.delayMs, signal);
       }
 
       if (plan.error) {
@@ -223,7 +223,6 @@ class FakeMonitor implements WorkerMonitorRuntime {
 }
 
 const tempDirs: string[] = [];
-
 afterEach(() => {
   while (tempDirs.length > 0) {
     const dir = tempDirs.pop();
@@ -276,6 +275,7 @@ describe('MonitorWorker', () => {
     const worker = new MonitorWorker(monitor, {
       clock,
       pollIntervalMs: 60_000,
+      amcCycleTimeoutMs: 120_000,
       telegramLongPollSeconds: 1,
       heartbeatIntervalMs: 15_000,
       leaseTtlMs: 45_000,
@@ -289,10 +289,12 @@ describe('MonitorWorker', () => {
     expect(monitor.maxConcurrentChecks).toBe(1);
 
     await clock.advance(60_000);
+    await clock.settle();
     expect(monitor.checkCalls).toBe(1);
     expect(monitor.maxConcurrentChecks).toBe(1);
 
     await clock.advance(10_000);
+    await clock.settle();
     expect(monitor.checkCalls).toBe(2);
     expect(monitor.maxConcurrentChecks).toBe(1);
 
@@ -316,6 +318,7 @@ describe('MonitorWorker', () => {
     const worker = new MonitorWorker(monitor, {
       clock,
       pollIntervalMs: 60_000,
+      amcCycleTimeoutMs: 120_000,
       telegramLongPollSeconds: 1,
       heartbeatIntervalMs: 15_000,
       leaseTtlMs: 45_000,
@@ -326,15 +329,19 @@ describe('MonitorWorker', () => {
     expect(monitor.checkCalls).toBe(1);
 
     await clock.advance(29_999);
+    await clock.settle();
     expect(monitor.checkCalls).toBe(1);
 
-    await clock.advance(1);
+    await clock.advance(60_000);
+    await clock.settle();
     expect(monitor.checkCalls).toBe(2);
 
     await clock.advance(299_999);
+    await clock.settle();
     expect(monitor.checkCalls).toBe(2);
 
-    await clock.advance(1);
+    await clock.advance(60_000);
+    await clock.settle();
     expect(monitor.checkCalls).toBe(3);
 
     worker.stop();

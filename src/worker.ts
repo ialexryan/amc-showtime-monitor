@@ -47,7 +47,7 @@ export interface WorkerLogger {
 
 export interface WorkerMonitorRuntime {
   initialize(): Promise<void>;
-  checkForNewShowtimes(): Promise<void>;
+  checkForNewShowtimes(signal?: AbortSignal): Promise<void>;
   processTelegramCommands(
     options?: TelegramCommandPollOptions & { throwOnError?: boolean }
   ): Promise<void>;
@@ -65,6 +65,7 @@ export interface WorkerClock {
 
 export interface MonitorWorkerOptions {
   pollIntervalMs?: number;
+  amcCycleTimeoutMs?: number;
   telegramLongPollSeconds?: number;
   healthPort?: number;
   leaseTtlMs?: number;
@@ -109,6 +110,7 @@ export class MonitorWorker {
   private readonly logger: WorkerLogger;
   private readonly clock: WorkerClock;
   private readonly pollIntervalMs: number;
+  private readonly amcCycleTimeoutMs: number;
   private readonly telegramLongPollSeconds: number;
   private readonly healthPort: number | undefined;
   private readonly leaseTtlMs: number;
@@ -140,6 +142,7 @@ export class MonitorWorker {
     this.logger = monitor.getLogger();
     this.clock = options.clock ?? defaultClock;
     this.pollIntervalMs = options.pollIntervalMs ?? 60_000;
+    this.amcCycleTimeoutMs = options.amcCycleTimeoutMs ?? 45_000;
     this.telegramLongPollSeconds = options.telegramLongPollSeconds ?? 30;
     this.healthPort = options.healthPort;
     this.leaseTtlMs = options.leaseTtlMs ?? 45_000;
@@ -312,8 +315,9 @@ export class MonitorWorker {
       this.database.markWorkerPollStarted(this.workerId, cycleStartedAt);
 
       let delayBeforeNextPollMs = 0;
+      let shouldForceRestart = false;
       try {
-        await this.monitor.checkForNewShowtimes();
+        await this.runTimedAmcCheck(signal);
         this.firstSuccessfulPoll = true;
         this.lastPollStatus = 'ok';
         transientBackoffIndex = 0;
@@ -339,6 +343,13 @@ export class MonitorWorker {
           this.warn(
             `⚠️ AMC poll failed transiently; backing off for ${Math.round(delayBeforeNextPollMs / 1000)}s`
           );
+        } else if (
+          error instanceof Error &&
+          error.message.startsWith('AMC poll cycle exceeded')
+        ) {
+          this.lastPollStatus = 'timed-out';
+          this.error(`❌ AMC poll timed out: ${error.message}`);
+          shouldForceRestart = true;
         } else {
           this.lastPollStatus = 'error';
           this.error(`❌ AMC poll failed: ${getErrorMessage(error)}`);
@@ -351,6 +362,10 @@ export class MonitorWorker {
           this.lastPollStatus ?? 'unknown'
         );
         this.monitor.flushLogs();
+        if (shouldForceRestart) {
+          await this.shutdown('stopping');
+          process.exit(1);
+        }
       }
 
       const scheduledNextRunAt = nextRunAt + this.pollIntervalMs;
@@ -368,6 +383,38 @@ export class MonitorWorker {
       } else {
         nextRunAt = scheduledNextRunAt;
       }
+    }
+  }
+
+  private async runTimedAmcCheck(signal: AbortSignal): Promise<void> {
+    const requestAbortController = new AbortController();
+    const timeoutAbortController = new AbortController();
+
+    const forwardAbort = (): void => {
+      requestAbortController.abort();
+      timeoutAbortController.abort();
+    };
+
+    signal.addEventListener('abort', forwardAbort, { once: true });
+
+    const timeoutPromise = this.clock
+      .sleep(this.amcCycleTimeoutMs, timeoutAbortController.signal)
+      .then(() => {
+        requestAbortController.abort();
+        throw new Error(
+          `AMC poll cycle exceeded ${Math.round(this.amcCycleTimeoutMs / 1000)}s`
+        );
+      });
+
+    try {
+      await Promise.race([
+        this.monitor.checkForNewShowtimes(requestAbortController.signal),
+        timeoutPromise,
+      ]);
+    } finally {
+      timeoutAbortController.abort();
+      requestAbortController.abort();
+      signal.removeEventListener('abort', forwardAbort);
     }
   }
 

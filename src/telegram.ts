@@ -44,6 +44,9 @@ export interface TelegramInlineButton {
   callbackData: string;
 }
 
+const TELEGRAM_MESSAGE_CHAR_LIMIT = 4096;
+const TELEGRAM_MESSAGE_SAFE_LIMIT = 3800;
+
 export class TelegramBot {
   private client: AxiosInstance;
   private lastUpdateId: number = 0;
@@ -86,18 +89,20 @@ export class TelegramBot {
     movieName: string,
     messages: TelegramMessage[]
   ): Promise<void> {
-    const batchMessage = this.formatBatchMessage(movieName, messages);
-    if (!batchMessage) {
+    const batchMessages = this.formatBatchMessages(movieName, messages);
+    if (batchMessages.length === 0) {
       return;
     }
 
     try {
-      await this.client.post('/sendMessage', {
-        chat_id: this.chatId,
-        text: batchMessage,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-      });
+      for (const batchMessage of batchMessages) {
+        await this.client.post('/sendMessage', {
+          chat_id: this.chatId,
+          text: batchMessage,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+        });
+      }
 
       this.logger?.info(
         `✅ Batch notification sent for ${movieName} (${messages.length} showtimes)`,
@@ -127,13 +132,13 @@ export class TelegramBot {
     return movieGroups;
   }
 
-  private formatBatchMessage(
+  private formatBatchMessages(
     movieName: string,
     messages: TelegramMessage[]
-  ): string {
+  ): string[] {
     const [firstMessage] = messages;
     if (!firstMessage) {
-      return '';
+      return [];
     }
 
     const sortedMessages = messages.sort(
@@ -150,42 +155,77 @@ export class TelegramBot {
         )
     );
 
-    const showtimeList = sortedMessages
-      .map((msg) => {
-        const dateStr = formatShowtimeDate(
-          msg.showDateTimeUtc,
-          msg.showDateTimeLocal,
-          msg.utcOffset
-        );
-        const timeStr = formatShowtimeTime(
-          msg.showDateTimeUtc,
-          msg.showDateTimeLocal,
-          msg.utcOffset
-        );
+    const showtimeLines = sortedMessages.map((msg) => {
+      const dateStr = formatShowtimeDate(
+        msg.showDateTimeUtc,
+        msg.showDateTimeLocal,
+        msg.utcOffset
+      );
+      const timeStr = formatShowtimeTime(
+        msg.showDateTimeUtc,
+        msg.showDateTimeLocal,
+        msg.utcOffset
+      );
 
-        const formatStr = this.getFormatString(msg.attributes);
+      const formatStr = this.getFormatString(msg.attributes);
 
-        let statusEmoji = '🎬';
-        if (msg.isSoldOut) statusEmoji = '❌';
-        else if (msg.isAlmostSoldOut) statusEmoji = '⚠️';
+      let statusEmoji = '🎬';
+      if (msg.isSoldOut) statusEmoji = '❌';
+      else if (msg.isAlmostSoldOut) statusEmoji = '⚠️';
 
-        const showtimeText = `${statusEmoji} ${dateStr} ${timeStr}${formatStr ? ` - ${formatStr}` : ` - Aud ${msg.auditorium}`}`;
-        return msg.ticketUrl
-          ? `<a href="${msg.ticketUrl}">${showtimeText}</a>`
-          : showtimeText;
-      })
-      .join('\n');
+      const showtimeText = `${statusEmoji} ${dateStr} ${timeStr}${formatStr ? ` - ${formatStr}` : ` - Aud ${msg.auditorium}`}`;
+      return msg.ticketUrl
+        ? `<a href="${msg.ticketUrl}">${showtimeText}</a>`
+        : showtimeText;
+    });
 
     const showtimeCount =
       messages.length === 1
         ? 'New Showtime'
         : `${messages.length} New Showtimes`;
 
-    return `🎬 <b>${showtimeCount} for ${movieName}!</b>
+    const buildHeader = (partIndex: number, partCount: number): string => {
+      const partSuffix =
+        partCount > 1 ? ` <i>(${partIndex + 1}/${partCount})</i>` : '';
+      return `🎬 <b>${showtimeCount} for ${movieName}!${partSuffix}</b>
 
 🏛️ ${firstMessage.theatreName}
 
-${showtimeList}`;
+`;
+    };
+
+    const chunks: string[] = [];
+    let currentChunkLines: string[] = [];
+
+    const flushChunk = (): void => {
+      if (currentChunkLines.length === 0) {
+        return;
+      }
+      chunks.push(currentChunkLines.join('\n'));
+      currentChunkLines = [];
+    };
+
+    for (const line of showtimeLines) {
+      const tentativeLines = [...currentChunkLines, line];
+      const tentativeText = buildHeader(0, 1) + tentativeLines.join('\n');
+      if (
+        tentativeText.length > TELEGRAM_MESSAGE_SAFE_LIMIT &&
+        currentChunkLines.length > 0
+      ) {
+        flushChunk();
+      }
+      currentChunkLines.push(line);
+    }
+
+    flushChunk();
+
+    return chunks.map((chunk, index) => {
+      const message = buildHeader(index, chunks.length) + chunk;
+      if (message.length <= TELEGRAM_MESSAGE_CHAR_LIMIT) {
+        return message;
+      }
+      return message.slice(0, TELEGRAM_MESSAGE_CHAR_LIMIT);
+    });
   }
 
   private getFormatString(

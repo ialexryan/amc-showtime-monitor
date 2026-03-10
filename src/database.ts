@@ -1287,6 +1287,72 @@ export class ShowtimeDatabase {
     }
   }
 
+  getRecentShowtimeCheckStarts(limit: number = 5): Array<{
+    id: number;
+    run_id: string;
+    timestamp: string;
+    level: string;
+    message: string;
+  }> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT id, run_id, timestamp, level, message
+        FROM logs
+        WHERE message LIKE '🔍 Checking for new showtimes%'
+        ORDER BY timestamp DESC
+        LIMIT ?
+      `);
+      return stmt.all(limit) as Array<{
+        id: number;
+        run_id: string;
+        timestamp: string;
+        level: string;
+        message: string;
+      }>;
+    } catch (error) {
+      console.error('Error getting recent showtime check starts:', error);
+      return [];
+    }
+  }
+
+  getLogsForShowtimeCheck(
+    startedAt: string,
+    runId: string
+  ): Array<{
+    id: number;
+    run_id: string;
+    timestamp: string;
+    level: string;
+    message: string;
+    movie?: string;
+    theatre?: string;
+    data?: string;
+  }> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT *
+        FROM logs
+        WHERE run_id = ?
+          AND datetime(timestamp) >= datetime(?)
+          AND datetime(timestamp) <= datetime(?, '+10 minutes')
+        ORDER BY timestamp ASC, id ASC
+      `);
+      return stmt.all(runId, startedAt, startedAt) as Array<{
+        id: number;
+        run_id: string;
+        timestamp: string;
+        level: string;
+        message: string;
+        movie?: string;
+        theatre?: string;
+        data?: string;
+      }>;
+    } catch (error) {
+      console.error('Error getting logs for showtime check:', error);
+      return [];
+    }
+  }
+
   getRecentRunIds(limit: number = 5): string[] {
     try {
       const stmt = this.db.prepare(`
@@ -1299,6 +1365,33 @@ export class ShowtimeDatabase {
       return results.map((r) => r.run_id);
     } catch (error) {
       console.error('Error getting recent run IDs:', error);
+      return [];
+    }
+  }
+
+  getRecentWorkerSessions(limit: number = 5): Array<{
+    run_id: string;
+    started_at: string;
+    last_log_at: string;
+  }> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT
+          run_id,
+          MIN(timestamp) as started_at,
+          MAX(timestamp) as last_log_at
+        FROM logs
+        GROUP BY run_id
+        ORDER BY MAX(timestamp) DESC
+        LIMIT ?
+      `);
+      return stmt.all(limit) as Array<{
+        run_id: string;
+        started_at: string;
+        last_log_at: string;
+      }>;
+    } catch (error) {
+      console.error('Error getting recent worker sessions:', error);
       return [];
     }
   }

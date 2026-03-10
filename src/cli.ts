@@ -280,9 +280,14 @@ program
 
 program
   .command('logs')
-  .description('Show logs from recent runs')
-  .option('-n, --runs <number>', 'Number of recent runs to show', '1')
+  .description('Show logs from recent showtime checks or worker sessions')
+  .option(
+    '-n, --runs <number>',
+    'Number of recent check cycles or worker sessions to show',
+    '1'
+  )
   .option('-d, --database <path>', 'Path to database file', defaultDatabasePath)
+  .option('--mode <mode>', 'Log view mode: checks or sessions', 'checks')
   .action(async (options) => {
     // Helper function to convert ISO UTC timestamp to Pacific time
     const formatTimestamp = (isoTimestamp: string): string => {
@@ -295,28 +300,53 @@ program
     try {
       const database = new ShowtimeDatabase(options.database);
       const numRuns = Number(options.runs);
-      const recentRunIds = database.getRecentRunIds(numRuns);
+      if (options.mode === 'sessions') {
+        const recentSessions = database.getRecentWorkerSessions(numRuns);
+        if (recentSessions.length === 0) {
+          console.log('No worker session logs found');
+          return;
+        }
 
-      if (recentRunIds.length === 0) {
-        console.log('No logs found');
-        return;
-      }
-
-      for (const runId of recentRunIds) {
-        const runLogs = database.getLogsByRunId(runId);
-        if (runLogs.length > 0) {
-          const [firstLog] = runLogs;
-          if (!firstLog) {
+        for (const session of recentSessions) {
+          const runLogs = database.getLogsByRunId(session.run_id);
+          if (runLogs.length === 0) {
             continue;
           }
+
           const header =
             numRuns === 1
-              ? `=== Most Recent Run (${formatTimestamp(firstLog.timestamp)} PT) ===`
-              : `\n=== Run at ${formatTimestamp(firstLog.timestamp)} PT ===`;
+              ? `=== Most Recent Worker Session (${formatTimestamp(session.started_at)} PT) ===`
+              : `\n=== Worker Session at ${formatTimestamp(session.started_at)} PT ===`;
 
           console.log(header);
+          console.log(`Run ID: ${session.run_id}`);
 
           for (const log of runLogs) {
+            console.log(log.message);
+          }
+        }
+      } else {
+        const recentChecks = database.getRecentShowtimeCheckStarts(numRuns);
+        if (recentChecks.length === 0) {
+          console.log('No showtime check logs found');
+          return;
+        }
+
+        for (const check of recentChecks) {
+          const checkLogs = database.getLogsForShowtimeCheck(
+            check.timestamp,
+            check.run_id
+          );
+
+          const header =
+            numRuns === 1
+              ? `=== Most Recent Showtime Check (${formatTimestamp(check.timestamp)} PT) ===`
+              : `\n=== Showtime Check at ${formatTimestamp(check.timestamp)} PT ===`;
+
+          console.log(header);
+          console.log(`Worker Session: ${check.run_id}`);
+
+          for (const log of checkLogs) {
             console.log(log.message);
           }
         }

@@ -110,7 +110,8 @@ export class AMCApiClient {
   }
 
   async findTheatreByName(
-    theatreNameOrSlug: string
+    theatreNameOrSlug: string,
+    signal?: AbortSignal
   ): Promise<AMCTheatre | null> {
     try {
       // Check cache first
@@ -128,7 +129,9 @@ export class AMCApiClient {
             theatre: theatreNameOrSlug,
           });
           const directResponse: AxiosResponse<AMCTheatre> =
-            await this.client.get(`/theatres/${theatreNameOrSlug}`);
+            await this.client.get(`/theatres/${theatreNameOrSlug}`, {
+              ...(signal ? { signal } : {}),
+            });
           const theatre = directResponse.data;
 
           // Cache the result
@@ -151,6 +154,7 @@ export class AMCApiClient {
         params: {
           name: theatreNameOrSlug,
         },
+        ...(signal ? { signal } : {}),
       });
 
       const theatres = response.data._embedded.theatres || [];
@@ -193,7 +197,8 @@ export class AMCApiClient {
   // Helper method to fetch movies from a specific endpoint
   private async fetchMoviesFromEndpoint(
     endpoint: string,
-    endpointName: string
+    endpointName: string,
+    signal?: AbortSignal
   ): Promise<AMCMovie[]> {
     try {
       const response: AxiosResponse<AMCApiResponse<{ movies: AMCMovie[] }>> =
@@ -201,6 +206,7 @@ export class AMCApiClient {
           params: {
             'page-size': 1000,
           },
+          ...(signal ? { signal } : {}),
         });
 
       const movies = response.data._embedded.movies || [];
@@ -228,7 +234,7 @@ export class AMCApiClient {
   }
 
   // Fetch all movies from all endpoints once per run
-  async getAllMovies(): Promise<AMCMovie[]> {
+  async getAllMovies(signal?: AbortSignal): Promise<AMCMovie[]> {
     try {
       this.info('Fetching all movies from AMC API...');
 
@@ -244,7 +250,8 @@ export class AMCApiClient {
       for (const endpoint of endpoints) {
         const movies = await this.fetchMoviesFromEndpoint(
           endpoint.path,
-          endpoint.name
+          endpoint.name,
+          signal
         );
         for (const movie of movies) {
           movieMap.set(movie.id, movie);
@@ -264,7 +271,8 @@ export class AMCApiClient {
 
   async getShowtimesForMovieAtTheatre(
     movieId: number,
-    theatreId: number
+    theatreId: number,
+    signal?: AbortSignal
   ): Promise<AMCShowtime[]> {
     try {
       this.info(
@@ -281,6 +289,7 @@ export class AMCApiClient {
           'movie-id': movieId,
           'page-size': 1000, // Get all showtimes
         },
+        ...(signal ? { signal } : {}),
       });
 
       const showtimes = response.data._embedded.showtimes || [];
