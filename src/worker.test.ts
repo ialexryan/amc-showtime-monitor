@@ -4,7 +4,11 @@ import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ShowtimeDatabase } from './database.js';
-import type { WorkerLogger, WorkerMonitorRuntime } from './worker.js';
+import type {
+  WorkerHealthcheckClient,
+  WorkerLogger,
+  WorkerMonitorRuntime,
+} from './worker.js';
 import { MonitorWorker } from './worker.js';
 
 class FakeClock {
@@ -116,6 +120,14 @@ class FakeLogger implements WorkerLogger {
 
   error(message: string): void {
     this.entries.push({ level: 'error', message });
+  }
+}
+
+class FakeHealthcheckClient implements WorkerHealthcheckClient {
+  readonly pingedUrls: string[] = [];
+
+  async ping(url: string): Promise<void> {
+    this.pingedUrls.push(url);
   }
 }
 
@@ -343,6 +355,36 @@ describe('MonitorWorker', () => {
     await clock.advance(60_000);
     await clock.settle();
     expect(monitor.checkCalls).toBe(3);
+
+    worker.stop();
+    await clock.advance(20_000);
+    await runPromise;
+  });
+
+  test('pings Healthchecks after a successful showtime check', async () => {
+    const clock = new FakeClock();
+    const monitor = new FakeMonitor(clock, [{ delayMs: 0 }]);
+    const healthcheckClient = new FakeHealthcheckClient();
+    const worker = new MonitorWorker(monitor, {
+      clock,
+      pollIntervalMs: 60_000,
+      amcCycleTimeoutMs: 120_000,
+      healthchecksPingUrl:
+        'https://hc-ping.com/935dd026-f916-4030-8fb1-8b89b6a9fc5e',
+      healthcheckClient,
+      telegramLongPollSeconds: 1,
+      heartbeatIntervalMs: 15_000,
+      leaseTtlMs: 45_000,
+    });
+
+    const runPromise = worker.run();
+    await clock.settle();
+    await clock.advance(1);
+    await clock.settle();
+
+    expect(healthcheckClient.pingedUrls).toEqual([
+      'https://hc-ping.com/935dd026-f916-4030-8fb1-8b89b6a9fc5e',
+    ]);
 
     worker.stop();
     await clock.advance(20_000);

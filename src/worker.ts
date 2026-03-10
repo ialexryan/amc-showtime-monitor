@@ -66,6 +66,8 @@ export interface WorkerClock {
 export interface MonitorWorkerOptions {
   pollIntervalMs?: number;
   amcCycleTimeoutMs?: number;
+  healthcheckClient?: WorkerHealthcheckClient;
+  healthchecksPingUrl?: string;
   telegramLongPollSeconds?: number;
   healthPort?: number;
   leaseTtlMs?: number;
@@ -94,7 +96,24 @@ export interface WorkerHealthSnapshot {
   workerState: WorkerState | null;
 }
 
+export interface WorkerHealthcheckClient {
+  ping(url: string): Promise<void>;
+}
+
 const TRANSIENT_BACKOFF_STEPS_MS = [30_000, 60_000, 120_000, 240_000, 300_000];
+
+const defaultHealthcheckClient: WorkerHealthcheckClient = {
+  async ping(url: string): Promise<void> {
+    const response = await fetch(url, {
+      method: 'GET',
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Healthchecks ping failed with HTTP ${response.status}`);
+    }
+  },
+};
 
 const defaultClock: WorkerClock = {
   now: () => new Date(),
@@ -111,6 +130,8 @@ export class MonitorWorker {
   private readonly clock: WorkerClock;
   private readonly pollIntervalMs: number;
   private readonly amcCycleTimeoutMs: number;
+  private readonly healthcheckClient: WorkerHealthcheckClient;
+  private readonly healthchecksPingUrl: string | undefined;
   private readonly telegramLongPollSeconds: number;
   private readonly healthPort: number | undefined;
   private readonly leaseTtlMs: number;
@@ -143,6 +164,9 @@ export class MonitorWorker {
     this.clock = options.clock ?? defaultClock;
     this.pollIntervalMs = options.pollIntervalMs ?? 60_000;
     this.amcCycleTimeoutMs = options.amcCycleTimeoutMs ?? 45_000;
+    this.healthcheckClient =
+      options.healthcheckClient ?? defaultHealthcheckClient;
+    this.healthchecksPingUrl = options.healthchecksPingUrl;
     this.telegramLongPollSeconds = options.telegramLongPollSeconds ?? 30;
     this.healthPort = options.healthPort;
     this.leaseTtlMs = options.leaseTtlMs ?? 45_000;
@@ -321,6 +345,7 @@ export class MonitorWorker {
         this.firstSuccessfulPoll = true;
         this.lastPollStatus = 'ok';
         transientBackoffIndex = 0;
+        await this.pingHealthchecks();
       } catch (error) {
         if (isRateLimitError(error)) {
           delayBeforeNextPollMs = 300_000;
@@ -415,6 +440,18 @@ export class MonitorWorker {
       timeoutAbortController.abort();
       requestAbortController.abort();
       signal.removeEventListener('abort', forwardAbort);
+    }
+  }
+
+  private async pingHealthchecks(): Promise<void> {
+    if (!this.healthchecksPingUrl) {
+      return;
+    }
+
+    try {
+      await this.healthcheckClient.ping(this.healthchecksPingUrl);
+    } catch (error) {
+      this.warn(`⚠️ Healthchecks ping failed: ${getErrorMessage(error)}`);
     }
   }
 

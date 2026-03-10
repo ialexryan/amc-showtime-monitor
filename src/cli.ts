@@ -45,6 +45,9 @@ program
       const monitor = new ShowtimeMonitor(config, options.database);
       const workerOptions = {
         pollIntervalMs: config.runtime.pollIntervalSeconds * 1000,
+        ...(config.runtime.healthchecksPingUrl !== undefined
+          ? { healthchecksPingUrl: config.runtime.healthchecksPingUrl }
+          : {}),
         telegramLongPollSeconds: config.runtime.telegramLongPollSeconds,
         ...(config.runtime.port !== undefined
           ? { healthPort: config.runtime.port }

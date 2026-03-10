@@ -4,6 +4,7 @@ import { ZodError, z } from 'zod';
 export const RuntimeConfigSchema = z.object({
   pollIntervalSeconds: z.coerce.number().int().positive().default(60),
   telegramLongPollSeconds: z.coerce.number().int().min(0).max(50).default(30),
+  healthchecksPingUrl: z.string().url().optional(),
   port: z.coerce.number().int().min(1).max(65535).optional(),
 });
 
@@ -53,6 +54,9 @@ export async function loadConfig(
       telegramLongPollSeconds:
         process.env.TELEGRAM_LONG_POLL_SECONDS ??
         rawConfig.runtime?.telegramLongPollSeconds,
+      healthchecksPingUrl:
+        process.env.HEALTHCHECKS_PING_URL ??
+        rawConfig.runtime?.healthchecksPingUrl,
       port: process.env.PORT ?? rawConfig.runtime?.port,
     },
   };

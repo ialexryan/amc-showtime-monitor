@@ -73,7 +73,8 @@ bun src/cli.ts telegram-setup
   "amcApiKey": "your-amc-api-key-here",
   "runtime": {
     "pollIntervalSeconds": 60,
-    "telegramLongPollSeconds": 30
+    "telegramLongPollSeconds": 30,
+    "healthchecksPingUrl": "https://hc-ping.com/your-uuid"
   }
 }
 ```
@@ -104,6 +105,7 @@ The app supports environment-only startup, which is the recommended Fly.io setup
 - `TELEGRAM_CHAT_ID`
 - optionally `POLL_INTERVAL_SECONDS`
 - optionally `TELEGRAM_LONG_POLL_SECONDS`
+- optionally `HEALTHCHECKS_PING_URL`
 
 The Fly deployment in this repo also sets:
 
@@ -112,6 +114,14 @@ The Fly deployment in this repo also sets:
 - `CONFIG_PATH=/data/config.json`
 
 If `/data/config.json` is missing, the app will still start correctly as long as the required env vars are present.
+
+### Optional external heartbeat
+
+If you use Healthchecks.io or a similar dead-man's-switch service, set:
+
+- `HEALTHCHECKS_PING_URL`
+
+The worker pings that URL after each successful showtime check. It does not ping on failed or timed-out AMC cycles, so missed pings mean the poller has stopped making forward progress.
 
 ## Usage
 
