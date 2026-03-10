@@ -46,6 +46,27 @@ export interface TelegramInlineButton {
 
 const TELEGRAM_MESSAGE_CHAR_LIMIT = 4096;
 const TELEGRAM_MESSAGE_SAFE_LIMIT = 3800;
+const TELEGRAM_FORMAT_LINE_SAFE_LIMIT = 1200;
+const PREMIUM_FORMAT_CODES = [
+  'IMAXWITHLASER3D',
+  'IMAXWITHLASERATAMC',
+  'DOLBYCINEMAATAMCPRIME',
+  'DOLBYCINEMAATAMC',
+  'IMAX',
+  'DOLBY3D',
+  'LASERATAMC',
+  'REALD3D',
+  'DBOX',
+  'DOLBYATMOS',
+];
+
+interface ShowtimeDisplayGroup {
+  dayLabel: string;
+  formatLabel: string;
+  formatSortRank: number;
+  formatSortLabel: string;
+  entries: string[];
+}
 
 export class TelegramBot {
   private client: AxiosInstance;
@@ -141,7 +162,7 @@ export class TelegramBot {
       return [];
     }
 
-    const sortedMessages = messages.sort(
+    const sortedMessages = [...messages].sort(
       (a, b) =>
         getShowtimeSortTimeMs(
           a.showDateTimeUtc,
@@ -154,30 +175,7 @@ export class TelegramBot {
           b.utcOffset
         )
     );
-
-    const showtimeLines = sortedMessages.map((msg) => {
-      const dateStr = formatShowtimeDate(
-        msg.showDateTimeUtc,
-        msg.showDateTimeLocal,
-        msg.utcOffset
-      );
-      const timeStr = formatShowtimeTime(
-        msg.showDateTimeUtc,
-        msg.showDateTimeLocal,
-        msg.utcOffset
-      );
-
-      const formatStr = this.getFormatString(msg.attributes);
-
-      let statusEmoji = '🎬';
-      if (msg.isSoldOut) statusEmoji = '❌';
-      else if (msg.isAlmostSoldOut) statusEmoji = '⚠️';
-
-      const showtimeText = `${statusEmoji} ${dateStr} ${timeStr}${formatStr ? ` - ${formatStr}` : ` - Aud ${msg.auditorium}`}`;
-      return msg.ticketUrl
-        ? `<a href="${msg.ticketUrl}">${showtimeText}</a>`
-        : showtimeText;
-    });
+    const showtimeLines = this.buildShowtimeLines(sortedMessages);
 
     const showtimeCount =
       messages.length === 1
@@ -187,9 +185,9 @@ export class TelegramBot {
     const buildHeader = (partIndex: number, partCount: number): string => {
       const partSuffix =
         partCount > 1 ? ` <i>(${partIndex + 1}/${partCount})</i>` : '';
-      return `🎬 <b>${showtimeCount} for ${movieName}!${partSuffix}</b>
+      return `🎬 <b>${this.escapeHtml(showtimeCount)} for ${this.escapeHtml(movieName)}!${partSuffix}</b>
 
-🏛️ ${firstMessage.theatreName}
+🏛️ ${this.escapeHtml(firstMessage.theatreName)}
 
 `;
     };
@@ -228,26 +226,168 @@ export class TelegramBot {
     });
   }
 
+  private buildShowtimeLines(messages: TelegramMessage[]): string[] {
+    const dayGroups = new Map<string, Map<string, ShowtimeDisplayGroup>>();
+
+    for (const message of messages) {
+      const dayLabel = formatShowtimeDate(
+        message.showDateTimeUtc,
+        message.showDateTimeLocal,
+        message.utcOffset
+      );
+      const timeLabel = formatShowtimeTime(
+        message.showDateTimeUtc,
+        message.showDateTimeLocal,
+        message.utcOffset
+      );
+      const formatGroup = this.getFormatGroup(message);
+      const dayGroup = dayGroups.get(dayLabel) ?? new Map();
+      if (!dayGroups.has(dayLabel)) {
+        dayGroups.set(dayLabel, dayGroup);
+      }
+
+      const existingGroup = dayGroup.get(formatGroup.label);
+      if (existingGroup) {
+        existingGroup.entries.push(
+          this.formatShowtimeToken(message, timeLabel)
+        );
+        continue;
+      }
+
+      dayGroup.set(formatGroup.label, {
+        dayLabel,
+        formatLabel: formatGroup.label,
+        formatSortRank: formatGroup.sortRank,
+        formatSortLabel: formatGroup.sortLabel,
+        entries: [this.formatShowtimeToken(message, timeLabel)],
+      });
+    }
+
+    const lines: string[] = [];
+    for (const [dayLabel, formatGroups] of dayGroups.entries()) {
+      if (lines.length > 0) {
+        lines.push('');
+      }
+
+      lines.push(`<b>${this.escapeHtml(dayLabel)}</b>`);
+      const sortedFormats = Array.from(formatGroups.values()).sort((a, b) => {
+        if (a.formatSortRank !== b.formatSortRank) {
+          return a.formatSortRank - b.formatSortRank;
+        }
+
+        return a.formatSortLabel.localeCompare(b.formatSortLabel, undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        });
+      });
+
+      for (const formatGroup of sortedFormats) {
+        lines.push(
+          ...this.buildFormatLines(formatGroup.formatLabel, formatGroup.entries)
+        );
+      }
+    }
+
+    return lines;
+  }
+
+  private buildFormatLines(formatLabel: string, entries: string[]): string[] {
+    const prefix = `${this.escapeHtml(formatLabel)}: `;
+    const lines: string[] = [];
+    let currentEntries: string[] = [];
+
+    for (const entry of entries) {
+      const tentativeEntries = [...currentEntries, entry];
+      const tentativeLine = `${prefix}${tentativeEntries.join(', ')}`;
+      if (
+        tentativeLine.length > TELEGRAM_FORMAT_LINE_SAFE_LIMIT &&
+        currentEntries.length > 0
+      ) {
+        lines.push(`${prefix}${currentEntries.join(', ')}`);
+        currentEntries = [entry];
+        continue;
+      }
+
+      currentEntries.push(entry);
+    }
+
+    if (currentEntries.length > 0) {
+      lines.push(`${prefix}${currentEntries.join(', ')}`);
+    }
+
+    return lines;
+  }
+
+  private formatShowtimeToken(
+    message: TelegramMessage,
+    timeLabel: string
+  ): string {
+    const escapedTime = this.escapeHtml(timeLabel);
+    const linkedTime = message.ticketUrl
+      ? `<a href="${this.escapeHtmlAttribute(message.ticketUrl)}">${escapedTime}</a>`
+      : escapedTime;
+
+    if (message.isSoldOut) {
+      return `❌ ${linkedTime}`;
+    }
+
+    if (message.isAlmostSoldOut) {
+      return `⚠️ ${linkedTime}`;
+    }
+
+    return linkedTime;
+  }
+
+  private getFormatGroup(
+    message: Pick<TelegramMessage, 'attributes' | 'auditorium'>
+  ): { label: string; sortRank: number; sortLabel: string } {
+    const formatLabel = this.getFormatString(message.attributes);
+    if (formatLabel) {
+      const matchedPremiumIndex = this.getPremiumFormatIndex(
+        message.attributes
+      );
+      const sortRank =
+        matchedPremiumIndex >= 0
+          ? matchedPremiumIndex
+          : PREMIUM_FORMAT_CODES.length;
+      return {
+        label: formatLabel,
+        sortRank,
+        sortLabel: formatLabel,
+      };
+    }
+
+    const fallbackLabel = `Aud ${message.auditorium}`;
+    return {
+      label: fallbackLabel,
+      sortRank: PREMIUM_FORMAT_CODES.length + 1,
+      sortLabel: fallbackLabel,
+    };
+  }
+
+  private getPremiumFormatIndex(
+    attributes: Array<{ code: string; name: string }>
+  ): number {
+    for (const [index, format] of PREMIUM_FORMAT_CODES.entries()) {
+      const found = attributes.find(
+        (attr) => attr.code.toUpperCase() === format
+      );
+      if (found) {
+        return index;
+      }
+    }
+
+    return -1;
+  }
+
   private getFormatString(
     attributes: Array<{ code: string; name: string }>
   ): string {
-    // Priority order for premium formats (most premium first)
-    const premiumFormats = [
-      'IMAXWITHLASER3D',
-      'IMAXWITHLASERATAMC',
-      'DOLBYCINEMAATAMCPRIME',
-      'DOLBYCINEMAATAMC',
-      'IMAX',
-      'DOLBY3D',
-      'LASERATAMC',
-      'REALD3D',
-      'DBOX',
-      'DOLBYATMOS',
-    ];
-
-    for (const format of premiumFormats) {
+    const premiumFormatIndex = this.getPremiumFormatIndex(attributes);
+    if (premiumFormatIndex >= 0) {
+      const premiumCode = PREMIUM_FORMAT_CODES[premiumFormatIndex];
       const found = attributes.find(
-        (attr) => attr.code.toUpperCase() === format
+        (attr) => attr.code.toUpperCase() === premiumCode
       );
       if (found) {
         return found.name.replace(/ at AMC$/, '');
@@ -269,6 +409,19 @@ export class TelegramBot {
     }
 
     return '';
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  private escapeHtmlAttribute(value: string): string {
+    return this.escapeHtml(value);
   }
 
   // Test the connection and get bot info
