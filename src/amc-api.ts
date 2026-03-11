@@ -77,6 +77,7 @@ export interface AMCApiResponse<T> {
 export class AMCApiClient {
   private client: AxiosInstance;
   private theatreCache = new Map<string, AMCTheatre>();
+  private readonly requestTimeoutMs = 10_000;
 
   constructor(
     apiKey: string,
@@ -89,7 +90,7 @@ export class AMCApiClient {
         'User-Agent': 'AMC-Showtime-Monitor/1.0',
         Accept: 'application/json',
       },
-      timeout: 10000, // 10 second timeout
+      timeout: this.requestTimeoutMs,
     });
 
     // Add response interceptor for error handling
@@ -200,32 +201,55 @@ export class AMCApiClient {
     endpointName: string,
     signal?: AbortSignal
   ): Promise<AMCMovie[]> {
+    const startedAt = Date.now();
+    const { signal: requestSignal, timeoutSignal } =
+      this.createRequestSignals(signal);
+
     try {
+      this.info(`Fetching ${endpointName} movies from AMC API...`, {
+        data: {
+          endpoint,
+          endpointName,
+          timeoutMs: this.requestTimeoutMs,
+        },
+      });
+
       const response: AxiosResponse<AMCApiResponse<{ movies: AMCMovie[] }>> =
         await this.client.get(endpoint, {
           params: {
             'page-size': 1000,
           },
-          ...(signal ? { signal } : {}),
+          signal: requestSignal,
         });
 
       const movies = response.data._embedded.movies || [];
-      this.info(`Found ${movies.length} ${endpointName} movies`, {
-        data: {
-          endpoint,
-          endpointName,
-          count: movies.length,
-        },
-      });
+      const durationMs = Date.now() - startedAt;
+      this.info(
+        `Found ${movies.length} ${endpointName} movies in ${durationMs}ms`,
+        {
+          data: {
+            endpoint,
+            endpointName,
+            count: movies.length,
+            durationMs,
+          },
+        }
+      );
       return movies;
     } catch (error) {
-      const message = getErrorMessage(error);
+      const durationMs = Date.now() - startedAt;
+      const timedOut = timeoutSignal.aborted && !signal?.aborted;
+      const message = timedOut
+        ? `request timed out after ${durationMs}ms`
+        : getErrorMessage(error);
       this.warn(
         `Error fetching ${endpointName} movies (continuing with other searches): ${message}`,
         {
           data: {
             endpoint,
             endpointName,
+            durationMs,
+            timedOut,
           },
         }
       );
@@ -235,6 +259,7 @@ export class AMCApiClient {
 
   // Fetch all movies from all endpoints once per run
   async getAllMovies(signal?: AbortSignal): Promise<AMCMovie[]> {
+    const startedAt = Date.now();
     try {
       this.info('Fetching all movies from AMC API...');
 
@@ -247,24 +272,35 @@ export class AMCApiClient {
         { path: '/movies/views/coming-soon', name: 'coming-soon' },
       ];
 
-      for (const endpoint of endpoints) {
-        const movies = await this.fetchMoviesFromEndpoint(
-          endpoint.path,
-          endpoint.name,
-          signal
-        );
+      const endpointResults = await Promise.all(
+        endpoints.map((endpoint) =>
+          this.fetchMoviesFromEndpoint(endpoint.path, endpoint.name, signal)
+        )
+      );
+
+      for (const movies of endpointResults) {
         for (const movie of movies) {
           movieMap.set(movie.id, movie);
         }
       }
 
       const allMovies = Array.from(movieMap.values());
-      this.info(`Total unique movies: ${allMovies.length}`, {
-        data: { count: allMovies.length },
-      });
+      this.info(
+        `Total unique movies: ${allMovies.length} (fetched in ${Date.now() - startedAt}ms)`,
+        {
+          data: {
+            count: allMovies.length,
+            durationMs: Date.now() - startedAt,
+          },
+        }
+      );
       return allMovies;
     } catch (error) {
-      this.error(`Error fetching all movies: ${getErrorMessage(error)}`);
+      this.error(`Error fetching all movies: ${getErrorMessage(error)}`, {
+        data: {
+          durationMs: Date.now() - startedAt,
+        },
+      });
       throw error;
     }
   }
@@ -274,11 +310,19 @@ export class AMCApiClient {
     theatreId: number,
     signal?: AbortSignal
   ): Promise<AMCShowtime[]> {
+    const startedAt = Date.now();
+    const { signal: requestSignal, timeoutSignal } =
+      this.createRequestSignals(signal);
+
     try {
       this.info(
         `Getting showtimes for movie ${movieId} at theatre ${theatreId}`,
         {
-          data: { movieId, theatreId },
+          data: {
+            movieId,
+            theatreId,
+            timeoutMs: this.requestTimeoutMs,
+          },
         }
       );
 
@@ -289,15 +333,17 @@ export class AMCApiClient {
           'movie-id': movieId,
           'page-size': 1000, // Get all showtimes
         },
-        ...(signal ? { signal } : {}),
+        signal: requestSignal,
       });
 
       const showtimes = response.data._embedded.showtimes || [];
-      this.info(`Found ${showtimes.length} showtimes`, {
+      const durationMs = Date.now() - startedAt;
+      this.info(`Found ${showtimes.length} showtimes in ${durationMs}ms`, {
         data: {
           movieId,
           theatreId,
           count: showtimes.length,
+          durationMs,
         },
       });
 
@@ -313,21 +359,27 @@ export class AMCApiClient {
           movieId,
           theatreId,
           count: futureShowtimes.length,
+          durationMs,
         },
       });
       return futureShowtimes;
     } catch (error) {
+      const durationMs = Date.now() - startedAt;
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         this.info(
-          `No showtimes available for movie ${movieId} at theatre ${theatreId}`,
+          `No showtimes available for movie ${movieId} at theatre ${theatreId} (${durationMs}ms)`,
           {
-            data: { movieId, theatreId },
+            data: { movieId, theatreId, durationMs },
           }
         );
         return [];
       }
-      this.error(`Error getting showtimes: ${getErrorMessage(error)}`, {
-        data: { movieId, theatreId },
+      const timedOut = timeoutSignal.aborted && !signal?.aborted;
+      const message = timedOut
+        ? `request timed out after ${durationMs}ms`
+        : getErrorMessage(error);
+      this.error(`Error getting showtimes: ${message}`, {
+        data: { movieId, theatreId, durationMs, timedOut },
       });
       throw error;
     }
@@ -361,5 +413,16 @@ export class AMCApiClient {
       return;
     }
     console.error(message);
+  }
+
+  private createRequestSignals(signal?: AbortSignal): {
+    signal: AbortSignal;
+    timeoutSignal: AbortSignal;
+  } {
+    const timeoutSignal = AbortSignal.timeout(this.requestTimeoutMs);
+    return {
+      signal: signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal,
+      timeoutSignal,
+    };
   }
 }
