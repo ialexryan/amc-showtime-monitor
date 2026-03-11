@@ -77,7 +77,7 @@ export interface AMCApiResponse<T> {
 export class AMCApiClient {
   private client: AxiosInstance;
   private theatreCache = new Map<string, AMCTheatre>();
-  private readonly requestTimeoutMs = 10_000;
+  private readonly requestTimeoutMs = 5_000;
 
   constructor(
     apiKey: string,
@@ -381,7 +381,7 @@ export class AMCApiClient {
       this.error(`Error getting showtimes: ${message}`, {
         data: { movieId, theatreId, durationMs, timedOut },
       });
-      throw error;
+      throw timedOut ? new Error(message) : error;
     }
   }
 
