@@ -1,5 +1,22 @@
 import axios from 'axios';
 
+export class HttpStatusError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string = `HTTP ${status}`
+  ) {
+    super(message);
+    this.name = 'HttpStatusError';
+  }
+}
+
+export class RequestTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`request timed out after ${timeoutMs}ms`);
+    this.name = 'RequestTimeoutError';
+  }
+}
+
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const responseData = error.response?.data;
@@ -63,6 +80,10 @@ export function isRateLimitError(error: unknown): boolean {
 export function isTransientError(error: unknown): boolean {
   if (isAbortError(error)) {
     return false;
+  }
+
+  if (error instanceof HttpStatusError) {
+    return error.status >= 500;
   }
 
   if (axios.isAxiosError(error)) {

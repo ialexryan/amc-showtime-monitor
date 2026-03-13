@@ -1,5 +1,8 @@
-import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import { getErrorMessage } from './errors.js';
+import {
+  getErrorMessage,
+  HttpStatusError,
+  RequestTimeoutError,
+} from './errors.js';
 
 interface AMCApiLogOptions {
   movie?: string;
@@ -74,40 +77,22 @@ export interface AMCApiResponse<T> {
   _embedded: T;
 }
 
+const AMC_API_BASE_URL = 'https://api.amctheatres.com/v2';
+
 export class AMCApiClient {
-  private client: AxiosInstance;
-  private theatreCache = new Map<string, AMCTheatre>();
+  private readonly theatreCache = new Map<string, AMCTheatre>();
   private readonly requestTimeoutMs = 5_000;
+  private readonly requestHeaders: Record<string, string>;
 
   constructor(
     apiKey: string,
     private logger?: AMCApiLogger
   ) {
-    this.client = axios.create({
-      baseURL: 'https://api.amctheatres.com/v2',
-      headers: {
-        'X-AMC-Vendor-Key': apiKey,
-        'User-Agent': 'AMC-Showtime-Monitor/1.0',
-        Accept: 'application/json',
-      },
-      timeout: this.requestTimeoutMs,
-    });
-
-    // Add response interceptor for error handling
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 429) {
-          throw new Error(
-            'Rate limited by AMC API. Please reduce polling frequency.'
-          );
-        }
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          throw new Error('Invalid AMC API key or access denied.');
-        }
-        throw error;
-      }
-    );
+    this.requestHeaders = {
+      'X-AMC-Vendor-Key': apiKey,
+      'User-Agent': 'AMC-Showtime-Monitor/1.0',
+      Accept: 'application/json',
+    };
   }
 
   async findTheatreByName(
@@ -115,27 +100,26 @@ export class AMCApiClient {
     signal?: AbortSignal
   ): Promise<AMCTheatre | null> {
     try {
-      // Check cache first
       const cached = this.theatreCache.get(theatreNameOrSlug.toLowerCase());
-      if (cached) return cached;
+      if (cached) {
+        return cached;
+      }
 
       this.info(`Looking up theatre: ${theatreNameOrSlug}`, {
         theatre: theatreNameOrSlug,
       });
 
-      // If it looks like a slug (contains hyphens and no spaces), try direct lookup first
       if (theatreNameOrSlug.includes('-') && !theatreNameOrSlug.includes(' ')) {
         try {
           this.info(`Attempting direct slug lookup: ${theatreNameOrSlug}`, {
             theatre: theatreNameOrSlug,
           });
-          const directResponse: AxiosResponse<AMCTheatre> =
-            await this.client.get(`/theatres/${theatreNameOrSlug}`, {
-              ...(signal ? { signal } : {}),
-            });
-          const theatre = directResponse.data;
+          const theatre = await this.fetchJson<AMCTheatre>(
+            `/theatres/${theatreNameOrSlug}`,
+            undefined,
+            signal
+          );
 
-          // Cache the result
           this.theatreCache.set(theatreNameOrSlug.toLowerCase(), theatre);
           return theatre;
         } catch {
@@ -145,31 +129,30 @@ export class AMCApiClient {
         }
       }
 
-      // Use AMC's name search parameter
       this.info(`Searching by name: ${theatreNameOrSlug}`, {
         theatre: theatreNameOrSlug,
       });
-      const response: AxiosResponse<
+      const response = await this.fetchJson<
         AMCApiResponse<{ theatres: AMCTheatre[] }>
-      > = await this.client.get('/theatres', {
-        params: {
+      >(
+        '/theatres',
+        {
           name: theatreNameOrSlug,
         },
-        ...(signal ? { signal } : {}),
-      });
+        signal
+      );
 
-      const theatres = response.data._embedded.theatres || [];
+      const theatres = response._embedded.theatres || [];
       this.info(`Found ${theatres.length} theatres matching name search`, {
         theatre: theatreNameOrSlug,
         data: { count: theatres.length },
       });
 
       if (theatres.length > 0) {
-        // Prefer exact matches, fall back to first result
         const exactMatch = theatres.find(
-          (t) =>
-            t.name.toLowerCase() === theatreNameOrSlug.toLowerCase() ||
-            t.longName.toLowerCase() === theatreNameOrSlug.toLowerCase()
+          (theatre) =>
+            theatre.name.toLowerCase() === theatreNameOrSlug.toLowerCase() ||
+            theatre.longName.toLowerCase() === theatreNameOrSlug.toLowerCase()
         );
 
         const selectedTheatre = exactMatch ?? theatres[0];
@@ -179,6 +162,7 @@ export class AMCApiClient {
           });
           return null;
         }
+
         this.theatreCache.set(theatreNameOrSlug.toLowerCase(), selectedTheatre);
         return selectedTheatre;
       }
@@ -195,15 +179,12 @@ export class AMCApiClient {
     }
   }
 
-  // Helper method to fetch movies from a specific endpoint
   private async fetchMoviesFromEndpoint(
     endpoint: string,
     endpointName: string,
     signal?: AbortSignal
   ): Promise<AMCMovie[]> {
     const startedAt = Date.now();
-    const { signal: requestSignal, timeoutSignal } =
-      this.createRequestSignals(signal);
 
     try {
       this.info(`Fetching ${endpointName} movies from AMC API...`, {
@@ -214,15 +195,17 @@ export class AMCApiClient {
         },
       });
 
-      const response: AxiosResponse<AMCApiResponse<{ movies: AMCMovie[] }>> =
-        await this.client.get(endpoint, {
-          params: {
-            'page-size': 1000,
-          },
-          signal: requestSignal,
-        });
+      const response = await this.fetchJson<
+        AMCApiResponse<{ movies: AMCMovie[] }>
+      >(
+        endpoint,
+        {
+          'page-size': 1000,
+        },
+        signal
+      );
 
-      const movies = response.data._embedded.movies || [];
+      const movies = response._embedded.movies || [];
       const durationMs = Date.now() - startedAt;
       this.info(
         `Found ${movies.length} ${endpointName} movies in ${durationMs}ms`,
@@ -238,10 +221,11 @@ export class AMCApiClient {
       return movies;
     } catch (error) {
       const durationMs = Date.now() - startedAt;
-      const timedOut = timeoutSignal.aborted && !signal?.aborted;
-      const message = timedOut
-        ? `request timed out after ${durationMs}ms`
-        : getErrorMessage(error);
+      const timedOut = error instanceof RequestTimeoutError;
+      const message =
+        timedOut && error instanceof RequestTimeoutError
+          ? `request timed out after ${durationMs}ms`
+          : getErrorMessage(error);
       this.warn(
         `Error fetching ${endpointName} movies (continuing with other searches): ${message}`,
         {
@@ -257,15 +241,12 @@ export class AMCApiClient {
     }
   }
 
-  // Fetch all movies from all endpoints once per run
   async getAllMovies(signal?: AbortSignal): Promise<AMCMovie[]> {
     const startedAt = Date.now();
     try {
       this.info('Fetching all movies from AMC API...');
 
       const movieMap = new Map<number, AMCMovie>();
-
-      // Fetch movies from all endpoints
       const endpoints = [
         { path: '/movies/views/advance', name: 'advance' },
         { path: '/movies/views/now-playing', name: 'now-playing' },
@@ -285,12 +266,13 @@ export class AMCApiClient {
       }
 
       const allMovies = Array.from(movieMap.values());
+      const durationMs = Date.now() - startedAt;
       this.info(
-        `Total unique movies: ${allMovies.length} (fetched in ${Date.now() - startedAt}ms)`,
+        `Total unique movies: ${allMovies.length} (fetched in ${durationMs}ms)`,
         {
           data: {
             count: allMovies.length,
-            durationMs: Date.now() - startedAt,
+            durationMs,
           },
         }
       );
@@ -311,8 +293,6 @@ export class AMCApiClient {
     signal?: AbortSignal
   ): Promise<AMCShowtime[]> {
     const startedAt = Date.now();
-    const { signal: requestSignal, timeoutSignal } =
-      this.createRequestSignals(signal);
 
     try {
       this.info(
@@ -326,17 +306,18 @@ export class AMCApiClient {
         }
       );
 
-      const response: AxiosResponse<
+      const response = await this.fetchJson<
         AMCApiResponse<{ showtimes: AMCShowtime[] }>
-      > = await this.client.get(`/theatres/${theatreId}/showtimes`, {
-        params: {
+      >(
+        `/theatres/${theatreId}/showtimes`,
+        {
           'movie-id': movieId,
-          'page-size': 1000, // Get all showtimes
+          'page-size': 1000,
         },
-        signal: requestSignal,
-      });
+        signal
+      );
 
-      const showtimes = response.data._embedded.showtimes || [];
+      const showtimes = response._embedded.showtimes || [];
       const durationMs = Date.now() - startedAt;
       this.info(`Found ${showtimes.length} showtimes in ${durationMs}ms`, {
         data: {
@@ -347,7 +328,6 @@ export class AMCApiClient {
         },
       });
 
-      // Filter out past showtimes (only future ones)
       const now = new Date();
       const futureShowtimes = showtimes.filter((showtime) => {
         const showDate = new Date(showtime.showDateTimeUtc);
@@ -365,7 +345,7 @@ export class AMCApiClient {
       return futureShowtimes;
     } catch (error) {
       const durationMs = Date.now() - startedAt;
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
+      if (error instanceof HttpStatusError && error.status === 404) {
         this.info(
           `No showtimes available for movie ${movieId} at theatre ${theatreId} (${durationMs}ms)`,
           {
@@ -374,21 +354,90 @@ export class AMCApiClient {
         );
         return [];
       }
-      const timedOut = timeoutSignal.aborted && !signal?.aborted;
-      const message = timedOut
-        ? `request timed out after ${durationMs}ms`
-        : getErrorMessage(error);
+
+      const timedOut = error instanceof RequestTimeoutError;
+      const message =
+        timedOut && error instanceof RequestTimeoutError
+          ? `request timed out after ${durationMs}ms`
+          : getErrorMessage(error);
       this.error(`Error getting showtimes: ${message}`, {
         data: { movieId, theatreId, durationMs, timedOut },
       });
-      throw timedOut ? new Error(message) : error;
+      throw timedOut ? new RequestTimeoutError(durationMs) : error;
     }
   }
 
-  // Generate ticket purchase URL for a showtime
   generateTicketUrl(showtime: AMCShowtime): string {
-    // AMC's direct showtime ticket URL format
     return `https://www.amctheatres.com/showtimes/${showtime.id}/seats`;
+  }
+
+  private async fetchJson<T>(
+    path: string,
+    params?: Record<string, string | number>,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const { requestSignal, timeoutSignal } = this.createRequestSignals(signal);
+    const url = new URL(path, AMC_API_BASE_URL);
+
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        url.searchParams.set(key, String(value));
+      }
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: this.requestHeaders,
+        signal: requestSignal,
+      });
+    } catch (error) {
+      if (timeoutSignal.aborted && !signal?.aborted) {
+        throw new RequestTimeoutError(this.requestTimeoutMs);
+      }
+      throw error;
+    }
+
+    if (response.status === 429) {
+      throw new Error(
+        'Rate limited by AMC API. Please reduce polling frequency.'
+      );
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('Invalid AMC API key or access denied.');
+    }
+
+    if (!response.ok) {
+      throw new HttpStatusError(
+        response.status,
+        `AMC API request failed with HTTP ${response.status}`
+      );
+    }
+
+    try {
+      return (await response.json()) as T;
+    } catch (error) {
+      if (timeoutSignal.aborted && !signal?.aborted) {
+        throw new RequestTimeoutError(this.requestTimeoutMs);
+      }
+      throw new Error(
+        `Failed to parse AMC API response: ${getErrorMessage(error)}`
+      );
+    }
+  }
+
+  private createRequestSignals(signal?: AbortSignal): {
+    requestSignal: AbortSignal;
+    timeoutSignal: AbortSignal;
+  } {
+    const timeoutSignal = AbortSignal.timeout(this.requestTimeoutMs);
+    return {
+      requestSignal: signal
+        ? AbortSignal.any([signal, timeoutSignal])
+        : timeoutSignal,
+      timeoutSignal,
+    };
   }
 
   private info(message: string, options?: AMCApiLogOptions): void {
@@ -413,16 +462,5 @@ export class AMCApiClient {
       return;
     }
     console.error(message);
-  }
-
-  private createRequestSignals(signal?: AbortSignal): {
-    signal: AbortSignal;
-    timeoutSignal: AbortSignal;
-  } {
-    const timeoutSignal = AbortSignal.timeout(this.requestTimeoutMs);
-    return {
-      signal: signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal,
-      timeoutSignal,
-    };
   }
 }
