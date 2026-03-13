@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 export class HttpStatusError extends Error {
   constructor(
     public readonly status: number,
@@ -18,20 +16,13 @@ export class RequestTimeoutError extends Error {
 }
 
 export function getErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const responseData = error.response?.data;
-    const description =
-      typeof responseData?.description === 'string'
-        ? responseData.description
-        : undefined;
-
-    if (description) {
-      return description;
-    }
-
-    if (error.message) {
-      return error.message;
-    }
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'description' in error &&
+    typeof error.description === 'string'
+  ) {
+    return error.description;
   }
 
   if (error instanceof Error) {
@@ -59,16 +50,12 @@ export function isAbortError(error: unknown): boolean {
     return true;
   }
 
-  if (axios.isAxiosError(error)) {
-    return error.code === 'ERR_CANCELED';
-  }
-
   return error instanceof Error && error.name === 'AbortError';
 }
 
 export function isRateLimitError(error: unknown): boolean {
-  if (axios.isAxiosError(error)) {
-    return error.response?.status === 429;
+  if (error instanceof HttpStatusError) {
+    return error.status === 429;
   }
 
   return (
@@ -84,14 +71,6 @@ export function isTransientError(error: unknown): boolean {
 
   if (error instanceof HttpStatusError) {
     return error.status >= 500;
-  }
-
-  if (axios.isAxiosError(error)) {
-    if (!error.response) {
-      return true;
-    }
-
-    return error.response.status >= 500;
   }
 
   if (!(error instanceof Error)) {

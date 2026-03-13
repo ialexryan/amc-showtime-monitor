@@ -1,21 +1,68 @@
 import { describe, expect, test } from 'bun:test';
 import { TelegramBot, type TelegramMessage } from './telegram.js';
 
+function createTelegramFetchStub(sentMessages: string[]): typeof fetch {
+  return (async (_input, init) => {
+    const bodyText =
+      typeof init?.body === 'string'
+        ? init.body
+        : init?.body instanceof Uint8Array
+          ? new TextDecoder().decode(init.body)
+          : '{}';
+    const payload = JSON.parse(bodyText) as { text: string };
+    sentMessages.push(payload.text);
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        result: { message_id: sentMessages.length },
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }
+    );
+  }) as typeof fetch;
+}
+
 describe('TelegramBot notification chunking', () => {
+  test('preserves Telegram error descriptions on non-2xx responses', async () => {
+    const bot = new TelegramBot('test-token', '123', undefined, undefined, {
+      fetchImpl: (async () =>
+        new Response(
+          JSON.stringify({
+            ok: false,
+            description: 'Bad Request: message is too long',
+          }),
+          {
+            status: 400,
+            headers: { 'content-type': 'application/json' },
+          }
+        )) as unknown as typeof fetch,
+    });
+
+    await expect(
+      bot.sendMovieNotification('The Super Mario Galaxy Movie', [
+        {
+          movieName: 'The Super Mario Galaxy Movie',
+          theatreName: 'AMC Metreon 16',
+          showDateTimeUtc: '2026-04-01T14:00:00Z',
+          showDateTimeLocal: '2026-04-01T07:00:00',
+          utcOffset: '-07:00',
+          auditorium: 1,
+          attributes: [],
+          ticketUrl: 'https://example.com/imax-1',
+          isSoldOut: false,
+          isAlmostSoldOut: false,
+        },
+      ])
+    ).rejects.toThrow(/message is too long/i);
+  });
+
   test('groups showtimes by day and premium format with only the times linked', async () => {
     const sentMessages: string[] = [];
-    const bot = new TelegramBot('test-token', '123');
-    (
-      bot as unknown as {
-        client: {
-          post: (path: string, payload: { text: string }) => Promise<void>;
-        };
-      }
-    ).client = {
-      post: async (_path: string, payload: { text: string }) => {
-        sentMessages.push(payload.text);
-      },
-    };
+    const bot = new TelegramBot('test-token', '123', undefined, undefined, {
+      fetchImpl: createTelegramFetchStub(sentMessages),
+    });
 
     const messages: TelegramMessage[] = [
       {
@@ -133,18 +180,9 @@ describe('TelegramBot notification chunking', () => {
 
   test('splits large movie notifications into multiple messages', async () => {
     const sentMessages: string[] = [];
-    const bot = new TelegramBot('test-token', '123');
-    (
-      bot as unknown as {
-        client: {
-          post: (path: string, payload: { text: string }) => Promise<void>;
-        };
-      }
-    ).client = {
-      post: async (_path: string, payload: { text: string }) => {
-        sentMessages.push(payload.text);
-      },
-    };
+    const bot = new TelegramBot('test-token', '123', undefined, undefined, {
+      fetchImpl: createTelegramFetchStub(sentMessages),
+    });
 
     const messages: TelegramMessage[] = Array.from(
       { length: 120 },

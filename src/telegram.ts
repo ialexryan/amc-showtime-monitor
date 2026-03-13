@@ -1,6 +1,9 @@
-import axios, { type AxiosInstance } from 'axios';
 import type { ShowtimeDatabase } from './database.js';
-import { getErrorMessage } from './errors.js';
+import {
+  getErrorMessage,
+  HttpStatusError,
+  RequestTimeoutError,
+} from './errors.js';
 import type { Logger } from './logger.js';
 import {
   formatShowtimeDate,
@@ -44,6 +47,25 @@ export interface TelegramInlineButton {
   callbackData: string;
 }
 
+interface TelegramBotOptions {
+  baseUrl?: string;
+  fetchImpl?: typeof fetch;
+}
+
+interface TelegramApiEnvelope<T> {
+  ok: boolean;
+  result?: T;
+  description?: string;
+}
+
+interface ShowtimeDisplayGroup {
+  dayLabel: string;
+  formatLabel: string;
+  formatSortRank: number;
+  formatSortLabel: string;
+  entries: string[];
+}
+
 const TELEGRAM_MESSAGE_CHAR_LIMIT = 4096;
 const TELEGRAM_MESSAGE_SAFE_LIMIT = 3800;
 const TELEGRAM_FORMAT_LINE_SAFE_LIMIT = 1200;
@@ -60,31 +82,22 @@ const PREMIUM_FORMAT_CODES = [
   'DOLBYATMOS',
 ];
 
-interface ShowtimeDisplayGroup {
-  dayLabel: string;
-  formatLabel: string;
-  formatSortRank: number;
-  formatSortLabel: string;
-  entries: string[];
-}
-
 export class TelegramBot {
-  private client: AxiosInstance;
   private lastUpdateId: number = 0;
   private readonly defaultTimeoutMs = 10_000;
+  private readonly baseUrl: string;
+  private readonly fetchImpl: typeof fetch;
 
   constructor(
     botToken: string,
     private chatId: string,
     private database?: ShowtimeDatabase,
-    private logger?: Logger
+    private logger?: Logger,
+    options: TelegramBotOptions = {}
   ) {
-    this.client = axios.create({
-      baseURL: `https://api.telegram.org/bot${botToken}`,
-      timeout: this.defaultTimeoutMs,
-    });
+    this.baseUrl = options.baseUrl ?? `https://api.telegram.org/bot${botToken}`;
+    this.fetchImpl = options.fetchImpl ?? fetch;
 
-    // Load last update ID from database
     if (this.database) {
       const lastId = this.database.getBotState('last_update_id');
       this.lastUpdateId = lastId ? parseInt(lastId, 10) : 0;
@@ -99,7 +112,6 @@ export class TelegramBot {
     for (const [movieName, movieMessages] of movieGroups) {
       await this.sendMovieNotification(movieName, movieMessages);
 
-      // Small delay between messages to avoid rate limiting
       if (movieGroups.size > 1) {
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
@@ -117,11 +129,14 @@ export class TelegramBot {
 
     try {
       for (const batchMessage of batchMessages) {
-        await this.client.post('/sendMessage', {
-          chat_id: this.chatId,
-          text: batchMessage,
-          parse_mode: 'HTML',
-          disable_web_page_preview: true,
+        await this.callTelegramApi('/sendMessage', {
+          method: 'POST',
+          body: {
+            chat_id: this.chatId,
+            text: batchMessage,
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
+          },
         });
       }
 
@@ -394,7 +409,6 @@ export class TelegramBot {
       }
     }
 
-    // Look for other notable premium attributes
     const otherFormats = attributes.filter(
       (attr) =>
         attr.code.includes('PREMIUM') ||
@@ -424,13 +438,12 @@ export class TelegramBot {
     return this.escapeHtml(value);
   }
 
-  // Test the connection and get bot info
   async testConnection(): Promise<boolean> {
     try {
-      const response = await this.client.get('/getMe');
-      this.logger?.info(
-        `✅ Telegram bot connected: ${response.data.result.username}`
+      const response = await this.callTelegramApi<{ username: string }>(
+        '/getMe'
       );
+      this.logger?.info(`✅ Telegram bot connected: ${response.username}`);
       return true;
     } catch (error) {
       const message = getErrorMessage(error);
@@ -439,7 +452,6 @@ export class TelegramBot {
     }
   }
 
-  // Send a test message
   async sendTestMessage(): Promise<void> {
     const testMessage = `🤖 <b>AMC Showtime Monitor Test</b>
 
@@ -448,10 +460,13 @@ This is a test message to verify your Telegram bot is working correctly.
 Time: ${new Date().toLocaleString()}`;
 
     try {
-      await this.client.post('/sendMessage', {
-        chat_id: this.chatId,
-        text: testMessage,
-        parse_mode: 'HTML',
+      await this.callTelegramApi('/sendMessage', {
+        method: 'POST',
+        body: {
+          chat_id: this.chatId,
+          text: testMessage,
+          parse_mode: 'HTML',
+        },
       });
 
       this.logger?.info('✅ Test message sent successfully');
@@ -470,32 +485,52 @@ Time: ${new Date().toLocaleString()}`;
       this.defaultTimeoutMs,
       (longPollTimeoutSeconds + 10) * 1000
     );
-    const requestConfig = {
+
+    const updateRequestOptions: {
+      params: Record<string, string | number | boolean | string[]>;
+      timeoutMs: number;
+      signal?: AbortSignal;
+    } = {
       params: {
         offset: this.lastUpdateId + 1,
         limit: 20,
         timeout: longPollTimeoutSeconds,
         allowed_updates: ['message', 'callback_query'],
       },
-      timeout: requestTimeoutMs,
-      ...(options.signal ? { signal: options.signal } : {}),
+      timeoutMs: requestTimeoutMs,
     };
+    if (options.signal) {
+      updateRequestOptions.signal = options.signal;
+    }
 
-    const response = await this.client.get('/getUpdates', requestConfig);
-    const updates = response.data.result;
+    const updates = await this.callTelegramApi<Record<string, unknown>[]>(
+      '/getUpdates',
+      updateRequestOptions
+    );
     const parsedUpdates: TelegramUpdate[] = [];
 
     for (const update of updates) {
-      this.lastUpdateId = update.update_id;
+      const updateId =
+        typeof update.update_id === 'number' ? update.update_id : undefined;
+      if (updateId === undefined) {
+        continue;
+      }
+
+      this.lastUpdateId = updateId;
+      const message = this.asRecord(update.message);
+      const callbackQuery = this.asRecord(update.callback_query);
+      const messageChat = this.asRecord(message?.chat);
+      const callbackMessage = this.asRecord(callbackQuery?.message);
+      const callbackChat = this.asRecord(callbackMessage?.chat);
 
       if (
-        update.message?.chat?.id?.toString() === this.chatId &&
-        update.message.text
+        messageChat?.id?.toString() === this.chatId &&
+        typeof message?.text === 'string'
       ) {
-        const text = update.message.text.trim();
+        const text = message.text.trim();
         if (text.startsWith('/')) {
           const parts = text.split(' ');
-          const command = parts[0].toLowerCase();
+          const command = (parts[0] ?? '').toLowerCase();
           const args = parts.slice(1).join(' ');
 
           parsedUpdates.push({ type: 'command', command, args });
@@ -503,16 +538,16 @@ Time: ${new Date().toLocaleString()}`;
       }
 
       if (
-        update.callback_query?.message?.chat?.id?.toString() === this.chatId &&
-        update.callback_query?.data &&
-        update.callback_query.id
+        callbackChat?.id?.toString() === this.chatId &&
+        typeof callbackQuery?.data === 'string' &&
+        typeof callbackQuery.id === 'string'
       ) {
         parsedUpdates.push({
           type: 'callback',
-          callbackQueryId: update.callback_query.id,
-          callbackData: update.callback_query.data,
-          ...(update.callback_query.message?.message_id !== undefined
-            ? { messageId: update.callback_query.message.message_id }
+          callbackQueryId: callbackQuery.id,
+          callbackData: callbackQuery.data,
+          ...(typeof callbackMessage?.message_id === 'number'
+            ? { messageId: callbackMessage.message_id }
             : {}),
         });
       }
@@ -552,15 +587,21 @@ Time: ${new Date().toLocaleString()}`;
       }
     }
 
-    const response = await this.client.post('/sendMessage', {
-      chat_id: this.chatId,
-      text: message,
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      reply_markup: buildInlineKeyboard(buttons),
-    });
+    const response = await this.callTelegramApi<{ message_id: number }>(
+      '/sendMessage',
+      {
+        method: 'POST',
+        body: {
+          chat_id: this.chatId,
+          text: message,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+          reply_markup: buildInlineKeyboard(buttons),
+        },
+      }
+    );
 
-    return response.data.result.message_id as number;
+    return response.message_id;
   }
 
   async answerCallbackQuery(
@@ -568,10 +609,13 @@ Time: ${new Date().toLocaleString()}`;
     message: string
   ): Promise<void> {
     try {
-      await this.client.post('/answerCallbackQuery', {
-        callback_query_id: callbackQueryId,
-        text: message,
-        show_alert: false,
+      await this.callTelegramApi('/answerCallbackQuery', {
+        method: 'POST',
+        body: {
+          callback_query_id: callbackQueryId,
+          text: message,
+          show_alert: false,
+        },
       });
     } catch (error) {
       const responseMessage = getErrorMessage(error);
@@ -587,13 +631,16 @@ Time: ${new Date().toLocaleString()}`;
     buttons: TelegramInlineButton[]
   ): Promise<boolean> {
     try {
-      await this.client.post('/editMessageText', {
-        chat_id: this.chatId,
-        message_id: messageId,
-        text: message,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-        reply_markup: buildInlineKeyboard(buttons),
+      await this.callTelegramApi('/editMessageText', {
+        method: 'POST',
+        body: {
+          chat_id: this.chatId,
+          message_id: messageId,
+          text: message,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+          reply_markup: buildInlineKeyboard(buttons),
+        },
       });
       return true;
     } catch (error) {
@@ -605,18 +652,132 @@ Time: ${new Date().toLocaleString()}`;
 
   async sendResponse(message: string): Promise<boolean> {
     try {
-      await this.client.post('/sendMessage', {
-        chat_id: this.chatId,
-        text: message,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
+      await this.callTelegramApi('/sendMessage', {
+        method: 'POST',
+        body: {
+          chat_id: this.chatId,
+          text: message,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+        },
       });
       return true;
     } catch (error) {
-      const message = getErrorMessage(error);
-      this.logger?.error(`❌ Failed to send response: ${message}`);
+      const responseMessage = getErrorMessage(error);
+      this.logger?.error(`❌ Failed to send response: ${responseMessage}`);
       return false;
     }
+  }
+
+  private async callTelegramApi<T = unknown>(
+    path: string,
+    options: {
+      method?: 'GET' | 'POST';
+      params?: Record<string, string | number | boolean | string[]>;
+      body?: unknown;
+      timeoutMs?: number;
+      signal?: AbortSignal;
+    } = {}
+  ): Promise<T> {
+    const method = options.method ?? 'GET';
+    const timeoutMs = options.timeoutMs ?? this.defaultTimeoutMs;
+    const { requestSignal, timeoutSignal } = this.createRequestSignals(
+      options.signal,
+      timeoutMs
+    );
+    const url = new URL(
+      path.startsWith('/') ? path.slice(1) : path,
+      this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`
+    );
+
+    if (options.params) {
+      for (const [key, value] of Object.entries(options.params)) {
+        if (Array.isArray(value)) {
+          url.searchParams.set(key, JSON.stringify(value));
+          continue;
+        }
+
+        url.searchParams.set(key, String(value));
+      }
+    }
+
+    let response: Response;
+    try {
+      response = await this.fetchImpl(url, {
+        method,
+        headers:
+          method === 'POST'
+            ? {
+                'content-type': 'application/json',
+              }
+            : undefined,
+        body:
+          method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
+        signal: requestSignal,
+      });
+    } catch (error) {
+      if (timeoutSignal.aborted && !options.signal?.aborted) {
+        throw new RequestTimeoutError(timeoutMs);
+      }
+      throw error;
+    }
+
+    const payload = await this.parseTelegramEnvelope<T>(response);
+
+    if (!response.ok) {
+      throw new HttpStatusError(
+        response.status,
+        payload.description ??
+          `Telegram API request failed with HTTP ${response.status}`
+      );
+    }
+
+    if (!payload.ok) {
+      throw new Error(
+        payload.description ??
+          'Telegram API request failed without a description'
+      );
+    }
+
+    if (payload.result === undefined) {
+      throw new Error('Telegram API response did not include a result payload');
+    }
+
+    return payload.result;
+  }
+
+  private async parseTelegramEnvelope<T>(
+    response: Response
+  ): Promise<TelegramApiEnvelope<T>> {
+    try {
+      return (await response.json()) as TelegramApiEnvelope<T>;
+    } catch (error) {
+      throw new Error(
+        `Failed to parse Telegram API response: ${getErrorMessage(error)}`
+      );
+    }
+  }
+
+  private createRequestSignals(
+    signal: AbortSignal | undefined,
+    timeoutMs: number
+  ): {
+    requestSignal: AbortSignal;
+    timeoutSignal: AbortSignal;
+  } {
+    const timeoutSignal = AbortSignal.timeout(timeoutMs);
+    return {
+      requestSignal: signal
+        ? AbortSignal.any([signal, timeoutSignal])
+        : timeoutSignal,
+      timeoutSignal,
+    };
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> | undefined {
+    return typeof value === 'object' && value !== null
+      ? (value as Record<string, unknown>)
+      : undefined;
   }
 }
 
