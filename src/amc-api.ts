@@ -79,15 +79,27 @@ export interface AMCApiResponse<T> {
 
 const AMC_API_BASE_URL = 'https://api.amctheatres.com/v2';
 
+interface AMCApiClientOptions {
+  baseUrl?: string;
+  fetchImpl?: typeof fetch;
+  requestTimeoutMs?: number;
+}
+
 export class AMCApiClient {
   private readonly theatreCache = new Map<string, AMCTheatre>();
-  private readonly requestTimeoutMs = 5_000;
+  private readonly requestTimeoutMs: number;
   private readonly requestHeaders: Record<string, string>;
+  private readonly baseUrl: string;
+  private readonly fetchImpl: typeof fetch;
 
   constructor(
     apiKey: string,
-    private logger?: AMCApiLogger
+    private logger?: AMCApiLogger,
+    options: AMCApiClientOptions = {}
   ) {
+    this.requestTimeoutMs = options.requestTimeoutMs ?? 5_000;
+    this.baseUrl = options.baseUrl ?? AMC_API_BASE_URL;
+    this.fetchImpl = options.fetchImpl ?? fetch;
     this.requestHeaders = {
       'X-AMC-Vendor-Key': apiKey,
       'User-Agent': 'AMC-Showtime-Monitor/1.0',
@@ -377,7 +389,7 @@ export class AMCApiClient {
     signal?: AbortSignal
   ): Promise<T> {
     const { requestSignal, timeoutSignal } = this.createRequestSignals(signal);
-    const url = new URL(path, AMC_API_BASE_URL);
+    const url = new URL(path, this.baseUrl);
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
@@ -387,7 +399,7 @@ export class AMCApiClient {
 
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await this.fetchImpl(url, {
         headers: this.requestHeaders,
         signal: requestSignal,
       });
