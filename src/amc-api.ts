@@ -98,7 +98,10 @@ export class AMCApiClient {
     options: AMCApiClientOptions = {}
   ) {
     this.requestTimeoutMs = options.requestTimeoutMs ?? 5_000;
-    this.baseUrl = options.baseUrl ?? AMC_API_BASE_URL;
+    const configuredBaseUrl = options.baseUrl ?? AMC_API_BASE_URL;
+    this.baseUrl = configuredBaseUrl.endsWith('/')
+      ? configuredBaseUrl
+      : `${configuredBaseUrl}/`;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.requestHeaders = {
       'X-AMC-Vendor-Key': apiKey,
@@ -389,11 +392,8 @@ export class AMCApiClient {
     signal?: AbortSignal
   ): Promise<T> {
     const { requestSignal, timeoutSignal } = this.createRequestSignals(signal);
-    const normalizedBaseUrl = this.baseUrl.endsWith('/')
-      ? this.baseUrl
-      : `${this.baseUrl}/`;
     const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
-    const url = new URL(normalizedPath, normalizedBaseUrl);
+    const url = new URL(normalizedPath, this.baseUrl);
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
