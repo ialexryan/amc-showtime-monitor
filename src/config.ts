@@ -1,10 +1,24 @@
 import { existsSync } from 'node:fs';
 import { ZodError, z } from 'zod';
 
+function isValidTimeZone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: value }).format(new Date(0));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const RuntimeConfigSchema = z.object({
   pollIntervalSeconds: z.coerce.number().int().positive().default(60),
   telegramLongPollSeconds: z.coerce.number().int().min(0).max(50).default(30),
   healthchecksPingUrl: z.string().url().optional(),
+  displayTimeZone: z
+    .string()
+    .min(1, 'Display time zone cannot be empty')
+    .refine(isValidTimeZone, 'Display time zone must be a valid IANA time zone')
+    .default('America/Los_Angeles'),
   port: z.coerce.number().int().min(1).max(65535).optional(),
 });
 
@@ -18,6 +32,7 @@ export const ConfigSchema = z.object({
   runtime: RuntimeConfigSchema.default({
     pollIntervalSeconds: 60,
     telegramLongPollSeconds: 30,
+    displayTimeZone: 'America/Los_Angeles',
   }),
 });
 
@@ -57,6 +72,8 @@ export async function loadConfig(
       healthchecksPingUrl:
         process.env.HEALTHCHECKS_PING_URL ??
         rawConfig.runtime?.healthchecksPingUrl,
+      displayTimeZone:
+        process.env.DISPLAY_TIME_ZONE ?? rawConfig.runtime?.displayTimeZone,
       port: process.env.PORT ?? rawConfig.runtime?.port,
     },
   };

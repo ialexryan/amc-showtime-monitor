@@ -106,12 +106,15 @@ The app supports environment-only startup, which is the recommended Fly.io setup
 - optionally `POLL_INTERVAL_SECONDS`
 - optionally `TELEGRAM_LONG_POLL_SECONDS`
 - optionally `HEALTHCHECKS_PING_URL`
+- optionally `DISPLAY_TIME_ZONE`
 
 The Fly deployment in this repo also sets:
 
 - `PORT=8080`
 - `DATABASE_PATH=/data/amc-monitor.db`
 - `CONFIG_PATH=/data/config.json`
+
+`DISPLAY_TIME_ZONE` controls admin/status timestamps such as `/status` and startup notifications. It does not affect showtime formatting, which continues to use AMC's per-showtime local time data.
 
 If `/data/config.json` is missing, the app will still start correctly as long as the required env vars are present.
 

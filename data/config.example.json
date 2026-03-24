@@ -8,6 +8,7 @@
   "runtime": {
     "pollIntervalSeconds": 60,
     "telegramLongPollSeconds": 30,
-    "healthchecksPingUrl": "https://hc-ping.com/your-uuid"
+    "healthchecksPingUrl": "https://hc-ping.com/your-uuid",
+    "displayTimeZone": "America/Los_Angeles"
   }
 }

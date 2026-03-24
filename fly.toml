@@ -7,6 +7,7 @@ kill_timeout = 20
   PORT = "8080"
   CONFIG_PATH = "/data/config.json"
   DATABASE_PATH = "/data/amc-monitor.db"
+  DISPLAY_TIME_ZONE = "America/Los_Angeles"
 
 [mounts]
   source = "amc_monitor_data"

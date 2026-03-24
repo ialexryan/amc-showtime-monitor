@@ -719,7 +719,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
 
 🏛️ ${this.escapeHtml(theatreName)}
 🆔 <code>${this.escapeHtml(workerId)}</code>
-🕒 ${this.escapeHtml(startedAt.toISOString())}`
+🕒 ${this.escapeHtml(this.formatDisplayTimestamp(startedAt))}`
     );
 
     if (sent) {
@@ -1062,6 +1062,18 @@ Show this help message
       return null;
     }
 
-    return `${this.lastSuccessfulCatalogMovieCount} movies at ${this.lastSuccessfulCatalogFetchAt.toISOString()}`;
+    return `${this.lastSuccessfulCatalogMovieCount} movies at ${this.formatDisplayTimestamp(this.lastSuccessfulCatalogFetchAt)}`;
+  }
+
+  private formatDisplayTimestamp(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short',
+      timeZone: this.config.runtime.displayTimeZone,
+    }).format(date);
   }
 }
