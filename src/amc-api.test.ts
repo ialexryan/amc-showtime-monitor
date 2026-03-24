@@ -58,6 +58,34 @@ async function withMockAmcServer(
 }
 
 describe('AMCApiClient', () => {
+  test('preserves base URL path segments when building AMC request URLs', async () => {
+    const requestedPaths: string[] = [];
+    const baseUrl = await withMockAmcServer((request, response) => {
+      requestedPaths.push(request.url ?? '');
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(
+        JSON.stringify({
+          pageSize: 1000,
+          pageNumber: 1,
+          count: 0,
+          _embedded: { movies: [] },
+        })
+      );
+    });
+
+    const client = new AMCApiClient('test-key', undefined, {
+      baseUrl: `${baseUrl}/v2`,
+      requestTimeoutMs: 25,
+    });
+
+    await expect(client.getAllMovies()).resolves.toEqual([]);
+    expect(requestedPaths.sort()).toEqual([
+      '/v2/movies/views/advance?page-size=1000',
+      '/v2/movies/views/coming-soon?page-size=1000',
+      '/v2/movies/views/now-playing?page-size=1000',
+    ]);
+  });
+
   test('times out a slow showtime request quickly', async () => {
     const baseUrl = await withMockAmcServer((_request, response) => {
       const timer = setTimeout(() => {

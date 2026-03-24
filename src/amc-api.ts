@@ -389,7 +389,11 @@ export class AMCApiClient {
     signal?: AbortSignal
   ): Promise<T> {
     const { requestSignal, timeoutSignal } = this.createRequestSignals(signal);
-    const url = new URL(path, this.baseUrl);
+    const normalizedBaseUrl = this.baseUrl.endsWith('/')
+      ? this.baseUrl
+      : `${this.baseUrl}/`;
+    const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+    const url = new URL(normalizedPath, normalizedBaseUrl);
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
