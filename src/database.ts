@@ -244,6 +244,7 @@ export class ShowtimeDatabase {
       CREATE INDEX IF NOT EXISTS idx_movies_last_checked ON movies (last_checked);
       CREATE INDEX IF NOT EXISTS idx_logs_run_id ON logs (run_id);
       CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs (timestamp);
+      CREATE INDEX IF NOT EXISTS idx_logs_message_timestamp ON logs (message, timestamp);
     `);
 
     this.ensureColumnExists('showtimes', 'utc_offset', 'TEXT');
@@ -605,6 +606,20 @@ export class ShowtimeDatabase {
     } catch (error) {
       console.error('Error getting pending notifications:', error);
       return [];
+    }
+  }
+
+  countUnnotifiedShowtimes(): number {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT COUNT(*) as count FROM showtimes
+        WHERE notified = FALSE
+      `);
+      const result = stmt.get() as { count: number };
+      return result.count;
+    } catch (error) {
+      console.error('Error counting unnotified showtimes:', error);
+      return 0;
     }
   }
 
@@ -1398,12 +1413,13 @@ export class ShowtimeDatabase {
 
   getShowtimeCheckCountSince(hours: number): number {
     try {
+      const lookback = `-${hours} hours`;
       const stmt = this.db.prepare(`
         SELECT COUNT(*) as count FROM logs
-        WHERE datetime(timestamp) >= datetime('now', '-${hours} hours')
-          AND message = '🏁 Checking for new showtimes complete'
+        WHERE message = '🏁 Checking for new showtimes complete'
+          AND timestamp >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', ?)
       `);
-      const result = stmt.get() as { count: number };
+      const result = stmt.get(lookback) as { count: number };
       return result.count;
     } catch (error) {
       console.error('Error getting showtime check count:', error);

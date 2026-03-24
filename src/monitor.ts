@@ -742,12 +742,11 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
     runsLast24Hours: number;
     workerState: WorkerState | null;
   }> {
-    const unnotifiedShowtimes = this.database.getUnnotifiedShowtimes();
+    const startedAt = Date.now();
     const watchlistEntries = this.database.getWatchlistEntries();
     const theatre =
       this.theatre || this.database.getTheatreByName(this.config.theatre);
-
-    return {
+    const status = {
       theatre: theatre,
       trackedMovies: watchlistEntries.map((entry) =>
         this.formatWatchlistEntryLabel(entry)
@@ -763,12 +762,16 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
           entry.resolutionState === 'pending' ||
           entry.resolutionState === 'unmatched'
       ).length,
-      unnotifiedShowtimes: unnotifiedShowtimes.length,
+      unnotifiedShowtimes: this.database.countUnnotifiedShowtimes(),
       lastSuccessfulCatalogFetch: this.formatLastSuccessfulCatalogFetch(),
       runsLastHour: this.database.getShowtimeCheckCountSince(1),
       runsLast24Hours: this.database.getShowtimeCheckCountSince(24),
       workerState: this.database.getWorkerState(),
     };
+
+    this.logger.info(`📊 Built status snapshot in ${Date.now() - startedAt}ms`);
+
+    return status;
   }
 
   flushLogs(): void {
@@ -994,6 +997,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
   }
 
   private async handleStatusCommand(): Promise<void> {
+    const startedAt = Date.now();
     const status = await this.getStatus();
 
     let message = `📊 <b>AMC Showtime Monitor Status</b>\n\n`;
@@ -1022,6 +1026,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
     message += `\n📊 <b>Unnotified Showtimes:</b> ${status.unnotifiedShowtimes}`;
 
     await this.telegram.sendResponse(message);
+    this.logger.info(`📤 Sent /status response in ${Date.now() - startedAt}ms`);
   }
 
   private async handleHelpCommand(): Promise<void> {
