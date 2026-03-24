@@ -27,6 +27,7 @@ import {
   buildAmbiguitySignature,
   createMovieResolutionContext,
   encodeWatchlistCallbackAction,
+  findResolvedMovieVariants,
   normalizeWatchlistQuery,
   parseWatchlistCallbackAction,
   resolveWatchlistQuery,
@@ -137,6 +138,7 @@ export class ShowtimeMonitor {
     }
 
     const resolvedEntries = this.database.getResolvedWatchlistEntries();
+    const processedResolvedMovieIds = new Set<number>();
     for (const entry of resolvedEntries) {
       try {
         const amcMovie = this.getResolvedWatchlistMovie(
@@ -151,7 +153,37 @@ export class ShowtimeMonitor {
           continue;
         }
 
-        newShowtimeCount += await this.processMovieShowtimes(amcMovie, signal);
+        const relatedMovies = findResolvedMovieVariants(
+          amcMovie,
+          resolutionContext
+        );
+        const moviesToProcess = relatedMovies.filter((movie) => {
+          if (processedResolvedMovieIds.has(movie.id)) {
+            return false;
+          }
+
+          processedResolvedMovieIds.add(movie.id);
+          return true;
+        });
+
+        if (moviesToProcess.length === 0) {
+          continue;
+        }
+
+        if (moviesToProcess.length > 1) {
+          const variantNames = moviesToProcess
+            .slice(1)
+            .map((movie) => movie.name)
+            .join(', ');
+          this.logger.info(
+            `🔗 Including ${moviesToProcess.length - 1} variant AMC title${moviesToProcess.length === 2 ? '' : 's'} for "${entry.resolvedMovieName ?? entry.queryText}": ${variantNames}`,
+            { movie: entry.resolvedMovieName ?? entry.queryText }
+          );
+        }
+
+        for (const movie of moviesToProcess) {
+          newShowtimeCount += await this.processMovieShowtimes(movie, signal);
+        }
       } catch (error) {
         const message = getErrorMessage(error);
         this.logger.error(

@@ -3,6 +3,7 @@ import {
   buildAmbiguitySignature,
   createMovieResolutionContext,
   encodeWatchlistCallbackAction,
+  findResolvedMovieVariants,
   normalizeWatchlistQuery,
   parseWatchlistCallbackAction,
   resolveWatchlistQuery,
@@ -71,6 +72,74 @@ describe('watchlist-resolution', () => {
     const result = resolveWatchlistQuery('The Odyssey', context);
 
     expect(result.state).toBe('unmatched');
+  });
+
+  test('finds resolved-title variants when the full title appears as a whole substring', () => {
+    const context = createMovieResolutionContext([
+      {
+        id: 10,
+        name: 'The Devil Wears Prada 2',
+        slug: 'the-devil-wears-prada-2',
+      },
+      {
+        id: 11,
+        name: 'The Devil Wears Prada 2 Opening Night Event',
+        slug: 'the-devil-wears-prada-2-opening-night-event',
+      },
+      {
+        id: 15,
+        name: 'The Devil Wears Prada 2: Opening Night Event',
+        slug: 'the-devil-wears-prada-2-opening-night-event-colon',
+      },
+      {
+        id: 12,
+        name: 'Fan Event: The Devil Wears Prada 2',
+        slug: 'fan-event-the-devil-wears-prada-2',
+      },
+      {
+        id: 13,
+        name: 'Fan Event: The Devil Wears Prada 2 Opening Night Event',
+        slug: 'fan-event-the-devil-wears-prada-2-opening-night-event',
+      },
+      {
+        id: 14,
+        name: 'The Devil Wears Prada 20',
+        slug: 'the-devil-wears-prada-20',
+      },
+    ]);
+
+    const variants = findResolvedMovieVariants(
+      {
+        id: 10,
+        name: 'The Devil Wears Prada 2',
+        slug: 'the-devil-wears-prada-2',
+      },
+      context
+    );
+
+    expect(variants.map((movie) => movie.id)).toEqual([10, 12, 13, 11, 15]);
+  });
+
+  test('keeps the resolved movie even when it is absent from the current catalog', () => {
+    const context = createMovieResolutionContext([
+      {
+        id: 11,
+        name: 'The Devil Wears Prada 2 Opening Night Event',
+        slug: 'the-devil-wears-prada-2-opening-night-event',
+      },
+    ]);
+
+    const variants = findResolvedMovieVariants(
+      {
+        id: 10,
+        name: 'The Devil Wears Prada 2',
+        slug: 'the-devil-wears-prada-2',
+      },
+      context
+    );
+
+    expect(variants.map((movie) => movie.id)).toEqual([10, 11]);
+    expect(variants[0]?.slug).toBe('the-devil-wears-prada-2');
   });
 
   test('encodes and parses callback payloads', () => {

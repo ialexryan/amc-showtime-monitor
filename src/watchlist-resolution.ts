@@ -144,6 +144,57 @@ export function resolveWatchlistQuery(
   };
 }
 
+export function findResolvedMovieVariants(
+  resolvedMovie: Pick<AMCMovie, 'id' | 'name' | 'slug'>,
+  context: MovieResolutionContext
+): AMCMovie[] {
+  const normalizedResolvedTitle = normalizeWatchlistQuery(resolvedMovie.name);
+  if (!normalizedResolvedTitle) {
+    return [
+      {
+        id: resolvedMovie.id,
+        name: resolvedMovie.name,
+        slug: resolvedMovie.slug,
+      },
+    ];
+  }
+
+  const matchingMovies = new Map<number, AMCMovie>();
+  const catalogResolvedMovie = context.moviesById.get(resolvedMovie.id);
+  matchingMovies.set(
+    resolvedMovie.id,
+    catalogResolvedMovie ?? {
+      id: resolvedMovie.id,
+      name: resolvedMovie.name,
+      slug: resolvedMovie.slug,
+    }
+  );
+
+  for (const movie of context.moviesById.values()) {
+    if (movie.id === resolvedMovie.id) {
+      continue;
+    }
+
+    const normalizedMovieTitle = normalizeWatchlistQuery(movie.name);
+    if (
+      normalizedMovieTitle &&
+      containsWholeTitleSubstring(normalizedMovieTitle, normalizedResolvedTitle)
+    ) {
+      matchingMovies.set(movie.id, movie);
+    }
+  }
+
+  return [...matchingMovies.values()].sort((left, right) => {
+    if (left.id === resolvedMovie.id) {
+      return -1;
+    }
+    if (right.id === resolvedMovie.id) {
+      return 1;
+    }
+    return left.name.localeCompare(right.name);
+  });
+}
+
 export function buildAmbiguitySignature(
   candidates: Array<{ movieId: number }>
 ): string {
@@ -222,4 +273,11 @@ function toCandidate(movie: AMCMovie, score: number): WatchlistCandidate {
     movieSlug: movie.slug,
     score,
   };
+}
+
+function containsWholeTitleSubstring(
+  candidateTitle: string,
+  resolvedTitle: string
+): boolean {
+  return ` ${candidateTitle} `.includes(` ${resolvedTitle} `);
 }
