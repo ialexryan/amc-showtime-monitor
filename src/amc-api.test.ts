@@ -140,7 +140,9 @@ describe('AMCApiClient', () => {
       requestTimeoutMs: 25,
     });
 
-    await expect(rateLimitedClient.getAllMovies()).resolves.toEqual([]);
+    await expect(rateLimitedClient.getAllMovies()).rejects.toThrow(
+      /Rate limited by AMC API/i
+    );
     expect(
       isRateLimitError(
         new Error('Rate limited by AMC API. Please reduce polling frequency.')
@@ -152,5 +154,20 @@ describe('AMCApiClient', () => {
       'AMC API request failed with HTTP 503'
     );
     expect(isTransientError(serverError)).toBe(true);
+  });
+
+  test('throws when all AMC catalog endpoints fail', async () => {
+    const catalogFailureClient = new AMCApiClient('test-key', undefined, {
+      fetchImpl: (async () =>
+        new Response(JSON.stringify({ description: 'Not Found' }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' },
+        })) as unknown as typeof fetch,
+      requestTimeoutMs: 25,
+    });
+
+    await expect(catalogFailureClient.getAllMovies()).rejects.toThrow(
+      /AMC catalog fetch failed for all endpoints/i
+    );
   });
 });

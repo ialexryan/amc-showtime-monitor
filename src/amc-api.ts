@@ -85,6 +85,12 @@ interface AMCApiClientOptions {
   requestTimeoutMs?: number;
 }
 
+interface MovieEndpointResult {
+  endpointName: string;
+  movies: AMCMovie[];
+  error?: Error;
+}
+
 export class AMCApiClient {
   private readonly theatreCache = new Map<string, AMCTheatre>();
   private readonly requestTimeoutMs: number;
@@ -198,7 +204,7 @@ export class AMCApiClient {
     endpoint: string,
     endpointName: string,
     signal?: AbortSignal
-  ): Promise<AMCMovie[]> {
+  ): Promise<MovieEndpointResult> {
     const startedAt = Date.now();
 
     try {
@@ -233,7 +239,10 @@ export class AMCApiClient {
           },
         }
       );
-      return movies;
+      return {
+        endpointName,
+        movies,
+      };
     } catch (error) {
       const durationMs = Date.now() - startedAt;
       const timedOut = error instanceof RequestTimeoutError;
@@ -252,7 +261,11 @@ export class AMCApiClient {
           },
         }
       );
-      return [];
+      return {
+        endpointName,
+        movies: [],
+        error: error instanceof Error ? error : new Error(message),
+      };
     }
   }
 
@@ -274,13 +287,28 @@ export class AMCApiClient {
         )
       );
 
-      for (const movies of endpointResults) {
-        for (const movie of movies) {
+      for (const result of endpointResults) {
+        for (const movie of result.movies) {
           movieMap.set(movie.id, movie);
         }
       }
 
       const allMovies = Array.from(movieMap.values());
+      const failedEndpoints = endpointResults.filter(
+        (result) => result.error !== undefined
+      );
+      if (failedEndpoints.length === endpointResults.length) {
+        const failureSummary = failedEndpoints
+          .map(
+            (result) =>
+              `${result.endpointName}: ${getErrorMessage(result.error)}`
+          )
+          .join('; ');
+        throw new Error(
+          `AMC catalog fetch failed for all endpoints: ${failureSummary}`
+        );
+      }
+
       const durationMs = Date.now() - startedAt;
       this.info(
         `Total unique movies: ${allMovies.length} (fetched in ${durationMs}ms)`,

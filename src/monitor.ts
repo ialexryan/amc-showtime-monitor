@@ -41,6 +41,8 @@ export class ShowtimeMonitor {
   private logger: Logger;
   private theatre: Theatre | null = null;
   private closed = false;
+  private lastSuccessfulCatalogFetchAt: Date | null = null;
+  private lastSuccessfulCatalogMovieCount: number | null = null;
 
   constructor(config: AppConfig, dbPath?: string) {
     this.config = config;
@@ -114,6 +116,7 @@ export class ShowtimeMonitor {
 
     // Fetch all movies once at the start
     const allMovies = await this.amcClient.getAllMovies(signal);
+    this.recordSuccessfulCatalogFetch(allMovies.length);
     const resolutionContext = createMovieResolutionContext(allMovies);
     const memAfterFetch = process.memoryUsage();
     this.logger.info(
@@ -734,6 +737,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
     ambiguousWatchlistEntries: number;
     pendingWatchlistEntries: number;
     unnotifiedShowtimes: number;
+    lastSuccessfulCatalogFetch: string | null;
     runsLastHour: number;
     runsLast24Hours: number;
     workerState: WorkerState | null;
@@ -760,6 +764,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
           entry.resolutionState === 'unmatched'
       ).length,
       unnotifiedShowtimes: unnotifiedShowtimes.length,
+      lastSuccessfulCatalogFetch: this.formatLastSuccessfulCatalogFetch(),
       runsLastHour: this.database.getShowtimeCheckCountSince(1),
       runsLast24Hours: this.database.getShowtimeCheckCountSince(24),
       workerState: this.database.getWorkerState(),
@@ -875,6 +880,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
 
     try {
       const allMovies = await this.amcClient.getAllMovies();
+      this.recordSuccessfulCatalogFetch(allMovies.length);
       const resolutionContext = createMovieResolutionContext(allMovies);
       const outcome = await this.reconcileWatchlistEntry(
         entry,
@@ -996,6 +1002,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
     message += `✅ <b>Resolved:</b> ${status.resolvedWatchlistEntries}\n`;
     message += `🤔 <b>Ambiguous:</b> ${status.ambiguousWatchlistEntries}\n`;
     message += `🕒 <b>Pending:</b> ${status.pendingWatchlistEntries}\n`;
+    message += `📚 <b>AMC catalog:</b> ${status.lastSuccessfulCatalogFetch || 'No successful fetch yet'}\n`;
     message += `🔄 <b>Showtime checks:</b> ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h\n`;
     if (status.workerState) {
       message += `⚙️ <b>Worker:</b> ${status.workerState.status}`;
@@ -1040,5 +1047,21 @@ Show this help message
 <i>If AMC finds multiple possible matches for a pending entry, the bot will send inline buttons so you can pick the right one.</i>`;
 
     await this.telegram.sendResponse(helpMessage);
+  }
+
+  private recordSuccessfulCatalogFetch(movieCount: number): void {
+    this.lastSuccessfulCatalogFetchAt = new Date();
+    this.lastSuccessfulCatalogMovieCount = movieCount;
+  }
+
+  private formatLastSuccessfulCatalogFetch(): string | null {
+    if (
+      this.lastSuccessfulCatalogFetchAt === null ||
+      this.lastSuccessfulCatalogMovieCount === null
+    ) {
+      return null;
+    }
+
+    return `${this.lastSuccessfulCatalogMovieCount} movies at ${this.lastSuccessfulCatalogFetchAt.toISOString()}`;
   }
 }

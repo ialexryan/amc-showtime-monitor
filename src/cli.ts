@@ -138,6 +138,9 @@ program
       console.log(`  Ambiguous: ${status.ambiguousWatchlistEntries}`);
       console.log(`  Pending: ${status.pendingWatchlistEntries}`);
       console.log(
+        `AMC Catalog: ${status.lastSuccessfulCatalogFetch || 'No successful fetch yet'}`
+      );
+      console.log(
         `Showtime checks: ${status.runsLastHour} last hour, ${status.runsLast24Hours} last 24h`
       );
       if (status.workerState) {
