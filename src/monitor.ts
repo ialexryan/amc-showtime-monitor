@@ -30,6 +30,7 @@ import {
   findResolvedMovieVariants,
   normalizeWatchlistQuery,
   parseWatchlistCallbackAction,
+  resolveDirectSearchMatches,
   resolveWatchlistQuery,
 } from './watchlist-resolution.js';
 
@@ -344,10 +345,31 @@ export class ShowtimeMonitor {
     | { kind: 'unmatched'; entry: WatchlistEntry }
   > {
     const checkedAt = new Date().toISOString();
-    const resolution = resolveWatchlistQuery(
-      entry.queryText,
-      resolutionContext
-    );
+    let resolution = resolveWatchlistQuery(entry.queryText, resolutionContext);
+
+    if (resolution.state === 'unmatched') {
+      const directMatches = await this.amcClient.searchMoviesByName(
+        entry.queryText
+      );
+      const directResolution = resolveDirectSearchMatches(
+        entry.queryText,
+        directMatches
+      );
+
+      if (directResolution.state === 'resolved') {
+        resolution = directResolution;
+        this.logger.info(
+          `🧭 Resolved "${entry.queryText}" via direct AMC movie search to "${directResolution.resolvedMovie.name}" (${directResolution.resolvedMovie.id})`,
+          {
+            movie: entry.queryText,
+            data: {
+              resolvedMovieId: directResolution.resolvedMovie.id,
+              matchCount: directMatches.length,
+            },
+          }
+        );
+      }
+    }
 
     if (resolution.state === 'resolved') {
       const existingResolvedEntry =

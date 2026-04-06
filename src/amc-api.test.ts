@@ -170,4 +170,48 @@ describe('AMCApiClient', () => {
       /AMC catalog fetch failed for all endpoints/i
     );
   });
+
+  test('searches AMC movies by name through the direct movie endpoint', async () => {
+    const requestedPaths: string[] = [];
+    const baseUrl = await withMockAmcServer((request, response) => {
+      requestedPaths.push(request.url ?? '');
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(
+        JSON.stringify({
+          pageSize: 25,
+          pageNumber: 1,
+          count: 1,
+          _embedded: {
+            movies: [
+              {
+                id: 83391,
+                name: 'Dune: Part Three',
+                slug: 'dune-part-three-83391',
+                hasScheduledShowtimes: true,
+              },
+            ],
+          },
+        })
+      );
+    });
+
+    const client = new AMCApiClient('test-key', undefined, {
+      baseUrl: `${baseUrl}/v2`,
+      requestTimeoutMs: 25,
+    });
+
+    await expect(
+      client.searchMoviesByName('Dune: Part Three')
+    ).resolves.toEqual([
+      {
+        id: 83391,
+        name: 'Dune: Part Three',
+        slug: 'dune-part-three-83391',
+        hasScheduledShowtimes: true,
+      },
+    ]);
+    expect(requestedPaths).toEqual([
+      '/v2/movies?name=Dune%3A+Part+Three&page-size=25',
+    ]);
+  });
 });

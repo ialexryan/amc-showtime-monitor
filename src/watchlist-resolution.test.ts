@@ -6,6 +6,7 @@ import {
   findResolvedMovieVariants,
   normalizeWatchlistQuery,
   parseWatchlistCallbackAction,
+  resolveDirectSearchMatches,
   resolveWatchlistQuery,
 } from './watchlist-resolution.js';
 
@@ -70,6 +71,49 @@ describe('watchlist-resolution', () => {
   test('marks unknown movies as unmatched', () => {
     const context = createMovieResolutionContext([...sampleMovies]);
     const result = resolveWatchlistQuery('The Odyssey', context);
+
+    expect(result.state).toBe('unmatched');
+  });
+
+  test('resolves duplicate exact-title direct matches to the scheduled movie', () => {
+    const result = resolveDirectSearchMatches('Dune: Part Three', [
+      {
+        id: 77032,
+        name: 'Dune: Part Three',
+        slug: 'dune-part-three-77032',
+        hasScheduledShowtimes: false,
+        releaseDateUtc: '2026-12-18T06:00:00Z',
+      },
+      {
+        id: 83391,
+        name: 'Dune: Part Three',
+        slug: 'dune-part-three-83391',
+        hasScheduledShowtimes: true,
+        earliestShowingUtc: '2026-12-17T19:00:00Z',
+        releaseDateUtc: '2026-12-18T06:00:00Z',
+      },
+    ]);
+
+    expect(result.state).toBe('resolved');
+    if (result.state !== 'resolved') {
+      throw new Error('Expected direct search to resolve');
+    }
+
+    expect(result.resolvedMovie.id).toBe(83391);
+    expect(result.candidates.map((candidate) => candidate.movieId)).toEqual([
+      77032, 83391,
+    ]);
+  });
+
+  test('keeps direct search unmatched when only non-exact titles are returned', () => {
+    const result = resolveDirectSearchMatches('Dune: Part Three', [
+      {
+        id: 90001,
+        name: 'Dune: Part Three Opening Night Event',
+        slug: 'dune-part-three-opening-night-event',
+        hasScheduledShowtimes: true,
+      },
+    ]);
 
     expect(result.state).toBe('unmatched');
   });

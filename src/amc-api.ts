@@ -36,10 +36,12 @@ export interface AMCMovie {
   id: number;
   name: string;
   slug: string;
+  sortableName?: string;
   genre?: string;
   mpaaRating?: string;
   runTime?: number;
   releaseDateUtc?: string;
+  earliestShowingUtc?: string;
   hasScheduledShowtimes?: boolean;
   attributes?: Array<{
     code: string;
@@ -324,6 +326,60 @@ export class AMCApiClient {
       this.error(`Error fetching all movies: ${getErrorMessage(error)}`, {
         data: {
           durationMs: Date.now() - startedAt,
+        },
+      });
+      throw error;
+    }
+  }
+
+  async searchMoviesByName(
+    movieName: string,
+    signal?: AbortSignal
+  ): Promise<AMCMovie[]> {
+    const startedAt = Date.now();
+
+    try {
+      this.info(`Searching AMC movies by name: ${movieName}`, {
+        movie: movieName,
+        data: {
+          movieName,
+          timeoutMs: this.requestTimeoutMs,
+        },
+      });
+
+      const response = await this.fetchJson<
+        AMCApiResponse<{ movies: AMCMovie[] }>
+      >(
+        '/movies',
+        {
+          name: movieName,
+          'page-size': 25,
+        },
+        signal
+      );
+
+      const movies = response._embedded.movies || [];
+      const durationMs = Date.now() - startedAt;
+      this.info(
+        `Found ${movies.length} AMC direct-search matches in ${durationMs}ms`,
+        {
+          movie: movieName,
+          data: {
+            movieName,
+            count: movies.length,
+            durationMs,
+          },
+        }
+      );
+      return movies;
+    } catch (error) {
+      const durationMs = Date.now() - startedAt;
+      const message = getErrorMessage(error);
+      this.error(`Error searching AMC movies by name: ${message}`, {
+        movie: movieName,
+        data: {
+          movieName,
+          durationMs,
         },
       });
       throw error;

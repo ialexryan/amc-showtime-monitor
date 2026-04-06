@@ -144,6 +144,46 @@ export function resolveWatchlistQuery(
   };
 }
 
+export function resolveDirectSearchMatches(
+  queryText: string,
+  directMatches: AMCMovie[]
+): WatchlistResolutionResult {
+  if (directMatches.length === 0) {
+    return {
+      state: 'unmatched',
+      candidates: [],
+    };
+  }
+
+  const normalizedQuery = normalizeWatchlistQuery(queryText);
+  const exactMatches = directMatches.filter(
+    (movie) => normalizeWatchlistQuery(movie.name) === normalizedQuery
+  );
+
+  if (exactMatches.length === 0) {
+    return {
+      state: 'unmatched',
+      candidates: [],
+    };
+  }
+
+  const candidates = exactMatches.map((movie) => toCandidate(movie, 0));
+  const resolvedMovie = selectPreferredDirectMatch(exactMatches);
+
+  if (!resolvedMovie) {
+    return {
+      state: 'unmatched',
+      candidates: [],
+    };
+  }
+
+  return {
+    state: 'resolved',
+    resolvedMovie,
+    candidates,
+  };
+}
+
 export function findResolvedMovieVariants(
   resolvedMovie: Pick<AMCMovie, 'id' | 'name' | 'slug'>,
   context: MovieResolutionContext
@@ -280,4 +320,49 @@ function containsWholeTitleSubstring(
   resolvedTitle: string
 ): boolean {
   return ` ${candidateTitle} `.includes(` ${resolvedTitle} `);
+}
+
+function selectPreferredDirectMatch(movies: AMCMovie[]): AMCMovie | null {
+  const [preferredMovie] = [...movies].sort(comparePreferredDirectMatches);
+  return preferredMovie ?? null;
+}
+
+function comparePreferredDirectMatches(
+  left: AMCMovie,
+  right: AMCMovie
+): number {
+  const scheduledDelta =
+    Number(right.hasScheduledShowtimes === true) -
+    Number(left.hasScheduledShowtimes === true);
+  if (scheduledDelta !== 0) {
+    return scheduledDelta;
+  }
+
+  const leftEarliestShowing = parseOptionalDateTime(
+    left.earliestShowingUtc ?? left.releaseDateUtc
+  );
+  const rightEarliestShowing = parseOptionalDateTime(
+    right.earliestShowingUtc ?? right.releaseDateUtc
+  );
+
+  if (leftEarliestShowing !== null && rightEarliestShowing !== null) {
+    if (leftEarliestShowing !== rightEarliestShowing) {
+      return leftEarliestShowing - rightEarliestShowing;
+    }
+  } else if (leftEarliestShowing !== null) {
+    return -1;
+  } else if (rightEarliestShowing !== null) {
+    return 1;
+  }
+
+  return right.id - left.id;
+}
+
+function parseOptionalDateTime(value?: string): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsedDate = Date.parse(value);
+  return Number.isNaN(parsedDate) ? null : parsedDate;
 }
