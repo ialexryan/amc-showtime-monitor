@@ -1002,7 +1002,7 @@ If none are right, tap <b>Keep pending</b>. I will only prompt again if the cand
 
     if (watchlistEntries.length === 0) {
       await this.telegram.sendResponse(
-        '📋 Your watchlist is empty.\n\nAdd movies with /add <movie name>'
+        '📋 Your watchlist is empty.\n\nAdd movies with <code>/add &lt;movie name&gt;</code>'
       );
       return;
     }
