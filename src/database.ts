@@ -1,5 +1,10 @@
 import { Database } from 'bun:sqlite';
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
+
+const LOG_RETENTION_DAYS = 7;
+const LOG_MAINTENANCE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const STARTUP_VACUUM_THRESHOLD_BYTES = 512 * 1024 * 1024;
+const EMERGENCY_LOG_PURGE_BATCH_SIZE = 100_000;
 
 export interface Theatre {
   id: number;
@@ -113,10 +118,14 @@ export interface WorkerLeaseResult {
 export class ShowtimeDatabase {
   private db: Database;
   private closed = false;
+  private readonly dbPath: string;
+  private lastLogMaintenanceAt = 0;
+  private logPersistenceDisabled = false;
 
   constructor(
     dbPath: string = process.env.DATABASE_PATH || './data/amc-monitor.db'
   ) {
+    this.dbPath = dbPath;
     this.db = new Database(dbPath);
 
     // Enable WAL mode for better concurrent access handling
@@ -161,6 +170,7 @@ export class ShowtimeDatabase {
     this.db.exec('PRAGMA auto_vacuum = INCREMENTAL');
 
     this.initTables();
+    this.runStartupLogMaintenance();
   }
 
   private initTables() {
@@ -1252,21 +1262,47 @@ export class ShowtimeDatabase {
     theatre?: string,
     data?: unknown
   ): void {
-    try {
-      const stmt = this.db.prepare(`
-        INSERT INTO logs (run_id, level, message, movie, theatre, data)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      stmt.run(
-        runId,
-        level,
-        message,
-        movie || null,
-        theatre || null,
-        data ? JSON.stringify(data) : null
-      );
-    } catch (error) {
-      console.error('Error adding log:', error);
+    if (this.logPersistenceDisabled) {
+      return;
+    }
+
+    this.maybeRunScheduledLogMaintenance();
+
+    const stmt = this.db.prepare(`
+      INSERT INTO logs (run_id, level, message, movie, theatre, data)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const serializedData = data ? JSON.stringify(data) : null;
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        stmt.run(
+          runId,
+          level,
+          message,
+          movie || null,
+          theatre || null,
+          serializedData
+        );
+        return;
+      } catch (error) {
+        if (this.isSqliteFullError(error) && attempt === 0) {
+          const recovered = this.attemptEmergencyLogRecovery();
+          if (recovered) {
+            continue;
+          }
+
+          this.logPersistenceDisabled = true;
+          console.error(
+            'Disabling DB-backed log persistence after SQLITE_FULL:',
+            error
+          );
+          return;
+        }
+
+        console.error('Error adding log:', error);
+        return;
+      }
     }
   }
 
@@ -1574,6 +1610,114 @@ export class ShowtimeDatabase {
 
   isClosed(): boolean {
     return this.closed;
+  }
+
+  private runStartupLogMaintenance(): void {
+    try {
+      const fileSizeBytes = this.getDatabaseFileSizeBytes();
+      this.pruneOldLogs({
+        force: true,
+        runVacuum:
+          fileSizeBytes !== null &&
+          fileSizeBytes >= STARTUP_VACUUM_THRESHOLD_BYTES,
+      });
+    } catch (error) {
+      console.error('Error during startup log maintenance:', error);
+    }
+  }
+
+  private maybeRunScheduledLogMaintenance(): void {
+    const now = Date.now();
+    if (now - this.lastLogMaintenanceAt < LOG_MAINTENANCE_INTERVAL_MS) {
+      return;
+    }
+
+    this.pruneOldLogs({ force: true, runVacuum: false });
+  }
+
+  private pruneOldLogs(options?: {
+    force?: boolean;
+    runVacuum?: boolean;
+  }): number {
+    if (!options?.force) {
+      const now = Date.now();
+      if (now - this.lastLogMaintenanceAt < LOG_MAINTENANCE_INTERVAL_MS) {
+        return 0;
+      }
+    }
+
+    this.lastLogMaintenanceAt = Date.now();
+
+    try {
+      const cutoff = this.getRetentionCutoff(LOG_RETENTION_DAYS);
+      const stmt = this.db.prepare(`
+        DELETE FROM logs
+        WHERE timestamp < ?
+      `);
+      const result = stmt.run(cutoff);
+
+      if (result.changes > 0) {
+        this.db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+        if (options?.runVacuum) {
+          this.db.exec('VACUUM');
+        }
+      }
+
+      return result.changes;
+    } catch (error) {
+      console.error('Error pruning old logs:', error);
+      return 0;
+    }
+  }
+
+  private attemptEmergencyLogRecovery(): boolean {
+    try {
+      let removed = this.pruneOldLogs({ force: true, runVacuum: false });
+
+      if (removed === 0) {
+        const stmt = this.db.prepare(`
+          DELETE FROM logs
+          WHERE id IN (
+            SELECT id
+            FROM logs
+            ORDER BY timestamp ASC, id ASC
+            LIMIT ?
+          )
+        `);
+        removed = stmt.run(EMERGENCY_LOG_PURGE_BATCH_SIZE).changes;
+        if (removed > 0) {
+          this.db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+        }
+      }
+
+      return removed > 0;
+    } catch (error) {
+      console.error('Error during emergency log recovery:', error);
+      return false;
+    }
+  }
+
+  private getRetentionCutoff(days: number): string {
+    return new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/\.\d{3}Z$/, 'Z');
+  }
+
+  private getDatabaseFileSizeBytes(): number | null {
+    try {
+      return statSync(this.dbPath).size;
+    } catch {
+      return null;
+    }
+  }
+
+  private isSqliteFullError(error: unknown): error is { code: string } {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: unknown }).code === 'SQLITE_FULL'
+    );
   }
 
   close() {

@@ -1,3 +1,4 @@
+import { Database as SQLiteDatabase } from 'bun:sqlite';
 import { afterEach, describe, expect, test } from 'bun:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -110,5 +111,36 @@ describe('ShowtimeDatabase notification delivery', () => {
     expect(secondResolved).toBeNull();
 
     db.close();
+  });
+
+  test('prunes logs older than seven days on startup', () => {
+    const dbPath = createTempDatabasePath();
+    const db = new ShowtimeDatabase(dbPath);
+    db.close();
+
+    const raw = new SQLiteDatabase(dbPath);
+    const insert = raw.prepare(`
+      INSERT INTO logs (run_id, timestamp, level, message)
+      VALUES (?, ?, ?, ?)
+    `);
+    const oldTimestamp = new Date(
+      Date.now() - 8 * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const recentTimestamp = new Date().toISOString();
+    insert.run('old-run', oldTimestamp, 'INFO', 'old log');
+    insert.run('recent-run', recentTimestamp, 'INFO', 'recent log');
+    raw.close();
+
+    const reopened = new ShowtimeDatabase(dbPath);
+    reopened.close();
+
+    const verify = new SQLiteDatabase(dbPath, { readonly: true });
+    const remainingLogs = verify
+      .query('SELECT timestamp, message FROM logs ORDER BY id ASC')
+      .all() as Array<{ timestamp: string; message: string }>;
+    verify.close();
+
+    expect(remainingLogs).toHaveLength(1);
+    expect(remainingLogs[0]?.message).toBe('recent log');
   });
 });
