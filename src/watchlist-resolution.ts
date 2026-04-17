@@ -5,6 +5,62 @@ import type { AMCMovie } from './amc-api.js';
 const STRONG_MATCH_THRESHOLD = 0.25;
 const CALLBACK_SIGNATURE_LENGTH = 12;
 const CALLBACK_PREFIX = 'wl';
+const TITLE_EQUIVALENT_REPLACEMENTS: [RegExp, string][] = [
+  [/&/gu, ' and '],
+  [/\bvs\.?\b/giu, ' versus '],
+  [/\bep\.?\b/giu, ' episode '],
+  [/\bpt\.?\b/giu, ' part '],
+  [/\bch\.?\b/giu, ' chapter '],
+  [/\bvol\.?\b/giu, ' volume '],
+];
+const SEQUEL_MARKERS = ['episode', 'part', 'chapter', 'volume'] as const;
+const SEQUEL_MARKER_PATTERN = SEQUEL_MARKERS.join('|');
+const NUMBER_WORD_VALUES = new Map<string, number>([
+  ['one', 1],
+  ['first', 1],
+  ['two', 2],
+  ['second', 2],
+  ['three', 3],
+  ['third', 3],
+  ['four', 4],
+  ['fourth', 4],
+  ['five', 5],
+  ['fifth', 5],
+  ['six', 6],
+  ['sixth', 6],
+  ['seven', 7],
+  ['seventh', 7],
+  ['eight', 8],
+  ['eighth', 8],
+  ['nine', 9],
+  ['ninth', 9],
+  ['ten', 10],
+  ['tenth', 10],
+  ['eleven', 11],
+  ['eleventh', 11],
+  ['twelve', 12],
+  ['twelfth', 12],
+  ['thirteen', 13],
+  ['thirteenth', 13],
+  ['fourteen', 14],
+  ['fourteenth', 14],
+  ['fifteen', 15],
+  ['fifteenth', 15],
+  ['sixteen', 16],
+  ['sixteenth', 16],
+  ['seventeen', 17],
+  ['seventeenth', 17],
+  ['eighteen', 18],
+  ['eighteenth', 18],
+  ['nineteen', 19],
+  ['nineteenth', 19],
+  ['twenty', 20],
+  ['twentieth', 20],
+]);
+const NUMBER_WORD_PATTERN = [...NUMBER_WORD_VALUES.keys()]
+  .sort((left, right) => right.length - left.length)
+  .join('|');
+const ROMAN_NUMERAL_PATTERN = '[ivxlcdm]+';
 
 export interface MovieResolutionContext {
   fuse: Fuse<AMCMovie>;
@@ -48,12 +104,36 @@ export type WatchlistCallbackAction =
     };
 
 export function normalizeWatchlistQuery(value: string): string {
-  return value
-    .normalize('NFKD')
-    .replace(/[^\p{Letter}\p{Number}]+/gu, ' ')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .toLowerCase();
+  return normalizeTitleWhitespace(
+    normalizeSequelMarkersAndNumbers(
+      stripTitlePunctuation(
+        replaceTitleEquivalents(normalizeTitleUnicode(value)).toLowerCase()
+      )
+    )
+  );
+}
+
+export function generateDirectSearchVariants(queryText: string): string[] {
+  const rawQuery = normalizeTitleWhitespace(normalizeTitleUnicode(queryText));
+  if (!rawQuery) {
+    return [];
+  }
+
+  const semanticVariant = normalizeTitleWhitespace(
+    normalizeSequelMarkersAndNumbers(
+      replaceTitleEquivalents(rawQuery).toLowerCase()
+    )
+  );
+  const romanVariant = normalizeTitleWhitespace(
+    normalizeSequelMarkersAndNumbers(
+      replaceTitleEquivalents(rawQuery).toLowerCase(),
+      'roman'
+    )
+  );
+
+  return [
+    ...new Set([rawQuery, semanticVariant, romanVariant].filter(Boolean)),
+  ];
 }
 
 export function createMovieResolutionContext(
@@ -365,4 +445,131 @@ function parseOptionalDateTime(value?: string): number | null {
 
   const parsedDate = Date.parse(value);
   return Number.isNaN(parsedDate) ? null : parsedDate;
+}
+
+function normalizeTitleUnicode(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/\p{Mark}+/gu, '')
+    .replace(/[’‘]/gu, "'")
+    .replace(/[‐‑‒–—―]/gu, '-');
+}
+
+function replaceTitleEquivalents(value: string): string {
+  let replacedValue = value;
+
+  for (const [pattern, replacement] of TITLE_EQUIVALENT_REPLACEMENTS) {
+    replacedValue = replacedValue.replace(pattern, replacement);
+  }
+
+  return replacedValue;
+}
+
+function stripTitlePunctuation(value: string): string {
+  return value.replace(/[^\p{Letter}\p{Number}]+/gu, ' ');
+}
+
+function normalizeTitleWhitespace(value: string): string {
+  return value.trim().replace(/\s+/g, ' ');
+}
+
+function normalizeSequelMarkersAndNumbers(
+  value: string,
+  outputMode: 'arabic' | 'roman' = 'arabic'
+): string {
+  const sequelPattern = new RegExp(
+    `\\b(${SEQUEL_MARKER_PATTERN})\\s+(${ROMAN_NUMERAL_PATTERN}|${NUMBER_WORD_PATTERN}|\\d+)\\b`,
+    'giu'
+  );
+
+  return value.replace(sequelPattern, (fullMatch, marker, token) => {
+    const numericValue = parseSequelNumberToken(token);
+    if (numericValue === undefined) {
+      return fullMatch;
+    }
+
+    const normalizedToken =
+      outputMode === 'roman'
+        ? integerToRoman(numericValue)
+        : String(numericValue);
+
+    return `${String(marker).toLowerCase()} ${normalizedToken}`;
+  });
+}
+
+function parseSequelNumberToken(token: string): number | undefined {
+  const normalizedToken = token.toLowerCase();
+
+  if (/^\d+$/.test(normalizedToken)) {
+    const parsedValue = Number.parseInt(normalizedToken, 10);
+    return Number.isNaN(parsedValue) ? undefined : parsedValue;
+  }
+
+  const wordValue = NUMBER_WORD_VALUES.get(normalizedToken);
+  if (wordValue !== undefined) {
+    return wordValue;
+  }
+
+  return romanToInteger(normalizedToken);
+}
+
+function romanToInteger(token: string): number | undefined {
+  const romanValues: Record<string, number> = {
+    i: 1,
+    v: 5,
+    x: 10,
+    l: 50,
+    c: 100,
+    d: 500,
+    m: 1000,
+  };
+
+  let total = 0;
+  let previousValue = 0;
+
+  for (const character of token.split('').reverse()) {
+    const currentValue = romanValues[character];
+    if (!currentValue) {
+      return undefined;
+    }
+
+    if (currentValue < previousValue) {
+      total -= currentValue;
+    } else {
+      total += currentValue;
+      previousValue = currentValue;
+    }
+  }
+
+  return total > 0 ? total : undefined;
+}
+
+function integerToRoman(value: number): string {
+  const romanPairs: [number, string][] = [
+    [1000, 'm'],
+    [900, 'cm'],
+    [500, 'd'],
+    [400, 'cd'],
+    [100, 'c'],
+    [90, 'xc'],
+    [50, 'l'],
+    [40, 'xl'],
+    [10, 'x'],
+    [9, 'ix'],
+    [5, 'v'],
+    [4, 'iv'],
+    [1, 'i'],
+  ];
+
+  let remainingValue = value;
+  let romanValue = '';
+
+  for (const [arabicValue, romanDigit] of romanPairs) {
+    while (remainingValue >= arabicValue) {
+      romanValue += romanDigit;
+      remainingValue -= arabicValue;
+    }
+  }
+
+  return romanValue;
 }

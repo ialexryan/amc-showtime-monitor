@@ -4,6 +4,7 @@ import {
   createMovieResolutionContext,
   encodeWatchlistCallbackAction,
   findResolvedMovieVariants,
+  generateDirectSearchVariants,
   normalizeWatchlistQuery,
   parseWatchlistCallbackAction,
   resolveDirectSearchMatches,
@@ -28,7 +29,13 @@ describe('watchlist-resolution', () => {
   test('normalizes watchlist queries for duplicate detection', () => {
     expect(normalizeWatchlistQuery('  Tron:   Ares  ')).toBe('tron ares');
     expect(normalizeWatchlistQuery('Deadpool & Wolverine')).toBe(
-      'deadpool wolverine'
+      'deadpool and wolverine'
+    );
+    expect(normalizeWatchlistQuery('Star Wars Episode III')).toBe(
+      'star wars episode 3'
+    );
+    expect(normalizeWatchlistQuery('Star Wars Ep. Three')).toBe(
+      'star wars episode 3'
     );
   });
 
@@ -54,6 +61,27 @@ describe('watchlist-resolution', () => {
     }
 
     expect(result.resolvedMovie.id).toBe(1);
+  });
+
+  test('resolves movie titles with equivalent connector wording', () => {
+    const context = createMovieResolutionContext([
+      {
+        id: 60322,
+        name: 'Star Wars: The Mandalorian and Grogu',
+        slug: 'star-wars-the-mandalorian-and-grogu-60322',
+      },
+    ]);
+    const result = resolveWatchlistQuery(
+      'Star Wars: The Mandalorian & Grogu',
+      context
+    );
+
+    expect(result.state).toBe('resolved');
+    if (result.state !== 'resolved') {
+      throw new Error('Expected an exact normalized match');
+    }
+
+    expect(result.resolvedMovie.id).toBe(60322);
   });
 
   test('marks multiple strong matches as ambiguous', () => {
@@ -105,6 +133,27 @@ describe('watchlist-resolution', () => {
     ]);
   });
 
+  test('resolves direct matches when titles differ only by movie-specific normalization', () => {
+    const result = resolveDirectSearchMatches(
+      'Star Wars: The Mandalorian & Grogu',
+      [
+        {
+          id: 60322,
+          name: 'Star Wars: The Mandalorian and Grogu',
+          slug: 'star-wars-the-mandalorian-and-grogu-60322',
+          hasScheduledShowtimes: true,
+        },
+      ]
+    );
+
+    expect(result.state).toBe('resolved');
+    if (result.state !== 'resolved') {
+      throw new Error('Expected direct search to resolve');
+    }
+
+    expect(result.resolvedMovie.id).toBe(60322);
+  });
+
   test('keeps direct search unmatched when only non-exact titles are returned', () => {
     const result = resolveDirectSearchMatches('Dune: Part Three', [
       {
@@ -116,6 +165,25 @@ describe('watchlist-resolution', () => {
     ]);
 
     expect(result.state).toBe('unmatched');
+  });
+
+  test('generates direct-search variants for movie-specific title equivalence', () => {
+    expect(
+      generateDirectSearchVariants('Star Wars: The Mandalorian & Grogu')
+    ).toEqual(
+      expect.arrayContaining([
+        'Star Wars: The Mandalorian & Grogu',
+        'star wars: the mandalorian and grogu',
+      ])
+    );
+
+    expect(generateDirectSearchVariants('Star Wars Episode III')).toEqual(
+      expect.arrayContaining(['Star Wars Episode III', 'star wars episode 3'])
+    );
+
+    expect(generateDirectSearchVariants('Star Wars Episode 3')).toEqual(
+      expect.arrayContaining(['Star Wars Episode 3', 'star wars episode iii'])
+    );
   });
 
   test('finds resolved-title variants when the full title appears as a whole substring', () => {

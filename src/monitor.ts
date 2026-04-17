@@ -28,6 +28,7 @@ import {
   createMovieResolutionContext,
   encodeWatchlistCallbackAction,
   findResolvedMovieVariants,
+  generateDirectSearchVariants,
   normalizeWatchlistQuery,
   parseWatchlistCallbackAction,
   resolveDirectSearchMatches,
@@ -348,9 +349,18 @@ export class ShowtimeMonitor {
     let resolution = resolveWatchlistQuery(entry.queryText, resolutionContext);
 
     if (resolution.state === 'unmatched') {
-      const directMatches = await this.amcClient.searchMoviesByName(
-        entry.queryText
-      );
+      const searchVariants = generateDirectSearchVariants(entry.queryText);
+      const directMatchesById = new Map<number, AMCMovie>();
+
+      for (const searchVariant of searchVariants) {
+        const searchResults =
+          await this.amcClient.searchMoviesByName(searchVariant);
+        for (const match of searchResults) {
+          directMatchesById.set(match.id, match);
+        }
+      }
+
+      const directMatches = [...directMatchesById.values()];
       const directResolution = resolveDirectSearchMatches(
         entry.queryText,
         directMatches
@@ -365,6 +375,7 @@ export class ShowtimeMonitor {
             data: {
               resolvedMovieId: directResolution.resolvedMovie.id,
               matchCount: directMatches.length,
+              searchVariantCount: searchVariants.length,
             },
           }
         );
