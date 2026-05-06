@@ -92,6 +92,18 @@ describe('TelegramBot notification chunking', () => {
       {
         movieName: 'The Super Mario Galaxy Movie',
         theatreName: 'AMC Metreon 16',
+        showDateTimeUtc: '2026-04-01T21:30:00Z',
+        showDateTimeLocal: '2026-04-01T14:30:00',
+        utcOffset: '-07:00',
+        auditorium: 1,
+        attributes: [{ code: 'SCREENX', name: 'SCREENX at AMC' }],
+        ticketUrl: 'https://example.com/screenx-1',
+        isSoldOut: false,
+        isAlmostSoldOut: false,
+      },
+      {
+        movieName: 'The Super Mario Galaxy Movie',
+        theatreName: 'AMC Metreon 16',
         showDateTimeUtc: '2026-04-01T14:00:00Z',
         showDateTimeLocal: '2026-04-01T07:00:00',
         utcOffset: '-07:00',
@@ -150,6 +162,9 @@ describe('TelegramBot notification chunking', () => {
       'Dolby Cinema: <a href="https://example.com/dolby-1">12:00 PM</a>'
     );
     expect(message).toContain(
+      'SCREENX: <a href="https://example.com/screenx-1">2:30 PM</a>'
+    );
+    expect(message).toContain(
       'Laser: <a href="https://example.com/laser-2">10:15 AM</a>'
     );
     expect(message).toContain(
@@ -170,12 +185,14 @@ describe('TelegramBot notification chunking', () => {
         (line) =>
           line.startsWith('IMAX with Laser:') ||
           line.startsWith('Dolby Cinema:') ||
+          line.startsWith('SCREENX:') ||
           line.startsWith('Laser:')
       );
 
     expect(wedLines[0]).toStartWith('IMAX with Laser:');
     expect(wedLines[1]).toStartWith('Dolby Cinema:');
-    expect(wedLines[2]).toStartWith('Laser:');
+    expect(wedLines[2]).toStartWith('SCREENX:');
+    expect(wedLines[3]).toStartWith('Laser:');
   });
 
   test('splits large movie notifications into multiple messages', async () => {
